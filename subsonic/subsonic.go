@@ -2,6 +2,7 @@ package subsonic
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -45,7 +46,7 @@ func (sc *SubsonicClient) Init() error {
 func (sc *SubsonicClient) ArtistSearch(searchTerm string) {
 	searchResult, err := sc.client.Search2(searchTerm, nil)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	fmt.Printf("Search result is %v", searchResult.Artist[0].Name)
 }
