@@ -43,10 +43,12 @@ func (sc *SubsonicClient) Init() error {
 	return nil
 }
 
-func (sc *SubsonicClient) ArtistSearch(searchTerm string) {
-	searchResult, err := sc.client.Search2(searchTerm, nil)
+func (sc *SubsonicClient) GetAlbum(albumId string) {
+	albumResult, err := sc.client.GetAlbum(albumId)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Printf("Search result is %v", searchResult.Artist[0].Name)
+	for _, song := range albumResult.Song {
+		fmt.Printf("\n%v has ID of %v", song.Title, song.ID)
+	}
 }

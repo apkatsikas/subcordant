@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	subsonicClient.ArtistSearch("my bloody valentine")
+	subsonicClient.GetAlbum("30c441134bfb1fa69022abe35af07a7c")
 
 	err = discordClient.Init()
 	if err != nil {
