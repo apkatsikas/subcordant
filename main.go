@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"github.com/apkatsikas/subcordant/subsonic"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	subsonicClient := subsonic.SubsonicClient{}
+	initErr := subsonicClient.Init()
+	if initErr != nil {
+		panic(initErr)
+	}
+	subsonicClient.ArtistSearch("my bloody valentine")
 }
