@@ -9,12 +9,16 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/api/cmdroute"
+	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 )
 
-const playCommand = "play"
+const (
+	playCommand = "play"
+	albumId     = "albumid"
+)
 
 type DiscordClient struct {
 }
@@ -23,6 +27,13 @@ var commands = []api.CreateCommandData{
 	{
 		Name:        playCommand,
 		Description: "play an album by album ID",
+		Options: []discord.CommandOption{
+			&discord.StringOption{
+				OptionName:  albumId,
+				Description: "ID of the album",
+				Required:    true,
+			},
+		},
 	},
 }
 
@@ -60,8 +71,9 @@ type handler struct {
 }
 
 func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
+	message := fmt.Sprintf("TODO - implement me! called with %v", cmd.Options.Find(albumId))
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString("TODO - implement me!"),
+		Content: option.NewNullableString(message),
 	}
 }
 
