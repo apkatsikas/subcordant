@@ -14,13 +14,15 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 )
 
+const playCommand = "play"
+
 type DiscordClient struct {
 }
 
 var commands = []api.CreateCommandData{
 	{
-		Name:        "ping",
-		Description: "ping pong!",
+		Name:        playCommand,
+		Description: "play an album by album ID",
 	},
 }
 
@@ -57,9 +59,9 @@ type handler struct {
 	s *state.State
 }
 
-func (h *handler) cmdPing(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
+func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString("Pong!"),
+		Content: option.NewNullableString("TODO - implement me!"),
 	}
 }
 
@@ -69,7 +71,7 @@ func newHandler(s *state.State) *handler {
 	h.Router = cmdroute.NewRouter()
 	// Automatically defer handles if they're slow.
 	h.Use(cmdroute.Deferrable(s, cmdroute.DeferOpts{}))
-	h.AddFunc("ping", h.cmdPing)
+	h.AddFunc(playCommand, h.cmdPlay)
 
 	return h
 }
