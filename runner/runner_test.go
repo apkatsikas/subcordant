@@ -8,6 +8,7 @@ import (
 
 var _ = Describe("runner", func() {
 	var subcordantRunner *runner.SubcordantRunner
+
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
