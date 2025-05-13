@@ -1,9 +1,6 @@
 bootstrap-test:
 	~/go/bin/ginkgo bootstrap
 
-bootstrap-test:
-	~/go/bin/ginkgo generate
-
 run-tests:
 	go test -p 1 -coverprofile coverage.out ./...
 

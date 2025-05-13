@@ -4,25 +4,24 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/apkatsikas/subcordant/discord"
-	"github.com/apkatsikas/subcordant/subsonic"
+	"github.com/apkatsikas/subcordant/interfaces"
 )
 
 type SubcordantRunner struct {
-	*subsonic.SubsonicClient
-	*discord.DiscordClient
+	subsonicClient interfaces.ISubsonicClient
+	discordClient  interfaces.IDiscordClient
 }
 
-func (sr *SubcordantRunner) Init() {
-	sr.SubsonicClient = &subsonic.SubsonicClient{}
-	sr.DiscordClient = &discord.DiscordClient{}
-	err := sr.SubsonicClient.Init()
+func (sr *SubcordantRunner) Init(subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient) {
+	sr.subsonicClient = subsonicClient
+	sr.discordClient = discordClient
+	err := sr.subsonicClient.Init()
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = sr.DiscordClient.Init(sr)
+	err = sr.discordClient.Init(sr)
 	if err != nil {
 		log.Fatalln(err)
 	}
