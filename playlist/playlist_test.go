@@ -7,7 +7,6 @@ import (
 )
 
 var _ = Describe("playlist service", func() {
-
 	var playlistService *playlist.PlaylistService
 
 	BeforeEach(func() {
