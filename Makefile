@@ -10,3 +10,6 @@ run-single-test:
 coverage:
 	@go tool cover -html coverage.out -o coverage.html
 	explorer.exe coverage.html
+
+mocks:
+	mockery
