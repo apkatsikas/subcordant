@@ -46,7 +46,7 @@ func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
 	albumResult, err := sc.client.GetAlbum(albumId)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get album with ID %v - %v", albumId, err)
 	}
 	return albumResult, nil
 }

@@ -19,6 +19,7 @@ var _ = Describe("runner", func() {
 	BeforeEach(func() {
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
+		discordClient.EXPECT().JoinVoiceChat().Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)

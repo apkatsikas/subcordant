@@ -1,7 +1,9 @@
 package runner
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -17,8 +19,8 @@ func (sr *SubcordantRunner) Init(subsonicClient interfaces.ISubsonicClient, disc
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
-	err := sr.subsonicClient.Init()
 
+	err := sr.subsonicClient.Init()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -38,5 +40,12 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) {
 
 	for _, song := range album.Song {
 		sr.PlaylistService.Add(song.ID)
+	}
+
+	fmt.Printf("%v", strings.Join(sr.PlaylistService.GetPlaylist(), "\n"))
+
+	err = sr.discordClient.JoinVoiceChat()
+	if err != nil {
+		log.Fatalln(err)
 	}
 }

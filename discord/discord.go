@@ -2,6 +2,7 @@ package discord
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -20,8 +21,8 @@ import (
 )
 
 const (
-	playCommand = "play"
-	albumId     = "albumid"
+	playCommand   = "play"
+	optionAlbumId = "albumid"
 
 	// Optional constants to tweak the Opus stream.
 	frameDuration = 60 // ms
@@ -38,7 +39,7 @@ var commands = []api.CreateCommandData{
 		Description: "play an album by album ID",
 		Options: []discord.CommandOption{
 			&discord.StringOption{
-				OptionName:  albumId,
+				OptionName:  optionAlbumId,
 				Description: "ID of the album",
 				Required:    true,
 			},
@@ -88,6 +89,11 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 		timeIncrement,
 	))
 
+	// TODO - continue to follow example here
+	// https://github.com/diamondburned/arikawa/blob/8a78eb04430cfd0f4997c8bf206cf36c0c2e604d/0-examples/commands/main.go#L29
+
+	// Make sure the bot quits when we exit
+
 	if err := v.JoinChannel(context.Background(), 1371301075998740484, false, true); err != nil {
 		return fmt.Errorf("failed to join channel: %w", err)
 	}
@@ -102,9 +108,14 @@ type handler struct {
 }
 
 func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
-	commandAlbumId := cmd.Options.Find(albumId).Value.String()
-	h.commandHandler.HandlePlay(commandAlbumId)
-	message := fmt.Sprintf("Queueing album with ID of %v", commandAlbumId)
+	var albumId string
+	err := json.Unmarshal(cmd.Options.Find(optionAlbumId).Value, &albumId)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	h.commandHandler.HandlePlay(albumId)
+	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(message),
 	}

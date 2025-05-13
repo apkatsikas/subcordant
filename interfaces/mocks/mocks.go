@@ -143,6 +143,50 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 	return _c
 }
 
+// JoinVoiceChat provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) JoinVoiceChat() error {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for JoinVoiceChat")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func() error); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// IDiscordClient_JoinVoiceChat_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'JoinVoiceChat'
+type IDiscordClient_JoinVoiceChat_Call struct {
+	*mock.Call
+}
+
+// JoinVoiceChat is a helper method to define mock.On call
+func (_e *IDiscordClient_Expecter) JoinVoiceChat() *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat")}
+}
+
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func()) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_JoinVoiceChat_Call) Return(err error) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() error) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewISubsonicClient creates a new instance of ISubsonicClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewISubsonicClient(t interface {
