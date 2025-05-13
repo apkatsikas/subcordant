@@ -20,10 +20,10 @@ func (sr *SubcordantRunner) Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	albumTrackIds := sr.SubsonicClient.GetAlbumTrackIds("30c441134bfb1fa69022abe35af07a7c")
+	album := sr.SubsonicClient.GetAlbum("30c441134bfb1fa69022abe35af07a7c")
 
-	for _, trackId := range albumTrackIds {
-		fmt.Println(trackId)
+	for _, song := range album.Song {
+		fmt.Println(song.ID)
 	}
 
 	err = sr.DiscordClient.Init()
