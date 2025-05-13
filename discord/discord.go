@@ -92,7 +92,9 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 	// TODO - continue to follow example here
 	// https://github.com/diamondburned/arikawa/blob/8a78eb04430cfd0f4997c8bf206cf36c0c2e604d/0-examples/commands/main.go#L29
 
-	// Make sure the bot quits when we exit
+	// TODO
+	// Make sure the bot quits when we timeout etc
+	// and a better way to pass context
 
 	if err := v.JoinChannel(context.Background(), 1371301075998740484, false, true); err != nil {
 		return fmt.Errorf("failed to join channel: %w", err)
