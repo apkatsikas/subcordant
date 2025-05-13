@@ -4,5 +4,5 @@ import sub "github.com/delucks/go-subsonic"
 
 type ISubsonicClient interface {
 	Init() error
-	GetAlbum(albumId string) *sub.AlbumID3
+	GetAlbum(albumId string) (*sub.AlbumID3, error)
 }

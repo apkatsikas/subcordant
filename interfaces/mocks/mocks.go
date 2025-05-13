@@ -171,7 +171,7 @@ func (_m *ISubsonicClient) EXPECT() *ISubsonicClient_Expecter {
 }
 
 // GetAlbum provides a mock function for the type ISubsonicClient
-func (_mock *ISubsonicClient) GetAlbum(albumId string) *subsonic.AlbumID3 {
+func (_mock *ISubsonicClient) GetAlbum(albumId string) (*subsonic.AlbumID3, error) {
 	ret := _mock.Called(albumId)
 
 	if len(ret) == 0 {
@@ -179,6 +179,10 @@ func (_mock *ISubsonicClient) GetAlbum(albumId string) *subsonic.AlbumID3 {
 	}
 
 	var r0 *subsonic.AlbumID3
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic.AlbumID3, error)); ok {
+		return returnFunc(albumId)
+	}
 	if returnFunc, ok := ret.Get(0).(func(string) *subsonic.AlbumID3); ok {
 		r0 = returnFunc(albumId)
 	} else {
@@ -186,7 +190,12 @@ func (_mock *ISubsonicClient) GetAlbum(albumId string) *subsonic.AlbumID3 {
 			r0 = ret.Get(0).(*subsonic.AlbumID3)
 		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(albumId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // ISubsonicClient_GetAlbum_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAlbum'
@@ -207,12 +216,12 @@ func (_c *ISubsonicClient_GetAlbum_Call) Run(run func(albumId string)) *ISubsoni
 	return _c
 }
 
-func (_c *ISubsonicClient_GetAlbum_Call) Return(albumID3 *subsonic.AlbumID3) *ISubsonicClient_GetAlbum_Call {
-	_c.Call.Return(albumID3)
+func (_c *ISubsonicClient_GetAlbum_Call) Return(albumID3 *subsonic.AlbumID3, err error) *ISubsonicClient_GetAlbum_Call {
+	_c.Call.Return(albumID3, err)
 	return _c
 }
 
-func (_c *ISubsonicClient_GetAlbum_Call) RunAndReturn(run func(albumId string) *subsonic.AlbumID3) *ISubsonicClient_GetAlbum_Call {
+func (_c *ISubsonicClient_GetAlbum_Call) RunAndReturn(run func(albumId string) (*subsonic.AlbumID3, error)) *ISubsonicClient_GetAlbum_Call {
 	_c.Call.Return(run)
 	return _c
 }

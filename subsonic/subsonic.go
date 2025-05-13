@@ -2,7 +2,6 @@ package subsonic
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -43,11 +42,11 @@ func (sc *SubsonicClient) Init() error {
 	return nil
 }
 
-func (sc *SubsonicClient) GetAlbum(albumId string) *sub.AlbumID3 {
+func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
 	albumResult, err := sc.client.GetAlbum(albumId)
-	if err != nil {
-		log.Fatalln(err)
-	}
 
-	return albumResult
+	if err != nil {
+		return nil, err
+	}
+	return albumResult, nil
 }
