@@ -56,7 +56,8 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	hand := newHandler(state.New("Bot "+botToken), commandHandler)
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
-	dc.handler.state.AddIntents(gateway.IntentGuilds)
+	//dc.handler.state.AddIntents(gateway.IntentGuilds) // TODO - enable if needed
+	voice.AddIntents(dc.handler.state)
 	dc.handler.state.AddHandler(func(*gateway.ReadyEvent) {
 		me, _ := dc.handler.state.Me()
 		log.Println("connected to the gateway as", me.Tag())
@@ -96,7 +97,10 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 	// Make sure the bot quits when we timeout etc
 	// and a better way to pass context
 
-	if err := v.JoinChannel(context.Background(), 1371301075998740484, false, true); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	if err := v.JoinChannel(ctx, 1371301075998740484, false, true); err != nil {
 		return fmt.Errorf("failed to join channel: %w", err)
 	}
 
