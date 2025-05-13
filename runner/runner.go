@@ -1,9 +1,7 @@
 package runner
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -41,8 +39,6 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) {
 	for _, song := range album.Song {
 		sr.PlaylistService.Add(song.ID)
 	}
-
-	fmt.Printf("%v", strings.Join(sr.PlaylistService.GetPlaylist(), "\n"))
 
 	err = sr.discordClient.JoinVoiceChat()
 	if err != nil {
