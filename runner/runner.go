@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/apkatsikas/subcordant/discord"
@@ -21,8 +22,12 @@ func (sr *SubcordantRunner) Init() {
 		log.Fatalln(err)
 	}
 
-	err = sr.DiscordClient.Init()
+	err = sr.DiscordClient.Init(sr)
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func (sr *SubcordantRunner) HandlePlay(albumId string) {
+	fmt.Printf("Called with %v - IMPLEMENT ME!", albumId)
 }
