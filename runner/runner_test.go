@@ -3,6 +3,7 @@ package runner_test
 import (
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
+	"github.com/delucks/go-subsonic"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
@@ -21,7 +22,16 @@ var _ = Describe("runner", func() {
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)
-		//subsonicClient.EXPECT().GetAlbum(albumId).Return(nil)
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Song: []*subsonic.Child{
+				{
+					ID: "bloop",
+				},
+				{
+					ID: "scoop",
+				},
+			},
+		}, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
 		subcordantRunner.Init(subsonicClient, discordClient)
 	})

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/diamondburned/arikawa/v3/api"
@@ -14,14 +15,21 @@ import (
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
+	"github.com/diamondburned/arikawa/v3/voice"
+	"github.com/diamondburned/arikawa/v3/voice/udp"
 )
 
 const (
 	playCommand = "play"
 	albumId     = "albumid"
+
+	// Optional constants to tweak the Opus stream.
+	frameDuration = 60 // ms
+	timeIncrement = 2880
 )
 
 type DiscordClient struct {
+	*handler
 }
 
 var commands = []api.CreateCommandData{
@@ -45,14 +53,15 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	}
 
 	hand := newHandler(state.New("Bot "+botToken), commandHandler)
-	hand.state.AddInteractionHandler(hand)
-	hand.state.AddIntents(gateway.IntentGuilds)
-	hand.state.AddHandler(func(*gateway.ReadyEvent) {
-		me, _ := hand.state.Me()
+	dc.handler = hand
+	dc.handler.state.AddInteractionHandler(dc.handler)
+	dc.handler.state.AddIntents(gateway.IntentGuilds)
+	dc.handler.state.AddHandler(func(*gateway.ReadyEvent) {
+		me, _ := dc.handler.state.Me()
 		log.Println("connected to the gateway as", me.Tag())
 	})
 
-	if err := cmdroute.OverwriteCommands(hand.state, commands); err != nil {
+	if err := cmdroute.OverwriteCommands(dc.handler.state, commands); err != nil {
 		log.Fatalln("cannot update commands:", err)
 	}
 
@@ -61,6 +70,26 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 
 	if err := hand.state.Connect(ctx); err != nil {
 		log.Fatalln("cannot connect:", err)
+	}
+
+	return nil
+}
+
+func (dc *DiscordClient) JoinVoiceChat() error {
+	v, err := voice.NewSession(dc.state)
+	if err != nil {
+		return fmt.Errorf("cannot make new voice session: %w", err)
+	}
+
+	// Optimize Opus frame duration. This step is optional, but it is
+	// recommended.
+	v.SetUDPDialer(udp.DialFuncWithFrequency(
+		frameDuration*time.Millisecond, // correspond to -frame_duration
+		timeIncrement,
+	))
+
+	if err := v.JoinChannel(context.Background(), 1371301075998740484, false, true); err != nil {
+		return fmt.Errorf("failed to join channel: %w", err)
 	}
 
 	return nil
