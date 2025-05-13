@@ -6,5 +6,5 @@ import (
 
 func main() {
 	runner := runner.SubcordantRunner{}
-	runner.Run()
+	runner.Init()
 }
