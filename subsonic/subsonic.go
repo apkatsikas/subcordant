@@ -43,12 +43,15 @@ func (sc *SubsonicClient) Init() error {
 	return nil
 }
 
-func (sc *SubsonicClient) GetAlbum(albumId string) {
+func (sc *SubsonicClient) GetAlbumTrackIds(albumId string) []string {
 	albumResult, err := sc.client.GetAlbum(albumId)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	var songIDs []string
 	for _, song := range albumResult.Song {
-		fmt.Printf("\n%v has ID of %v", song.Title, song.ID)
+		songIDs = append(songIDs, song.ID)
 	}
+	return songIDs
 }
