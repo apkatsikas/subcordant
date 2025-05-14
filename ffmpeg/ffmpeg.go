@@ -22,7 +22,7 @@ type FfmpegCommander struct {
 func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error {
 	// FFmpeg command with "-" as input (reads from stdin)
 	fc.cmd = exec.CommandContext(ctx,
-		"ffmpeg", "-hide_banner", "-loglevel", "error",
+		"ffmpeg", "-hide_banner", "-loglevel", "warning",
 		"-threads", "1", // Single thread
 		"-i", "-", // Read from standard input
 		"-c:a", "libopus", // Codec
