@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"io"
+
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/delucks/go-subsonic"
 	mock "github.com/stretchr/testify/mock"
@@ -144,20 +146,31 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat() error {
+func (_mock *IDiscordClient) JoinVoiceChat() (io.Writer, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func() error); ok {
+	var r0 io.Writer
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func() (io.Writer, error)); ok {
+		return returnFunc()
+	}
+	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
 		r0 = returnFunc()
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.Writer)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
+		r1 = returnFunc()
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // IDiscordClient_JoinVoiceChat_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'JoinVoiceChat'
@@ -177,12 +190,12 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func()) *IDiscordClient_Joi
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Return(err error) *IDiscordClient_JoinVoiceChat_Call {
-	_c.Call.Return(err)
+func (_c *IDiscordClient_JoinVoiceChat_Call) Return(writer io.Writer, err error) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Return(writer, err)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() error) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }

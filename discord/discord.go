@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/apkatsikas/subcordant/constants"
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/api/cmdroute"
@@ -24,8 +26,7 @@ const (
 	playCommand   = "play"
 	optionAlbumId = "albumid"
 
-	// Optional constants to tweak the Opus stream.
-	frameDuration = 60 // ms
+	// Optional to tweak the Opus stream.
 	timeIncrement = 2880
 )
 
@@ -73,7 +74,7 @@ func setUdpDialer(v *voice.Session) {
 	// Optimize Opus frame duration. This step is optional, but it is
 	// recommended.
 	v.SetUDPDialer(udp.DialFuncWithFrequency(
-		frameDuration*time.Millisecond, // correspond to -frame_duration
+		constants.FrameDuration*time.Millisecond,
 		timeIncrement,
 	))
 }
@@ -123,10 +124,10 @@ func (dc *DiscordClient) setupHandler(hand *handler) {
 	})
 }
 
-func (dc *DiscordClient) JoinVoiceChat() error {
+func (dc *DiscordClient) JoinVoiceChat() (io.Writer, error) {
 	v, err := voice.NewSession(dc.state)
 	if err != nil {
-		return fmt.Errorf("cannot make new voice session: %w", err)
+		return nil, fmt.Errorf("cannot make new voice session: %w", err)
 	}
 
 	setUdpDialer(v)
@@ -134,11 +135,11 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	if err := v.JoinChannel(ctx, discord.ChannelID(dc.voiceChannelId), false, true); err != nil {
-		return fmt.Errorf("failed to join channel: %w", err)
+	if err := v.JoinChannelAndSpeak(ctx, discord.ChannelID(dc.voiceChannelId), false, true); err != nil {
+		return nil, fmt.Errorf("failed to join channel: %w", err)
 	}
 
-	return nil
+	return v, nil
 }
 
 type handler struct {

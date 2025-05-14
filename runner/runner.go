@@ -1,22 +1,36 @@
 package runner
 
 import (
+	"context"
 	"log"
+	"os"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
 )
 
 type SubcordantRunner struct {
-	subsonicClient interfaces.ISubsonicClient
-	discordClient  interfaces.IDiscordClient
+	subsonicClient  interfaces.ISubsonicClient
+	discordClient   interfaces.IDiscordClient
+	ffmpegCommander interfaces.IFfmpegCommander
 	*playlist.PlaylistService
+	removeMeFileToStream string
 }
 
-func (sr *SubcordantRunner) Init(subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient) {
+func (sr *SubcordantRunner) Init(
+	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
+	ffmpegCommander interfaces.IFfmpegCommander) {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
+	sr.ffmpegCommander = ffmpegCommander
+
+	// TODO - delete
+	ffmpegFile := os.Getenv("FFMPEG_FILE")
+	if ffmpegFile == "" {
+		log.Fatalln("FFMPEG_FILE must be set.")
+	}
+	sr.removeMeFileToStream = ffmpegFile
 
 	err := sr.subsonicClient.Init()
 	if err != nil {
@@ -40,8 +54,13 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) {
 		sr.PlaylistService.Add(song.ID)
 	}
 
-	err = sr.discordClient.JoinVoiceChat()
+	// TODO - context from somewhere else
+	sr.ffmpegCommander.Start(context.Background(), sr.removeMeFileToStream)
+
+	voiceSession, err := sr.discordClient.JoinVoiceChat()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	sr.ffmpegCommander.Stream(voiceSession)
 }
