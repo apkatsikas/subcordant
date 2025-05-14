@@ -69,6 +69,15 @@ func getChannelId() (discord.Snowflake, error) {
 	return id, nil
 }
 
+func setUdpDialer(v *voice.Session) {
+	// Optimize Opus frame duration. This step is optional, but it is
+	// recommended.
+	v.SetUDPDialer(udp.DialFuncWithFrequency(
+		frameDuration*time.Millisecond, // correspond to -frame_duration
+		timeIncrement,
+	))
+}
+
 func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	hand, err := createBotAndHandler(commandHandler)
 	if err != nil {
@@ -121,12 +130,7 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 		return fmt.Errorf("cannot make new voice session: %w", err)
 	}
 
-	// Optimize Opus frame duration. This step is optional, but it is
-	// recommended.
-	v.SetUDPDialer(udp.DialFuncWithFrequency(
-		frameDuration*time.Millisecond, // correspond to -frame_duration
-		timeIncrement,
-	))
+	setUdpDialer(v)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
