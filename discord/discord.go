@@ -48,7 +48,7 @@ var commands = []api.CreateCommandData{
 	},
 }
 
-func setupHandler(commandHandler interfaces.ICommandHandler) (*handler, error) {
+func createBotAndHandler(commandHandler interfaces.ICommandHandler) (*handler, error) {
 	botToken := os.Getenv("DISCORD_BOT_TOKEN")
 	if botToken == "" {
 		return nil, fmt.Errorf("DISCORD_BOT_TOKEN must be set")
@@ -64,13 +64,13 @@ func getChannelId() (discord.Snowflake, error) {
 	}
 	id, err := discord.ParseSnowflake(idStr)
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert channel id %v to Snowflake")
+		return 0, fmt.Errorf("failed to convert channel id %v to Snowflake", idStr)
 	}
 	return id, nil
 }
 
 func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
-	hand, err := setupHandler(commandHandler)
+	hand, err := createBotAndHandler(commandHandler)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -80,6 +80,31 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	}
 	dc.voiceChannelId = voiceChannelId
 
+	dc.setupHandler(hand)
+
+	if err := cmdroute.OverwriteCommands(dc.handler.state, commands); err != nil {
+		log.Fatalln("cannot update commands:", err)
+	}
+
+	err = dc.connect()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return nil
+}
+
+func (dc *DiscordClient) connect() error {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	if err := dc.handler.state.Connect(ctx); err != nil {
+		return fmt.Errorf("cannot connect: %v", err)
+	}
+	return nil
+}
+
+func (dc *DiscordClient) setupHandler(hand *handler) {
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
 	//dc.handler.state.AddIntents(gateway.IntentGuilds) // TODO - enable if needed
@@ -88,19 +113,6 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 		me, _ := dc.handler.state.Me()
 		log.Println("connected to the gateway as", me.Tag())
 	})
-
-	if err := cmdroute.OverwriteCommands(dc.handler.state, commands); err != nil {
-		log.Fatalln("cannot update commands:", err)
-	}
-
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
-	if err := hand.state.Connect(ctx); err != nil {
-		log.Fatalln("cannot connect:", err)
-	}
-
-	return nil
 }
 
 func (dc *DiscordClient) JoinVoiceChat() error {
