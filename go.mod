@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	github.com/delucks/go-subsonic v0.0.0-20240806025900-2a743ec36238
 	github.com/diamondburned/arikawa/v3 v3.5.0
+	github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
 	github.com/stretchr/testify v1.10.0
@@ -12,7 +13,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
