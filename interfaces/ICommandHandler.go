@@ -1,5 +1,5 @@
 package interfaces
 
 type ICommandHandler interface {
-	HandlePlay(id string)
+	HandlePlay(id string) error
 }

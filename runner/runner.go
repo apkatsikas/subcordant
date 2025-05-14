@@ -43,11 +43,11 @@ func (sr *SubcordantRunner) Init(
 	}
 }
 
-func (sr *SubcordantRunner) HandlePlay(albumId string) {
+func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	album, err := sr.subsonicClient.GetAlbum(albumId)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	for _, song := range album.Song {
@@ -59,8 +59,9 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) {
 
 	voiceSession, err := sr.discordClient.JoinVoiceChat()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	sr.ffmpegCommander.Stream(voiceSession)
+	return nil
 }

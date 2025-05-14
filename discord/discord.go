@@ -155,7 +155,10 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		log.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	h.commandHandler.HandlePlay(albumId)
+	err = h.commandHandler.HandlePlay(albumId)
+	if err != nil {
+		log.Fatalf("Failed to handle play: %v", err)
+	}
 	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(message),

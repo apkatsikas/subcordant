@@ -1,6 +1,8 @@
 package runner_test
 
 import (
+	"os"
+
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
 	"github.com/delucks/go-subsonic"
@@ -9,17 +11,35 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type nopWriter struct{}
+
+func (nopWriter) Write(p []byte) (int, error) {
+	return len(p), nil
+}
+
 var _ = Describe("runner", func() {
+	const ffmpegFileEnv = "FFMPEG_FILE"
+	const ffmpegFilePath = "/path/to/file"
+
 	const albumId = "foobar"
 
 	var subcordantRunner *runner.SubcordantRunner
 	var discordClient *mocks.IDiscordClient
 	var subsonicClient *mocks.ISubsonicClient
+	var ffmpegCommander *mocks.IFfmpegCommander
+	var fakeWriter nopWriter
 
 	BeforeEach(func() {
+		err := os.Setenv(ffmpegFileEnv, ffmpegFilePath)
+		Expect(err).NotTo(HaveOccurred())
+
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat().Return(nil)
+		discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil)
+
+		ffmpegCommander = mocks.NewIFfmpegCommander(GinkgoT())
+		ffmpegCommander.EXPECT().Start(mock.AnythingOfType("context.backgroundCtx"), ffmpegFilePath).Return(nil)
+		ffmpegCommander.EXPECT().Stream(fakeWriter).Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)
@@ -34,11 +54,12 @@ var _ = Describe("runner", func() {
 			},
 		}, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
-		subcordantRunner.Init(subsonicClient, discordClient)
+		// TODO - test init doesnt error, return errors
+		subcordantRunner.Init(subsonicClient, discordClient, ffmpegCommander)
 	})
 
 	It("will run", func() {
-		subcordantRunner.HandlePlay(albumId)
-		Expect(1).To(Equal(1))
+		err := subcordantRunner.HandlePlay(albumId)
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
