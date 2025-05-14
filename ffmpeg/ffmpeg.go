@@ -59,7 +59,7 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error
 		defer stdin.Close()
 		n, err := io.Copy(stdin, input)
 		if err != nil {
-			log.Printf("Error streaming input: %v", err)
+			log.Printf("Error streaming input after %v bytes: %v", n, err)
 		} else {
 			log.Printf("Streamed %d bytes to FFmpeg", n)
 		}
