@@ -116,7 +116,6 @@ func (dc *DiscordClient) connect() error {
 func (dc *DiscordClient) setupHandler(hand *handler) {
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
-	//dc.handler.state.AddIntents(gateway.IntentGuilds) // TODO - enable if needed
 	voice.AddIntents(dc.handler.state)
 	dc.handler.state.AddHandler(func(*gateway.ReadyEvent) {
 		me, _ := dc.handler.state.Me()
