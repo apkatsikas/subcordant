@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -56,7 +57,12 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error
 	// Pipe the input stream to FFmpeg's stdin in a goroutine
 	go func() {
 		defer stdin.Close()
-		_, _ = io.Copy(stdin, input) // Errors can be ignored since the context might cancel the process
+		n, err := io.Copy(stdin, input)
+		if err != nil {
+			log.Printf("Error streaming input: %v", err)
+		} else {
+			log.Printf("Streamed %d bytes to FFmpeg", n)
+		}
 	}()
 
 	return nil
