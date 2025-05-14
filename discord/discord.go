@@ -31,6 +31,7 @@ const (
 
 type DiscordClient struct {
 	*handler
+	voiceChannelId discord.Snowflake
 }
 
 var commands = []api.CreateCommandData{
@@ -47,13 +48,38 @@ var commands = []api.CreateCommandData{
 	},
 }
 
-func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
+func setupHandler(commandHandler interfaces.ICommandHandler) (*handler, error) {
 	botToken := os.Getenv("DISCORD_BOT_TOKEN")
 	if botToken == "" {
-		return fmt.Errorf("DISCORD_BOT_TOKEN must be set")
+		return nil, fmt.Errorf("DISCORD_BOT_TOKEN must be set")
 	}
 
-	hand := newHandler(state.New("Bot "+botToken), commandHandler)
+	return newHandler(state.New("Bot "+botToken), commandHandler), nil
+}
+
+func getChannelId() (discord.Snowflake, error) {
+	idStr := os.Getenv("DISCORD_VOICE_CHANNEL_ID")
+	if idStr == "" {
+		return 0, fmt.Errorf("DISCORD_VOICE_CHANNEL_ID must be set")
+	}
+	id, err := discord.ParseSnowflake(idStr)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert channel id %v to Snowflake")
+	}
+	return id, nil
+}
+
+func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
+	hand, err := setupHandler(commandHandler)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	voiceChannelId, err := getChannelId()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	dc.voiceChannelId = voiceChannelId
+
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
 	//dc.handler.state.AddIntents(gateway.IntentGuilds) // TODO - enable if needed
@@ -90,17 +116,10 @@ func (dc *DiscordClient) JoinVoiceChat() error {
 		timeIncrement,
 	))
 
-	// TODO - continue to follow example here
-	// https://github.com/diamondburned/arikawa/blob/8a78eb04430cfd0f4997c8bf206cf36c0c2e604d/0-examples/commands/main.go#L29
-
-	// TODO
-	// Make sure the bot quits when we timeout etc
-	// and a better way to pass context
-
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	if err := v.JoinChannel(ctx, 1371301075998740484, false, true); err != nil {
+	if err := v.JoinChannel(ctx, discord.ChannelID(dc.voiceChannelId), false, true); err != nil {
 		return fmt.Errorf("failed to join channel: %w", err)
 	}
 
