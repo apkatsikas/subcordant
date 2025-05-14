@@ -6,6 +6,6 @@ import (
 )
 
 type IFfmpegCommander interface {
-	Start(ctx context.Context, file string) error
+	Start(ctx context.Context, input io.ReadCloser) error
 	Stream(voice io.Writer) error
 }

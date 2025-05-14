@@ -3,7 +3,6 @@ package runner
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -14,7 +13,6 @@ type SubcordantRunner struct {
 	discordClient   interfaces.IDiscordClient
 	ffmpegCommander interfaces.IFfmpegCommander
 	*playlist.PlaylistService
-	removeMeFileToStream string
 }
 
 func (sr *SubcordantRunner) Init(
@@ -24,13 +22,6 @@ func (sr *SubcordantRunner) Init(
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
 	sr.ffmpegCommander = ffmpegCommander
-
-	// TODO - delete
-	ffmpegFile := os.Getenv("FFMPEG_FILE")
-	if ffmpegFile == "" {
-		log.Fatalln("FFMPEG_FILE must be set.")
-	}
-	sr.removeMeFileToStream = ffmpegFile
 
 	err := sr.subsonicClient.Init()
 	if err != nil {
@@ -54,8 +45,13 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 		sr.PlaylistService.Add(song.ID)
 	}
 
+	stream, err := sr.subsonicClient.Stream(sr.GetPlaylist()[0])
+	if err != nil {
+		return err
+	}
+
 	// TODO - context from somewhere else
-	sr.ffmpegCommander.Start(context.Background(), sr.removeMeFileToStream)
+	sr.ffmpegCommander.Start(context.Background(), stream)
 
 	voiceSession, err := sr.discordClient.JoinVoiceChat()
 	if err != nil {

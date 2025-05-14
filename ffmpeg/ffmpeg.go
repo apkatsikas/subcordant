@@ -15,50 +15,61 @@ import (
 type FfmpegCommander struct {
 	stdout io.ReadCloser
 	cmd    *exec.Cmd
+	stdin  io.WriteCloser // Optional: Keep track of stdin to allow cleanup or testing
 }
 
-func (fc *FfmpegCommander) Start(ctx context.Context, file string) error {
+func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error {
+	// FFmpeg command with "-" as input (reads from stdin)
 	fc.cmd = exec.CommandContext(ctx,
 		"ffmpeg", "-hide_banner", "-loglevel", "error",
-		// Streaming is slow, so a single thread is all we need.
-		"-threads", "1",
-		// Input file.
-		"-i", file,
-		// Output format; leave as "libopus".
-		"-c:a", "libopus",
-		// Bitrate in kilobits.
-		"-b:a", "128k",
-		// Frame duration should be the same as what's given into
-		// udp.DialFuncWithFrequency.
+		"-threads", "1", // Single thread
+		"-i", "-", // Read from standard input
+		"-c:a", "libopus", // Codec
+		"-b:a", "128k", // Bitrate
 		"-frame_duration", strconv.Itoa(constants.FrameDuration),
-		// Disable variable bitrate to keep packet sizes consistent. This is
-		// optional.
-		"-vbr", "off",
-		// Output format, which is opus, so we need to unwrap the opus file.
-		"-f", "opus",
-		"-",
+		"-vbr", "off", // Disable variable bitrate
+		"-f", "opus", // Output format
+		"-", // Output to stdout
 	)
 
 	fc.cmd.Stderr = os.Stderr
 
+	// Set stdin to the input stream
+	stdin, err := fc.cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to get stdin pipe: %w", err)
+	}
+	fc.stdin = stdin
+
+	// Set stdout to capture the FFmpeg output
 	stdout, err := fc.cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 	fc.stdout = stdout
 
-	// FFmpeg will wait until we start consuming the stream to process further.
+	// Start the FFmpeg process
 	if err := fc.cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
+
+	// Pipe the input stream to FFmpeg's stdin in a goroutine
+	go func() {
+		defer stdin.Close()
+		_, _ = io.Copy(stdin, input) // Errors can be ignored since the context might cancel the process
+	}()
+
 	return nil
 }
 
-func (fc *FfmpegCommander) Stream(voice io.Writer) error {
-	if err := oggreader.DecodeBuffered(voice, fc.stdout); err != nil {
+// Stream processes FFmpeg's stdout and writes to the provided io.Writer.
+func (fc *FfmpegCommander) Stream(output io.Writer) error {
+	// Decode and process the FFmpeg output
+	if err := oggreader.DecodeBuffered(output, fc.stdout); err != nil {
 		return fmt.Errorf("failed to decode ogg: %w", err)
 	}
 
+	// Wait for FFmpeg to finish
 	if err := fc.cmd.Wait(); err != nil {
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}

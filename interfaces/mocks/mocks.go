@@ -240,16 +240,16 @@ func (_m *IFfmpegCommander) EXPECT() *IFfmpegCommander_Expecter {
 }
 
 // Start provides a mock function for the type IFfmpegCommander
-func (_mock *IFfmpegCommander) Start(ctx context.Context, file string) error {
-	ret := _mock.Called(ctx, file)
+func (_mock *IFfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error {
+	ret := _mock.Called(ctx, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = returnFunc(ctx, file)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser) error); ok {
+		r0 = returnFunc(ctx, input)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -263,14 +263,14 @@ type IFfmpegCommander_Start_Call struct {
 
 // Start is a helper method to define mock.On call
 //   - ctx
-//   - file
-func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, file interface{}) *IFfmpegCommander_Start_Call {
-	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, file)}
+//   - input
+func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, input interface{}) *IFfmpegCommander_Start_Call {
+	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, input)}
 }
 
-func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, file string)) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser)) *IFfmpegCommander_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(io.ReadCloser))
 	})
 	return _c
 }
@@ -280,7 +280,7 @@ func (_c *IFfmpegCommander_Start_Call) Return(err error) *IFfmpegCommander_Start
 	return _c
 }
 
-func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, file string) error) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser) error) *IFfmpegCommander_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -453,6 +453,62 @@ func (_c *ISubsonicClient_Init_Call) Return(err error) *ISubsonicClient_Init_Cal
 }
 
 func (_c *ISubsonicClient_Init_Call) RunAndReturn(run func() error) *ISubsonicClient_Init_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Stream provides a mock function for the type ISubsonicClient
+func (_mock *ISubsonicClient) Stream(trackId string) (io.ReadCloser, error) {
+	ret := _mock.Called(trackId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Stream")
+	}
+
+	var r0 io.ReadCloser
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (io.ReadCloser, error)); ok {
+		return returnFunc(trackId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) io.ReadCloser); ok {
+		r0 = returnFunc(trackId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.ReadCloser)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(trackId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ISubsonicClient_Stream_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Stream'
+type ISubsonicClient_Stream_Call struct {
+	*mock.Call
+}
+
+// Stream is a helper method to define mock.On call
+//   - trackId
+func (_e *ISubsonicClient_Expecter) Stream(trackId interface{}) *ISubsonicClient_Stream_Call {
+	return &ISubsonicClient_Stream_Call{Call: _e.mock.On("Stream", trackId)}
+}
+
+func (_c *ISubsonicClient_Stream_Call) Run(run func(trackId string)) *ISubsonicClient_Stream_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *ISubsonicClient_Stream_Call) Return(readCloser io.ReadCloser, err error) *ISubsonicClient_Stream_Call {
+	_c.Call.Return(readCloser, err)
+	return _c
+}
+
+func (_c *ISubsonicClient_Stream_Call) RunAndReturn(run func(trackId string) (io.ReadCloser, error)) *ISubsonicClient_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }
