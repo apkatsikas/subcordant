@@ -49,6 +49,7 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	if err != nil {
 		return err
 	}
+	defer stream.Close()
 
 	// TODO - context from somewhere else
 	sr.ffmpegCommander.Start(context.Background(), stream)
@@ -58,6 +59,9 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 		return err
 	}
 
-	sr.ffmpegCommander.Stream(voiceSession)
+	err = sr.ffmpegCommander.Stream(voiceSession)
+	if err != nil {
+		return err
+	}
 	return nil
 }
