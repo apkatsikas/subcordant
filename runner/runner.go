@@ -45,14 +45,15 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 		sr.PlaylistService.Add(song.ID)
 	}
 
-	stream, err := sr.subsonicClient.Stream(sr.GetPlaylist()[0])
+	firstTrack := sr.GetPlaylist()[0]
+	stream, err := sr.subsonicClient.Stream(firstTrack)
 	if err != nil {
 		return err
 	}
 	defer stream.Close()
 
 	// TODO - context from somewhere else
-	sr.ffmpegCommander.Start(context.Background(), stream)
+	sr.ffmpegCommander.Start(context.Background(), stream, "temptrack")
 
 	voiceSession, err := sr.discordClient.JoinVoiceChat()
 	if err != nil {
