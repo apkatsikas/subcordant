@@ -18,9 +18,15 @@ import (
 	"github.com/diamondburned/arikawa/v3/voice"
 	"github.com/diamondburned/arikawa/v3/voice/udp"
 	"github.com/diamondburned/oggreader"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	flag.Parse()
 
 	file := flag.Arg(0)
@@ -28,13 +34,13 @@ func main() {
 		log.Fatalln("usage:", filepath.Base(os.Args[0]), "<audio file>")
 	}
 
-	voiceID, err := discord.ParseSnowflake(os.Getenv("VOICE_ID"))
+	voiceID, err := discord.ParseSnowflake(os.Getenv("DISCORD_VOICE_CHANNEL_ID"))
 	if err != nil {
-		log.Fatalln("failed to parse $VOICE_ID:", err)
+		log.Fatalln("failed to parse $DISCORD_VOICE_CHANNEL_ID:", err)
 	}
 	chID := discord.ChannelID(voiceID)
 
-	state := state.New("Bot " + os.Getenv("BOT_TOKEN"))
+	state := state.New("Bot " + os.Getenv("DISCORD_BOT_TOKEN"))
 	voice.AddIntents(state)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

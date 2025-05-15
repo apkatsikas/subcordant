@@ -69,9 +69,9 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error
 }
 
 // Stream processes FFmpeg's stdout and writes to the provided io.Writer.
-func (fc *FfmpegCommander) Stream(output io.Writer) error {
+func (fc *FfmpegCommander) Stream(voice io.Writer) error {
 	// Decode and process the FFmpeg output
-	if err := oggreader.DecodeBuffered(output, fc.stdout); err != nil {
+	if err := oggreader.DecodeBuffered(voice, fc.stdout); err != nil {
 		return fmt.Errorf("failed to decode ogg: %w", err)
 	}
 
