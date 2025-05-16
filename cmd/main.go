@@ -13,12 +13,12 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatalf("error loading .env file: %v", err)
 	}
 
 	runner := runner.SubcordantRunner{}
 	err = runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &ffmpeg.FfmpegCommander{})
 	if err != nil {
-		log.Fatalf("Failed to init runner", err)
+		log.Fatalf("failed to init runner: %v", err)
 	}
 }
