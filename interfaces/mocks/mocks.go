@@ -158,8 +158,8 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat(ctx context.Context, cancelFunc context.CancelFunc) (io.Writer, error) {
-	ret := _mock.Called(ctx, cancelFunc)
+func (_mock *IDiscordClient) JoinVoiceChat(cancelFunc context.CancelFunc) (io.Writer, error) {
+	ret := _mock.Called(cancelFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
@@ -167,18 +167,18 @@ func (_mock *IDiscordClient) JoinVoiceChat(ctx context.Context, cancelFunc conte
 
 	var r0 io.Writer
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, context.CancelFunc) (io.Writer, error)); ok {
-		return returnFunc(ctx, cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func(context.CancelFunc) (io.Writer, error)); ok {
+		return returnFunc(cancelFunc)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, context.CancelFunc) io.Writer); ok {
-		r0 = returnFunc(ctx, cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func(context.CancelFunc) io.Writer); ok {
+		r0 = returnFunc(cancelFunc)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(io.Writer)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, context.CancelFunc) error); ok {
-		r1 = returnFunc(ctx, cancelFunc)
+	if returnFunc, ok := ret.Get(1).(func(context.CancelFunc) error); ok {
+		r1 = returnFunc(cancelFunc)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -191,15 +191,14 @@ type IDiscordClient_JoinVoiceChat_Call struct {
 }
 
 // JoinVoiceChat is a helper method to define mock.On call
-//   - ctx
 //   - cancelFunc
-func (_e *IDiscordClient_Expecter) JoinVoiceChat(ctx interface{}, cancelFunc interface{}) *IDiscordClient_JoinVoiceChat_Call {
-	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", ctx, cancelFunc)}
+func (_e *IDiscordClient_Expecter) JoinVoiceChat(cancelFunc interface{}) *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", cancelFunc)}
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(ctx context.Context, cancelFunc context.CancelFunc)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(cancelFunc context.CancelFunc)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(context.CancelFunc))
+		run(args[0].(context.CancelFunc))
 	})
 	return _c
 }
@@ -209,7 +208,7 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) Return(writer io.Writer, err error)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(ctx context.Context, cancelFunc context.CancelFunc) (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(cancelFunc context.CancelFunc) (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -49,15 +49,17 @@ var _ = Describe("runner", func() {
 	var fakeReadCloser nopReadCloser
 	var initError error
 
+	var cancelFunc = mock.AnythingOfType("context.CancelFunc")
+
 	BeforeEach(func() {
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil)
+		discordClient.EXPECT().JoinVoiceChat(cancelFunc).Return(fakeWriter, nil)
 
 		ffmpegCommander = mocks.NewIFfmpegCommander(GinkgoT())
 		ffmpegCommander.EXPECT().Start(
-			mock.AnythingOfType("context.backgroundCtx"), fakeReadCloser, mock.AnythingOfType("string")).Return(nil)
-		ffmpegCommander.EXPECT().Stream(fakeWriter).Return(nil)
+			mock.Anything, fakeReadCloser, mock.AnythingOfType("string"), cancelFunc).Return(nil)
+		ffmpegCommander.EXPECT().Stream(fakeWriter, cancelFunc).Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)
