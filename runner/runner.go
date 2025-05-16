@@ -53,7 +53,10 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	defer stream.Close()
 
 	// TODO - context from somewhere else
-	sr.ffmpegCommander.Start(context.Background(), stream, "temptrack")
+	err = sr.ffmpegCommander.Start(context.Background(), stream, "temptrack")
+	if err != nil {
+		return err
+	}
 
 	voiceSession, err := sr.discordClient.JoinVoiceChat()
 	if err != nil {

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/api/cmdroute"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/diamondburned/arikawa/v3/voice"
@@ -118,10 +116,6 @@ func (dc *DiscordClient) setupHandler(hand *handler) {
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
 	voice.AddIntents(dc.handler.state)
-	dc.handler.state.AddHandler(func(*gateway.ReadyEvent) {
-		me, _ := dc.handler.state.Me()
-		log.Println("connected to the gateway as", me.Tag())
-	})
 }
 
 func (dc *DiscordClient) JoinVoiceChat() (io.Writer, error) {
@@ -152,12 +146,21 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 	var albumId string
 	err := json.Unmarshal(cmd.Options.Find(optionAlbumId).Value, &albumId)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal JSON: %v", err)
+		errorMessage := fmt.Sprintf("ERROR: Failed to unmarshal JSON: %v", err)
+
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(errorMessage),
+		}
 	}
 
+	// TODO - make this non blocking
 	err = h.commandHandler.HandlePlay(albumId)
 	if err != nil {
-		log.Fatalf("Failed to handle play: %v", err)
+		errorMessage := fmt.Sprintf("ERROR: Failed to handle play: %v", err)
+
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(errorMessage),
+		}
 	}
 	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
 	return &api.InteractionResponseData{
