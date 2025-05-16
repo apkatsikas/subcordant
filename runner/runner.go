@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"io"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -14,6 +15,7 @@ type SubcordantRunner struct {
 	discordClient   interfaces.IDiscordClient
 	ffmpegCommander interfaces.IFfmpegCommander
 	*playlist.PlaylistService
+	voiceSession io.Writer
 }
 
 func (sr *SubcordantRunner) Init(
@@ -48,7 +50,15 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	}
 
 	firstTrack := sr.GetPlaylist()[0]
-	stream, err := sr.subsonicClient.Stream(firstTrack)
+	err = sr.doPlay(firstTrack, false)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sr *SubcordantRunner) doPlay(trackId string, nextTrack bool) error {
+	stream, err := sr.subsonicClient.Stream(trackId)
 	if err != nil {
 		return err
 	}
@@ -59,6 +69,11 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	go func() {
 		<-ctx.Done()
 		stream.Close()
+		sr.PlaylistService.FinishTrack()
+		playlist := sr.PlaylistService.GetPlaylist()
+		if len(playlist) > 0 {
+			sr.doPlay(playlist[0], true)
+		}
 	}()
 
 	err = sr.ffmpegCommander.Start(ctx, stream, trackName, cancel)
@@ -67,13 +82,16 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 		return err
 	}
 
-	voiceSession, err := sr.discordClient.JoinVoiceChat(cancel)
-	if err != nil {
-		cancel()
-		return err
+	if !nextTrack {
+		voiceSession, err := sr.discordClient.JoinVoiceChat(cancel)
+		if err != nil {
+			cancel()
+			return err
+		}
+		sr.voiceSession = voiceSession
 	}
 
-	err = sr.ffmpegCommander.Stream(voiceSession, cancel)
+	err = sr.ffmpegCommander.Stream(sr.voiceSession, cancel)
 	if err != nil {
 		cancel()
 		return err

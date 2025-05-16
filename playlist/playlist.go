@@ -11,3 +11,7 @@ func (ps *PlaylistService) Add(trackId string) {
 func (ps *PlaylistService) GetPlaylist() []string {
 	return ps.playlist
 }
+
+func (ps *PlaylistService) FinishTrack() {
+	ps.playlist = append(ps.playlist[:0], ps.playlist[0+1:]...)
+}

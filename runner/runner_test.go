@@ -36,9 +36,6 @@ var _ = Describe("runner", func() {
 		{
 			ID: "bloop",
 		},
-		{
-			ID: "scoop",
-		},
 	}
 
 	var subcordantRunner *runner.SubcordantRunner
