@@ -240,16 +240,16 @@ func (_m *IFfmpegCommander) EXPECT() *IFfmpegCommander_Expecter {
 }
 
 // Start provides a mock function for the type IFfmpegCommander
-func (_mock *IFfmpegCommander) Start(ctx context.Context, input io.ReadCloser) error {
-	ret := _mock.Called(ctx, input)
+func (_mock *IFfmpegCommander) Start(ctx context.Context, input io.ReadCloser, inputDestination string) error {
+	ret := _mock.Called(ctx, input, inputDestination)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser) error); ok {
-		r0 = returnFunc(ctx, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser, string) error); ok {
+		r0 = returnFunc(ctx, input, inputDestination)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -264,13 +264,14 @@ type IFfmpegCommander_Start_Call struct {
 // Start is a helper method to define mock.On call
 //   - ctx
 //   - input
-func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, input interface{}) *IFfmpegCommander_Start_Call {
-	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, input)}
+//   - inputDestination
+func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, input interface{}, inputDestination interface{}) *IFfmpegCommander_Start_Call {
+	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, input, inputDestination)}
 }
 
-func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser)) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser, inputDestination string)) *IFfmpegCommander_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(io.ReadCloser))
+		run(args[0].(context.Context), args[1].(io.ReadCloser), args[2].(string))
 	})
 	return _c
 }
@@ -280,7 +281,7 @@ func (_c *IFfmpegCommander_Start_Call) Return(err error) *IFfmpegCommander_Start
 	return _c
 }
 
-func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser) error) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser, inputDestination string) error) *IFfmpegCommander_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }

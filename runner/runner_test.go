@@ -54,7 +54,8 @@ var _ = Describe("runner", func() {
 		discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil)
 
 		ffmpegCommander = mocks.NewIFfmpegCommander(GinkgoT())
-		ffmpegCommander.EXPECT().Start(mock.AnythingOfType("context.backgroundCtx"), fakeReadCloser).Return(nil)
+		ffmpegCommander.EXPECT().Start(
+			mock.AnythingOfType("context.backgroundCtx"), fakeReadCloser, mock.AnythingOfType("string")).Return(nil)
 		ffmpegCommander.EXPECT().Stream(fakeWriter).Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
