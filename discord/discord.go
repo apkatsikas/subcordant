@@ -82,23 +82,23 @@ func setUdpDialer(v *voice.Session) {
 func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	hand, err := createBotAndHandler(commandHandler)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	voiceChannelId, err := getChannelId()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	dc.voiceChannelId = voiceChannelId
 
 	dc.setupHandler(hand)
 
 	if err := cmdroute.OverwriteCommands(dc.handler.state, commands); err != nil {
-		log.Fatalln("cannot update commands:", err)
+		return err
 	}
 
 	err = dc.connect()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	return nil
