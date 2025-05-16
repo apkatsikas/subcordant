@@ -17,5 +17,8 @@ func main() {
 	}
 
 	runner := runner.SubcordantRunner{}
-	runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &ffmpeg.FfmpegCommander{})
+	err = runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &ffmpeg.FfmpegCommander{})
+	if err != nil {
+		log.Fatalf("Failed to init runner", err)
+	}
 }

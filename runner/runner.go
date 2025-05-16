@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"log"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -17,7 +16,7 @@ type SubcordantRunner struct {
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	ffmpegCommander interfaces.IFfmpegCommander) {
+	ffmpegCommander interfaces.IFfmpegCommander) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
@@ -25,13 +24,14 @@ func (sr *SubcordantRunner) Init(
 
 	err := sr.subsonicClient.Init()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = sr.discordClient.Init(sr)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+	return nil
 }
 
 func (sr *SubcordantRunner) HandlePlay(albumId string) error {

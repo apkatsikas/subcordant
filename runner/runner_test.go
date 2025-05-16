@@ -47,6 +47,7 @@ var _ = Describe("runner", func() {
 	var ffmpegCommander *mocks.IFfmpegCommander
 	var fakeWriter nopWriter
 	var fakeReadCloser nopReadCloser
+	var initError error
 
 	BeforeEach(func() {
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
@@ -65,11 +66,12 @@ var _ = Describe("runner", func() {
 		}, nil)
 		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
-		// TODO - test init doesnt error, return errors
-		subcordantRunner.Init(subsonicClient, discordClient, ffmpegCommander)
+
+		initError = subcordantRunner.Init(subsonicClient, discordClient, ffmpegCommander)
 	})
 
-	It("will run", func() {
+	It("will Init and HandlePlay without error", func() {
+		Expect(initError).NotTo(HaveOccurred())
 		err := subcordantRunner.HandlePlay(albumId)
 		Expect(err).NotTo(HaveOccurred())
 	})
