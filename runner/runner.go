@@ -7,6 +7,8 @@ import (
 	"github.com/apkatsikas/subcordant/playlist"
 )
 
+const trackName = "temptrack"
+
 type SubcordantRunner struct {
 	subsonicClient  interfaces.ISubsonicClient
 	discordClient   interfaces.IDiscordClient
@@ -50,21 +52,30 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 	if err != nil {
 		return err
 	}
-	defer stream.Close()
 
-	// TODO - context from somewhere else
-	err = sr.ffmpegCommander.Start(context.Background(), stream, "temptrack")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		<-ctx.Done()
+		stream.Close()
+	}()
+
+	err = sr.ffmpegCommander.Start(ctx, stream, trackName, cancel)
 	if err != nil {
+		cancel()
 		return err
 	}
 
-	voiceSession, err := sr.discordClient.JoinVoiceChat()
+	voiceSession, err := sr.discordClient.JoinVoiceChat(cancel)
 	if err != nil {
+		cancel()
 		return err
 	}
 
-	err = sr.ffmpegCommander.Stream(voiceSession)
+	err = sr.ffmpegCommander.Stream(voiceSession, cancel)
 	if err != nil {
+		cancel()
 		return err
 	}
 	return nil

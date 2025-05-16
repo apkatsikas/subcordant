@@ -158,8 +158,8 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat() (io.Writer, error) {
-	ret := _mock.Called()
+func (_mock *IDiscordClient) JoinVoiceChat(ctx context.Context, cancelFunc context.CancelFunc) (io.Writer, error) {
+	ret := _mock.Called(ctx, cancelFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
@@ -167,18 +167,18 @@ func (_mock *IDiscordClient) JoinVoiceChat() (io.Writer, error) {
 
 	var r0 io.Writer
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (io.Writer, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context, context.CancelFunc) (io.Writer, error)); ok {
+		return returnFunc(ctx, cancelFunc)
 	}
-	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context, context.CancelFunc) io.Writer); ok {
+		r0 = returnFunc(ctx, cancelFunc)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(io.Writer)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(context.Context, context.CancelFunc) error); ok {
+		r1 = returnFunc(ctx, cancelFunc)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -191,13 +191,15 @@ type IDiscordClient_JoinVoiceChat_Call struct {
 }
 
 // JoinVoiceChat is a helper method to define mock.On call
-func (_e *IDiscordClient_Expecter) JoinVoiceChat() *IDiscordClient_JoinVoiceChat_Call {
-	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat")}
+//   - ctx
+//   - cancelFunc
+func (_e *IDiscordClient_Expecter) JoinVoiceChat(ctx interface{}, cancelFunc interface{}) *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", ctx, cancelFunc)}
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func()) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(ctx context.Context, cancelFunc context.CancelFunc)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		run(args[0].(context.Context), args[1].(context.CancelFunc))
 	})
 	return _c
 }
@@ -207,7 +209,7 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) Return(writer io.Writer, err error)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(ctx context.Context, cancelFunc context.CancelFunc) (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -240,16 +242,16 @@ func (_m *IFfmpegCommander) EXPECT() *IFfmpegCommander_Expecter {
 }
 
 // Start provides a mock function for the type IFfmpegCommander
-func (_mock *IFfmpegCommander) Start(ctx context.Context, input io.ReadCloser, inputDestination string) error {
-	ret := _mock.Called(ctx, input, inputDestination)
+func (_mock *IFfmpegCommander) Start(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc) error {
+	ret := _mock.Called(ctx, input, inputDestination, cancelFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser, string) error); ok {
-		r0 = returnFunc(ctx, input, inputDestination)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser, string, context.CancelFunc) error); ok {
+		r0 = returnFunc(ctx, input, inputDestination, cancelFunc)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -265,13 +267,14 @@ type IFfmpegCommander_Start_Call struct {
 //   - ctx
 //   - input
 //   - inputDestination
-func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, input interface{}, inputDestination interface{}) *IFfmpegCommander_Start_Call {
-	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, input, inputDestination)}
+//   - cancelFunc
+func (_e *IFfmpegCommander_Expecter) Start(ctx interface{}, input interface{}, inputDestination interface{}, cancelFunc interface{}) *IFfmpegCommander_Start_Call {
+	return &IFfmpegCommander_Start_Call{Call: _e.mock.On("Start", ctx, input, inputDestination, cancelFunc)}
 }
 
-func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser, inputDestination string)) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc)) *IFfmpegCommander_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(io.ReadCloser), args[2].(string))
+		run(args[0].(context.Context), args[1].(io.ReadCloser), args[2].(string), args[3].(context.CancelFunc))
 	})
 	return _c
 }
@@ -281,22 +284,22 @@ func (_c *IFfmpegCommander_Start_Call) Return(err error) *IFfmpegCommander_Start
 	return _c
 }
 
-func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser, inputDestination string) error) *IFfmpegCommander_Start_Call {
+func (_c *IFfmpegCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc) error) *IFfmpegCommander_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Stream provides a mock function for the type IFfmpegCommander
-func (_mock *IFfmpegCommander) Stream(voice io.Writer) error {
-	ret := _mock.Called(voice)
+func (_mock *IFfmpegCommander) Stream(voice io.Writer, cancelFunc context.CancelFunc) error {
+	ret := _mock.Called(voice, cancelFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stream")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(io.Writer) error); ok {
-		r0 = returnFunc(voice)
+	if returnFunc, ok := ret.Get(0).(func(io.Writer, context.CancelFunc) error); ok {
+		r0 = returnFunc(voice, cancelFunc)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -310,13 +313,14 @@ type IFfmpegCommander_Stream_Call struct {
 
 // Stream is a helper method to define mock.On call
 //   - voice
-func (_e *IFfmpegCommander_Expecter) Stream(voice interface{}) *IFfmpegCommander_Stream_Call {
-	return &IFfmpegCommander_Stream_Call{Call: _e.mock.On("Stream", voice)}
+//   - cancelFunc
+func (_e *IFfmpegCommander_Expecter) Stream(voice interface{}, cancelFunc interface{}) *IFfmpegCommander_Stream_Call {
+	return &IFfmpegCommander_Stream_Call{Call: _e.mock.On("Stream", voice, cancelFunc)}
 }
 
-func (_c *IFfmpegCommander_Stream_Call) Run(run func(voice io.Writer)) *IFfmpegCommander_Stream_Call {
+func (_c *IFfmpegCommander_Stream_Call) Run(run func(voice io.Writer, cancelFunc context.CancelFunc)) *IFfmpegCommander_Stream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(io.Writer))
+		run(args[0].(io.Writer), args[1].(context.CancelFunc))
 	})
 	return _c
 }
@@ -326,7 +330,7 @@ func (_c *IFfmpegCommander_Stream_Call) Return(err error) *IFfmpegCommander_Stre
 	return _c
 }
 
-func (_c *IFfmpegCommander_Stream_Call) RunAndReturn(run func(voice io.Writer) error) *IFfmpegCommander_Stream_Call {
+func (_c *IFfmpegCommander_Stream_Call) RunAndReturn(run func(voice io.Writer, cancelFunc context.CancelFunc) error) *IFfmpegCommander_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }

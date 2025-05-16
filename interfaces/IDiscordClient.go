@@ -1,8 +1,11 @@
 package interfaces
 
-import "io"
+import (
+	"context"
+	"io"
+)
 
 type IDiscordClient interface {
 	Init(commandHandler ICommandHandler) error
-	JoinVoiceChat() (io.Writer, error)
+	JoinVoiceChat(cancelFunc context.CancelFunc) (io.Writer, error)
 }
