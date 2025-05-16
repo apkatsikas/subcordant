@@ -49,11 +49,15 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser, input
 	fc.stdout = stdout
 
 	if err := fc.cmd.Start(); err != nil {
+		fc.stdout.Close()
+		file.Close()
+		input.Close()
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
 
 	go func() {
 		defer file.Close()
+		defer input.Close()
 
 		writer := bufio.NewWriter(file)
 
@@ -82,7 +86,7 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser, input
 }
 
 func (fc *FfmpegCommander) Stream(voice io.Writer) error {
-	// TODO - close stdout?
+	defer fc.stdout.Close()
 	if err := oggreader.DecodeBuffered(voice, fc.stdout); err != nil {
 		return fmt.Errorf("failed to decode ogg: %w", err)
 	}
