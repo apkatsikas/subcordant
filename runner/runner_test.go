@@ -35,20 +35,8 @@ var anyCancelFunc = mock.AnythingOfType("context.CancelFunc")
 var anySubcordantRunner = mock.AnythingOfType("*runner.SubcordantRunner")
 var anyString = mock.AnythingOfType("string")
 
-func getSongs(n uint) []*subsonic.Child {
-	songs := make([]*subsonic.Child, int(n))
-	for i := range songs {
-		b := make([]byte, 8) // 8 random bytes → 16 hex characters
-		if _, err := rand.Read(b); err != nil {
-			// fallback to something deterministic, or handle error
-			b = []byte("deadbeefcafebabe")
-		}
-		songs[i] = &subsonic.Child{
-			ID: hex.EncodeToString(b),
-		}
-	}
-	return songs
-}
+var fakeWriter = nopWriter{}
+var fakeReadCloser nopReadCloser = nopReadCloser{}
 
 var _ = Describe("runner", func() {
 	const albumId = "foobar"
@@ -59,13 +47,9 @@ var _ = Describe("runner", func() {
 	var discordClient *mocks.IDiscordClient
 	var subsonicClient *mocks.ISubsonicClient
 	var execCommander *mocks.IExecCommander
-	var fakeWriter nopWriter
-	var fakeReadCloser nopReadCloser
 
 	BeforeEach(func() {
-		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
+		discordClient = getDiscordClient()
 
 		execCommander = mocks.NewIExecCommander(GinkgoT())
 		execCommander.EXPECT().Start(
@@ -102,14 +86,9 @@ var _ = Describe("runner", func() {
 	var discordClient *mocks.IDiscordClient
 	var subsonicClient *mocks.ISubsonicClient
 	var execCommander *mocks.IExecCommander
-	var fakeWriter nopWriter
-	var fakeReadCloser nopReadCloser
 
 	BeforeEach(func() {
-		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
-
+		discordClient = getDiscordClient()
 		execCommander = mocks.NewIExecCommander(GinkgoT())
 		execCommander.EXPECT().Start(
 			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil).Twice()
@@ -136,3 +115,25 @@ var _ = Describe("runner", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 })
+
+func getDiscordClient() *mocks.IDiscordClient {
+	discordClient := mocks.NewIDiscordClient(GinkgoT())
+	discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
+	discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
+	return discordClient
+}
+
+func getSongs(n uint) []*subsonic.Child {
+	songs := make([]*subsonic.Child, int(n))
+	for i := range songs {
+		b := make([]byte, 8) // 8 random bytes → 16 hex characters
+		if _, err := rand.Read(b); err != nil {
+			// fallback to something deterministic, or handle error
+			b = []byte("deadbeefcafebabe")
+		}
+		songs[i] = &subsonic.Child{
+			ID: hex.EncodeToString(b),
+		}
+	}
+	return songs
+}
