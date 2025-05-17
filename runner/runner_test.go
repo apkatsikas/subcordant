@@ -1,6 +1,8 @@
 package runner_test
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"io"
 
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
@@ -29,14 +31,29 @@ func (nopReadCloser) Close() error {
 	return nil
 }
 
+var anyCancelFunc = mock.AnythingOfType("context.CancelFunc")
+var anySubcordantRunner = mock.AnythingOfType("*runner.SubcordantRunner")
+var anyString = mock.AnythingOfType("string")
+
+func getSongs(n uint) []*subsonic.Child {
+	songs := make([]*subsonic.Child, int(n))
+	for i := range songs {
+		b := make([]byte, 8) // 8 random bytes → 16 hex characters
+		if _, err := rand.Read(b); err != nil {
+			// fallback to something deterministic, or handle error
+			b = []byte("deadbeefcafebabe")
+		}
+		songs[i] = &subsonic.Child{
+			ID: hex.EncodeToString(b),
+		}
+	}
+	return songs
+}
+
 var _ = Describe("runner", func() {
 	const albumId = "foobar"
 
-	var songs = []*subsonic.Child{
-		{
-			ID: "bloop",
-		},
-	}
+	var songs = getSongs(1)
 
 	var subcordantRunner *runner.SubcordantRunner
 	var discordClient *mocks.IDiscordClient
@@ -45,17 +62,15 @@ var _ = Describe("runner", func() {
 	var fakeWriter nopWriter
 	var fakeReadCloser nopReadCloser
 
-	var cancelFunc = mock.AnythingOfType("context.CancelFunc")
-
 	BeforeEach(func() {
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat(cancelFunc).Return(fakeWriter, nil)
+		discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
+		discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
 
 		execCommander = mocks.NewIExecCommander(GinkgoT())
 		execCommander.EXPECT().Start(
-			mock.Anything, fakeReadCloser, mock.AnythingOfType("string"), cancelFunc).Return(nil)
-		execCommander.EXPECT().Stream(fakeWriter, cancelFunc).Return(nil)
+			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil)
+		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)
@@ -67,6 +82,50 @@ var _ = Describe("runner", func() {
 	})
 
 	It("will Init, Queue and Play without error", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, execCommander)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = subcordantRunner.Queue(albumId)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = subcordantRunner.Play()
+		Expect(err).NotTo(HaveOccurred())
+	})
+})
+
+var _ = Describe("runner", func() {
+	const albumId = "foobar"
+
+	var songs = getSongs(2)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var execCommander *mocks.IExecCommander
+	var fakeWriter nopWriter
+	var fakeReadCloser nopReadCloser
+
+	BeforeEach(func() {
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
+		discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
+
+		execCommander = mocks.NewIExecCommander(GinkgoT())
+		execCommander.EXPECT().Start(
+			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil).Twice()
+		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil).Twice()
+
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Song: songs,
+		}, nil)
+		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
+		subsonicClient.EXPECT().Stream(songs[1].ID).Return(fakeReadCloser, nil)
+		subcordantRunner = &runner.SubcordantRunner{}
+	})
+
+	It("will Init, Queue and Play without error with a playlist of more than 1 song", func() {
 		err := subcordantRunner.Init(subsonicClient, discordClient, execCommander)
 		Expect(err).NotTo(HaveOccurred())
 
