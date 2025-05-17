@@ -50,12 +50,7 @@ var _ = Describe("runner", func() {
 
 	BeforeEach(func() {
 		discordClient = getDiscordClient()
-
-		execCommander = mocks.NewIExecCommander(GinkgoT())
-		execCommander.EXPECT().Start(
-			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil)
-		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil)
-
+		execCommander = getExecCommander(len(songs))
 		subsonicClient = getSubsonicClient(songs)
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
@@ -82,11 +77,7 @@ var _ = Describe("runner", func() {
 
 	BeforeEach(func() {
 		discordClient = getDiscordClient()
-		execCommander = mocks.NewIExecCommander(GinkgoT())
-		execCommander.EXPECT().Start(
-			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil).Twice()
-		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil).Twice()
-
+		execCommander = getExecCommander(len(songs))
 		subsonicClient = getSubsonicClient(songs)
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
@@ -109,6 +100,16 @@ func getDiscordClient() *mocks.IDiscordClient {
 	discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
 	discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
 	return discordClient
+}
+
+func getExecCommander(songCount int) *mocks.IExecCommander {
+	execCommander := mocks.NewIExecCommander(GinkgoT())
+	for i := 0; i < songCount; i++ {
+		execCommander.EXPECT().Start(
+			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil)
+		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil)
+	}
+	return execCommander
 }
 
 func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
