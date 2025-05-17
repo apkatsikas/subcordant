@@ -14,7 +14,7 @@ const trackName = "temptrack"
 type SubcordantRunner struct {
 	subsonicClient  interfaces.ISubsonicClient
 	discordClient   interfaces.IDiscordClient
-	ffmpegCommander interfaces.IExecCommander
+	execCommander interfaces.IExecCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	playing      bool
@@ -22,11 +22,11 @@ type SubcordantRunner struct {
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	ffmpegCommander interfaces.IExecCommander) error {
+	execCommander interfaces.IExecCommander) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
-	sr.ffmpegCommander = ffmpegCommander
+	sr.execCommander = execCommander
 
 	err := sr.subsonicClient.Init()
 	if err != nil {
@@ -85,7 +85,7 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = sr.ffmpegCommander.Start(ctx, stream, trackName, cancel)
+	err = sr.execCommander.Start(ctx, stream, trackName, cancel)
 	if err != nil {
 		return err
 	}
@@ -98,5 +98,5 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		sr.voiceSession = voiceSession
 	}
 
-	return sr.ffmpegCommander.Stream(sr.voiceSession, cancel)
+	return sr.execCommander.Stream(sr.voiceSession, cancel)
 }
