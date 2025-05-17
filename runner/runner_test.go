@@ -31,6 +31,8 @@ func (nopReadCloser) Close() error {
 	return nil
 }
 
+const albumId = "foobar"
+
 var anyCancelFunc = mock.AnythingOfType("context.CancelFunc")
 var anySubcordantRunner = mock.AnythingOfType("*runner.SubcordantRunner")
 var anyString = mock.AnythingOfType("string")
@@ -39,8 +41,6 @@ var fakeWriter = nopWriter{}
 var fakeReadCloser nopReadCloser = nopReadCloser{}
 
 var _ = Describe("runner", func() {
-	const albumId = "foobar"
-
 	var songs = getSongs(1)
 
 	var subcordantRunner *runner.SubcordantRunner
@@ -56,12 +56,7 @@ var _ = Describe("runner", func() {
 			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil)
 		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil)
 
-		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
-		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
-			Song: songs,
-		}, nil)
-		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
+		subsonicClient = getSubsonicClient(songs)
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
 
@@ -78,8 +73,6 @@ var _ = Describe("runner", func() {
 })
 
 var _ = Describe("runner", func() {
-	const albumId = "foobar"
-
 	var songs = getSongs(2)
 
 	var subcordantRunner *runner.SubcordantRunner
@@ -94,13 +87,7 @@ var _ = Describe("runner", func() {
 			mock.Anything, fakeReadCloser, anyString, anyCancelFunc).Return(nil).Twice()
 		execCommander.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil).Twice()
 
-		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
-		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
-			Song: songs,
-		}, nil)
-		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
-		subsonicClient.EXPECT().Stream(songs[1].ID).Return(fakeReadCloser, nil)
+		subsonicClient = getSubsonicClient(songs)
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
 
@@ -116,11 +103,24 @@ var _ = Describe("runner", func() {
 	})
 })
 
+// TODO - should i add ginkgo helper to these functions below?
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(anySubcordantRunner).Return(nil)
 	discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
 	return discordClient
+}
+
+func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
+	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
+	subsonicClient.EXPECT().Init().Return(nil)
+	subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+		Song: songs,
+	}, nil)
+	for _, song := range songs {
+		subsonicClient.EXPECT().Stream(song.ID).Return(fakeReadCloser, nil)
+	}
+	return subsonicClient
 }
 
 func getSongs(n uint) []*subsonic.Child {
