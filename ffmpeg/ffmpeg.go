@@ -33,50 +33,6 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 		return fmt.Errorf("error creating file: %v", err)
 	}
 
-	fc.cmd = exec.CommandContext(ctx,
-		"ffmpeg", "-hide_banner", "-loglevel", "warning",
-		"-threads", "1", // Single thread
-		"-i", inputDestination,
-		"-c:a", "libopus", // Codec
-		"-b:a", "128k", // Bitrate
-		"-frame_duration", strconv.Itoa(constants.FrameDuration),
-		"-vbr", "off", // Disable variable bitrate
-		"-f", "opus", // Output format
-		"-", // Output to stdout
-	)
-
-	fc.cmd.Stderr = os.Stderr
-
-	stdout, err := fc.cmd.StdoutPipe()
-	if err != nil {
-		input.Close()
-		file.Close()
-		stdout.Close()
-		fc.stdout.Close()
-		fc.cmd.Cancel()
-		cancelFunc()
-		return fmt.Errorf("failed to get stdout pipe: %w", err)
-	}
-	fc.stdout = stdout
-
-	if err := fc.cmd.Start(); err != nil {
-		fc.stdout.Close()
-		fc.cmd.Cancel()
-		file.Close()
-		input.Close()
-		cancelFunc()
-		return fmt.Errorf("failed to start ffmpeg: %w", err)
-	}
-
-	go func() {
-		<-ctx.Done()
-		fc.stdout.Close()
-		fc.cmd.Cancel()
-		file.Close()
-		input.Close()
-		log.Println("cancelling ffmpeg as context was cancelled")
-	}()
-
 	// TODO - could this go in a separate module, or would it be too annoying?
 	// Would want to pass context in so we could cancel and close stuff
 	go func() {
@@ -122,6 +78,54 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 			log.Printf("\nERROR: final flush resulted in: %v", err)
 			return
 		}
+	}()
+
+	// TODO - fix this and use context cancel to wait until file is a certain size before proceeding
+	// album ID fc9bf7bb3a0c6c4218112c72fedb0a29 shows this
+	time.Sleep(500 * time.Millisecond)
+
+	fc.cmd = exec.CommandContext(ctx,
+		"ffmpeg", "-hide_banner", "-loglevel", "warning",
+		"-threads", "1", // Single thread
+		"-i", inputDestination,
+		"-c:a", "libopus", // Codec
+		"-b:a", "128k", // Bitrate
+		"-frame_duration", strconv.Itoa(constants.FrameDuration),
+		"-vbr", "off", // Disable variable bitrate
+		"-f", "opus", // Output format
+		"-", // Output to stdout
+	)
+
+	fc.cmd.Stderr = os.Stderr
+
+	stdout, err := fc.cmd.StdoutPipe()
+	if err != nil {
+		input.Close()
+		file.Close()
+		stdout.Close()
+		fc.stdout.Close()
+		fc.cmd.Cancel()
+		cancelFunc()
+		return fmt.Errorf("failed to get stdout pipe: %w", err)
+	}
+	fc.stdout = stdout
+
+	if err := fc.cmd.Start(); err != nil {
+		fc.stdout.Close()
+		fc.cmd.Cancel()
+		file.Close()
+		input.Close()
+		cancelFunc()
+		return fmt.Errorf("failed to start ffmpeg: %w", err)
+	}
+
+	go func() {
+		<-ctx.Done()
+		fc.stdout.Close()
+		fc.cmd.Cancel()
+		file.Close()
+		input.Close()
+		log.Println("cancelling ffmpeg as context was cancelled")
 	}()
 
 	return nil
