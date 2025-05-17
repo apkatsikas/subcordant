@@ -76,7 +76,12 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 
 	// TODO - fix this and use context cancel to wait until file is a certain size before proceeding
 	// album ID fc9bf7bb3a0c6c4218112c72fedb0a29 shows this
-	time.Sleep(500 * time.Millisecond)
+	// Wait until the file is ready for streaming
+	minSize := int64(1024 * 100) // Example: Wait for 100KB of data
+	checkInterval := 50 * time.Millisecond
+	if err := waitForFileReady(inputDestination, minSize, checkInterval); err != nil {
+		return fmt.Errorf("file not ready for streaming: %w", err)
+	}
 
 	fc.cmd = exec.CommandContext(ctx,
 		"ffmpeg", "-hide_banner", "-loglevel", "warning",
@@ -137,6 +142,26 @@ func (fc *FfmpegCommander) Stream(voice io.Writer, cancelFunc context.CancelFunc
 		cancelFunc()
 		fc.stdout.Close()
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
+	}
+	return nil
+}
+
+func waitForFileReady(filePath string, minSize int64, checkInterval time.Duration) error {
+	ticker := time.NewTicker(checkInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		info, err := os.Stat(filePath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue // File not created yet
+			}
+			return fmt.Errorf("failed to stat file: %w", err)
+		}
+
+		if info.Size() >= minSize {
+			return nil // File is ready
+		}
 	}
 	return nil
 }
