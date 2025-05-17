@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"io"
+	"log"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -49,52 +50,49 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) error {
 		sr.PlaylistService.Add(song.ID)
 	}
 
-	firstTrack := sr.GetPlaylist()[0]
-	err = sr.doPlay(firstTrack, false)
-	if err != nil {
-		return err
-	}
+	go sr.playTracks()
+
 	return nil
 }
 
-func (sr *SubcordantRunner) doPlay(trackId string, nextTrack bool) error {
+func (sr *SubcordantRunner) playTracks() {
+	for {
+		playlist := sr.PlaylistService.GetPlaylist()
+		if len(playlist) == 0 {
+			return
+		}
+
+		trackId := playlist[0]
+		if err := sr.doPlay(trackId); err != nil {
+			log.Printf("ERROR: playing track %s resulted in: %v", trackId, err)
+			// TODO - Optionally handle errors (e.g., skip to the next track)
+		}
+		sr.PlaylistService.FinishTrack()
+	}
+}
+
+func (sr *SubcordantRunner) doPlay(trackId string) error {
 	stream, err := sr.subsonicClient.Stream(trackId)
 	if err != nil {
 		return err
 	}
+	defer stream.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go func() {
-		<-ctx.Done()
-		stream.Close()
-		sr.PlaylistService.FinishTrack()
-		playlist := sr.PlaylistService.GetPlaylist()
-		if len(playlist) > 0 {
-			sr.doPlay(playlist[0], true)
-		}
-	}()
-
 	err = sr.ffmpegCommander.Start(ctx, stream, trackName, cancel)
 	if err != nil {
-		cancel()
 		return err
 	}
 
-	if !nextTrack {
+	if sr.voiceSession == nil {
 		voiceSession, err := sr.discordClient.JoinVoiceChat(cancel)
 		if err != nil {
-			cancel()
 			return err
 		}
 		sr.voiceSession = voiceSession
 	}
 
-	err = sr.ffmpegCommander.Stream(sr.voiceSession, cancel)
-	if err != nil {
-		cancel()
-		return err
-	}
-	return nil
+	return sr.ffmpegCommander.Stream(sr.voiceSession, cancel)
 }
