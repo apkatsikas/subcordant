@@ -8,6 +8,7 @@
 * Say what the album name is
 * Support playlist
 * DOn't emit that ffmpeg was cancelled
+* Allow one signal kill to exit cleanly
 
 ## Scenarios to test
 * Stream from subsonic is slower than reading the file from ffmpeg

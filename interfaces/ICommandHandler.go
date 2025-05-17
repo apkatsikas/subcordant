@@ -1,5 +1,7 @@
 package interfaces
 
 type ICommandHandler interface {
-	HandlePlay(id string)
+	Queue(albumId string) error
+	Play() error
+	IsPlaying() bool
 }

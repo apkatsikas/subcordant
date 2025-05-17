@@ -2,8 +2,8 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"io"
-	"log"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -17,7 +17,7 @@ type SubcordantRunner struct {
 	ffmpegCommander interfaces.IExecCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
-	Playing      bool
+	playing      bool
 }
 
 func (sr *SubcordantRunner) Init(
@@ -40,37 +40,36 @@ func (sr *SubcordantRunner) Init(
 	return nil
 }
 
-func (sr *SubcordantRunner) HandlePlay(albumId string) {
-	go func() {
-		album, err := sr.subsonicClient.GetAlbum(albumId)
-
-		if err != nil {
-			log.Println(err)
-		}
-
-		for _, song := range album.Song {
-			sr.PlaylistService.Add(song.ID)
-		}
-
-		if !sr.Playing {
-			go sr.playTracks()
-		}
-	}()
+func (sr *SubcordantRunner) IsPlaying() bool {
+	return sr.playing
 }
 
-func (sr *SubcordantRunner) playTracks() {
+func (sr *SubcordantRunner) Queue(albumId string) error {
+	album, err := sr.subsonicClient.GetAlbum(albumId)
+
+	if err != nil {
+		return err
+	}
+
+	for _, song := range album.Song {
+		sr.PlaylistService.Add(song.ID)
+	}
+	return nil
+}
+
+func (sr *SubcordantRunner) Play() error {
 	for {
-		sr.Playing = true
+		sr.playing = true
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
-			sr.Playing = false
-			return
+			sr.playing = false
+			return nil
 		}
 
 		trackId := playlist[0]
 		if err := sr.doPlay(trackId); err != nil {
-			log.Printf("ERROR: playing track %s resulted in: %v", trackId, err)
-			// TODO - Optionally handle errors (e.g., skip to the next track)
+			sr.PlaylistService.FinishTrack()
+			return fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
 		sr.PlaylistService.FinishTrack()
 	}

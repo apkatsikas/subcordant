@@ -2,7 +2,6 @@ package runner_test
 
 import (
 	"io"
-	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
@@ -45,7 +44,6 @@ var _ = Describe("runner", func() {
 	var execCommander *mocks.IExecCommander
 	var fakeWriter nopWriter
 	var fakeReadCloser nopReadCloser
-	var initError error
 
 	var cancelFunc = mock.AnythingOfType("context.CancelFunc")
 
@@ -66,26 +64,16 @@ var _ = Describe("runner", func() {
 		}, nil)
 		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
-
-		initError = subcordantRunner.Init(subsonicClient, discordClient, execCommander)
 	})
 
-	It("will Init and HandlePlay without error", func() {
-		Expect(initError).NotTo(HaveOccurred())
-		subcordantRunner.HandlePlay(albumId)
-		time.Sleep(100 * time.Millisecond) // Let it play
+	It("will Init, Queue and Play without error", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, execCommander)
+		Expect(err).NotTo(HaveOccurred())
 
-		timeoutStop := time.After(500 * time.Millisecond)
-		for {
-			if !subcordantRunner.Playing {
-				break
-			}
-			select {
-			case <-timeoutStop:
-				GinkgoT().Fatal("Timeout waiting for play to stop")
-			default:
-				time.Sleep(10 * time.Millisecond)
-			}
-		}
+		err = subcordantRunner.Queue(albumId)
+		Expect(err).NotTo(HaveOccurred())
+
+		err = subcordantRunner.Play()
+		Expect(err).NotTo(HaveOccurred())
 	})
 })

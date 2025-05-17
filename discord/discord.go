@@ -156,7 +156,14 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
-	h.commandHandler.HandlePlay(albumId)
+	go func() {
+		h.commandHandler.Queue(albumId)
+
+		if !h.commandHandler.IsPlaying() {
+			h.commandHandler.Play()
+		}
+	}()
+
 	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(message),
