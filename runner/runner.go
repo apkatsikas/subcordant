@@ -52,14 +52,13 @@ func (sr *SubcordantRunner) HandlePlay(albumId string) {
 			sr.PlaylistService.Add(song.ID)
 		}
 
-		go sr.playTracks()
+		if !sr.Playing {
+			go sr.playTracks()
+		}
 	}()
 }
 
 func (sr *SubcordantRunner) playTracks() {
-	if sr.Playing {
-		return
-	}
 	for {
 		sr.Playing = true
 		playlist := sr.PlaylistService.GetPlaylist()
