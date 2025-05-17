@@ -43,40 +43,34 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 
 		ticker := time.NewTicker(flushFrequency * time.Millisecond)
 		defer ticker.Stop()
+
+		errorOccurred := false
 		go func() {
 			for range ticker.C {
 				err := writer.Flush()
 				if err != nil {
-					file.Close()
-					input.Close()
-					fc.stdout.Close()
-					fc.cmd.Cancel()
-					cancelFunc()
 					log.Printf("\nERROR: Flush resulted in: %v", err)
-					return
+					errorOccurred = true
+					break
 				}
 			}
 		}()
 
 		n, err := io.Copy(writer, input)
 		if err != nil {
-			file.Close()
-			input.Close()
-			fc.stdout.Close()
-			fc.cmd.Cancel()
-			cancelFunc()
 			log.Printf("\nERROR: writing to file after %v bytes resulted in: %v", n, err)
-			return
+			errorOccurred = true
 		}
 
-		if err := writer.Flush(); err != nil {
-			file.Close()
-			input.Close()
+		if finalErr := writer.Flush(); finalErr != nil {
+			log.Printf("\nERROR: final flush resulted in: %v", finalErr)
+			errorOccurred = true
+		}
+
+		if errorOccurred {
 			fc.stdout.Close()
 			fc.cmd.Cancel()
 			cancelFunc()
-			log.Printf("\nERROR: final flush resulted in: %v", err)
-			return
 		}
 	}()
 
