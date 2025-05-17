@@ -1,4 +1,4 @@
-package ffmpeg
+package ecmd
 
 import (
 	"bufio"

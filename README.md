@@ -3,7 +3,6 @@
 ## TODOs
 * Testability - we have to do a delay
 * Testing errors and enqueing, one song, multiple songs
-* Let album end then enque, or while playing - test these
 * Kick bot
 * Properly handle errors
 * Say what the album name is
