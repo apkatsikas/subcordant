@@ -14,7 +14,7 @@ const trackName = "temptrack"
 type SubcordantRunner struct {
 	subsonicClient  interfaces.ISubsonicClient
 	discordClient   interfaces.IDiscordClient
-	ffmpegCommander interfaces.IFfmpegCommander
+	ffmpegCommander interfaces.IExecCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	Playing      bool
@@ -22,7 +22,7 @@ type SubcordantRunner struct {
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	ffmpegCommander interfaces.IFfmpegCommander) error {
+	ffmpegCommander interfaces.IExecCommander) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient

@@ -17,12 +17,12 @@ import (
 
 var flushFrequency = 250 * time.Millisecond
 
-type FfmpegCommander struct {
+type ExecCommander struct {
 	stdout io.ReadCloser
 	cmd    *exec.Cmd
 }
 
-func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
+func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 	inputDestination string, cancelFunc context.CancelFunc) error {
 
 	file, err := os.Create(inputDestination)
@@ -68,8 +68,8 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 		}
 
 		if errorOccurred {
-			fc.stdout.Close()
-			fc.cmd.Cancel()
+			ecmd.stdout.Close()
+			ecmd.cmd.Cancel()
 			cancelFunc()
 		}
 	}()
@@ -83,7 +83,7 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 		return fmt.Errorf("file not ready for streaming: %w", err)
 	}
 
-	fc.cmd = exec.CommandContext(ctx,
+	ecmd.cmd = exec.CommandContext(ctx,
 		"ffmpeg", "-hide_banner", "-loglevel", "warning",
 		"-threads", "1", // Single thread
 		"-i", inputDestination,
@@ -95,23 +95,23 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 		"-", // Output to stdout
 	)
 
-	fc.cmd.Stderr = os.Stderr
+	ecmd.cmd.Stderr = os.Stderr
 
-	stdout, err := fc.cmd.StdoutPipe()
+	stdout, err := ecmd.cmd.StdoutPipe()
 	if err != nil {
 		input.Close()
 		file.Close()
 		stdout.Close()
-		fc.stdout.Close()
-		fc.cmd.Cancel()
+		ecmd.stdout.Close()
+		ecmd.cmd.Cancel()
 		cancelFunc()
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
-	fc.stdout = stdout
+	ecmd.stdout = stdout
 
-	if err := fc.cmd.Start(); err != nil {
-		fc.stdout.Close()
-		fc.cmd.Cancel()
+	if err := ecmd.cmd.Start(); err != nil {
+		ecmd.stdout.Close()
+		ecmd.cmd.Cancel()
 		file.Close()
 		input.Close()
 		cancelFunc()
@@ -120,8 +120,8 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 
 	go func() {
 		<-ctx.Done()
-		fc.stdout.Close()
-		fc.cmd.Cancel()
+		ecmd.stdout.Close()
+		ecmd.cmd.Cancel()
 		file.Close()
 		input.Close()
 		log.Println("cancelling ffmpeg as context was cancelled")
@@ -130,17 +130,17 @@ func (fc *FfmpegCommander) Start(ctx context.Context, input io.ReadCloser,
 	return nil
 }
 
-func (fc *FfmpegCommander) Stream(voice io.Writer, cancelFunc context.CancelFunc) error {
-	defer fc.stdout.Close()
-	if err := oggreader.DecodeBuffered(voice, fc.stdout); err != nil {
+func (ecmd *ExecCommander) Stream(voice io.Writer, cancelFunc context.CancelFunc) error {
+	defer ecmd.stdout.Close()
+	if err := oggreader.DecodeBuffered(voice, ecmd.stdout); err != nil {
 		cancelFunc()
-		fc.stdout.Close()
+		ecmd.stdout.Close()
 		return fmt.Errorf("failed to decode ogg: %w", err)
 	}
 
-	if err := fc.cmd.Wait(); err != nil {
+	if err := ecmd.cmd.Wait(); err != nil {
 		cancelFunc()
-		fc.stdout.Close()
+		ecmd.stdout.Close()
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}
 	return nil

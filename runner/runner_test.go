@@ -42,7 +42,7 @@ var _ = Describe("runner", func() {
 	var subcordantRunner *runner.SubcordantRunner
 	var discordClient *mocks.IDiscordClient
 	var subsonicClient *mocks.ISubsonicClient
-	var ffmpegCommander *mocks.IFfmpegCommander
+	var execCommander *mocks.IExecCommander
 	var fakeWriter nopWriter
 	var fakeReadCloser nopReadCloser
 	var initError error
@@ -54,10 +54,10 @@ var _ = Describe("runner", func() {
 		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
 		discordClient.EXPECT().JoinVoiceChat(cancelFunc).Return(fakeWriter, nil)
 
-		ffmpegCommander = mocks.NewIFfmpegCommander(GinkgoT())
-		ffmpegCommander.EXPECT().Start(
+		execCommander = mocks.NewIExecCommander(GinkgoT())
+		execCommander.EXPECT().Start(
 			mock.Anything, fakeReadCloser, mock.AnythingOfType("string"), cancelFunc).Return(nil)
-		ffmpegCommander.EXPECT().Stream(fakeWriter, cancelFunc).Return(nil)
+		execCommander.EXPECT().Stream(fakeWriter, cancelFunc).Return(nil)
 
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil)
@@ -67,7 +67,7 @@ var _ = Describe("runner", func() {
 		subsonicClient.EXPECT().Stream(songs[0].ID).Return(fakeReadCloser, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
 
-		initError = subcordantRunner.Init(subsonicClient, discordClient, ffmpegCommander)
+		initError = subcordantRunner.Init(subsonicClient, discordClient, execCommander)
 	})
 
 	It("will Init and HandlePlay without error", func() {
