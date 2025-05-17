@@ -15,6 +15,9 @@ import (
 	"github.com/diamondburned/oggreader"
 )
 
+// TODO - we could make this class take dependencies to the files system and os/exec
+// and rename it to Streamer. then we can run tests over it specifically
+
 var flushFrequency = 250 * time.Millisecond
 
 type ExecCommander struct {
