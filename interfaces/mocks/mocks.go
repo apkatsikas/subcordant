@@ -41,20 +41,9 @@ func (_m *ICommandHandler) EXPECT() *ICommandHandler_Expecter {
 }
 
 // HandlePlay provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) HandlePlay(id string) error {
-	ret := _mock.Called(id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for HandlePlay")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
-		r0 = returnFunc(id)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
+func (_mock *ICommandHandler) HandlePlay(id string) {
+	_mock.Called(id)
+	return
 }
 
 // ICommandHandler_HandlePlay_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HandlePlay'
@@ -75,13 +64,13 @@ func (_c *ICommandHandler_HandlePlay_Call) Run(run func(id string)) *ICommandHan
 	return _c
 }
 
-func (_c *ICommandHandler_HandlePlay_Call) Return(err error) *ICommandHandler_HandlePlay_Call {
-	_c.Call.Return(err)
+func (_c *ICommandHandler_HandlePlay_Call) Return() *ICommandHandler_HandlePlay_Call {
+	_c.Call.Return()
 	return _c
 }
 
-func (_c *ICommandHandler_HandlePlay_Call) RunAndReturn(run func(id string) error) *ICommandHandler_HandlePlay_Call {
-	_c.Call.Return(run)
+func (_c *ICommandHandler_HandlePlay_Call) RunAndReturn(run func(id string)) *ICommandHandler_HandlePlay_Call {
+	_c.Run(run)
 	return _c
 }
 

@@ -156,15 +156,7 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
-	// TODO - make this non blocking
-	err = h.commandHandler.HandlePlay(albumId)
-	if err != nil {
-		errorMessage := fmt.Sprintf("ERROR: Failed to handle play: %v", err)
-
-		return &api.InteractionResponseData{
-			Content: option.NewNullableString(errorMessage),
-		}
-	}
+	h.commandHandler.HandlePlay(albumId)
 	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(message),

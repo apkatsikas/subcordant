@@ -17,6 +17,7 @@ type SubcordantRunner struct {
 	ffmpegCommander interfaces.IFfmpegCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
+	Playing      bool
 }
 
 func (sr *SubcordantRunner) Init(
@@ -39,26 +40,31 @@ func (sr *SubcordantRunner) Init(
 	return nil
 }
 
-func (sr *SubcordantRunner) HandlePlay(albumId string) error {
-	album, err := sr.subsonicClient.GetAlbum(albumId)
+func (sr *SubcordantRunner) HandlePlay(albumId string) {
+	go func() {
+		album, err := sr.subsonicClient.GetAlbum(albumId)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			log.Println(err)
+		}
 
-	for _, song := range album.Song {
-		sr.PlaylistService.Add(song.ID)
-	}
+		for _, song := range album.Song {
+			sr.PlaylistService.Add(song.ID)
+		}
 
-	go sr.playTracks()
-
-	return nil
+		go sr.playTracks()
+	}()
 }
 
 func (sr *SubcordantRunner) playTracks() {
+	if sr.Playing {
+		return
+	}
 	for {
+		sr.Playing = true
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
+			sr.Playing = false
 			return
 		}
 

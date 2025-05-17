@@ -72,17 +72,17 @@ var _ = Describe("runner", func() {
 
 	It("will Init and HandlePlay without error", func() {
 		Expect(initError).NotTo(HaveOccurred())
-		err := subcordantRunner.HandlePlay(albumId)
-		Expect(err).NotTo(HaveOccurred())
+		subcordantRunner.HandlePlay(albumId)
+		time.Sleep(100 * time.Millisecond) // Let it play
 
-		timeout := time.After(250 * time.Millisecond)
+		timeoutStop := time.After(500 * time.Millisecond)
 		for {
-			if len(subcordantRunner.PlaylistService.GetPlaylist()) == 0 {
+			if !subcordantRunner.Playing {
 				break
 			}
 			select {
-			case <-timeout:
-				GinkgoT().Fatal("Timeout waiting for playTracks to finish")
+			case <-timeoutStop:
+				GinkgoT().Fatal("Timeout waiting for play to stop")
 			default:
 				time.Sleep(10 * time.Millisecond)
 			}
