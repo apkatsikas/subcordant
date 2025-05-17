@@ -2,6 +2,7 @@ package runner_test
 
 import (
 	"io"
+	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
@@ -73,5 +74,18 @@ var _ = Describe("runner", func() {
 		Expect(initError).NotTo(HaveOccurred())
 		err := subcordantRunner.HandlePlay(albumId)
 		Expect(err).NotTo(HaveOccurred())
+
+		timeout := time.After(250 * time.Millisecond)
+		for {
+			if len(subcordantRunner.PlaylistService.GetPlaylist()) == 0 {
+				break
+			}
+			select {
+			case <-timeout:
+				GinkgoT().Fatal("Timeout waiting for playTracks to finish")
+			default:
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
 	})
 })
