@@ -9,6 +9,8 @@
 * Support playlist
 * DOn't emit that ffmpeg was cancelled
 * Allow one signal kill to exit cleanly
+* -stream-from flag, defaults to stream, but you can also stream from disk (if the bot has access to same file system as the subsonic instance)
+* -stream-buffer flag, defaults to disk, but you can choose RAM, for named pipe option (will need other stuff set, make it linux/mac only at first, then add windows support)
 * option to run from disk (current) or named pipe (need windows and linux versions, and set upper limit of pipe size via envionment variable, 100mb?)
 
 ## Scenarios to test
