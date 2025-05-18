@@ -9,10 +9,12 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/apkatsikas/subcordant/constants"
 	"github.com/diamondburned/oggreader"
+	"golang.org/x/sys/unix"
 )
 
 // TODO - we could make this class take dependencies to the files system and os/exec
@@ -28,22 +30,39 @@ type ExecCommander struct {
 func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 	inputDestination string, cancelFunc context.CancelFunc) error {
 
-	file, err := os.Create(inputDestination)
-	if err != nil {
-		input.Close()
-		file.Close()
-		cancelFunc()
-		return fmt.Errorf("error creating file: %v", err)
+	// Create a named pipe if it doesn't already exist
+	if _, err := os.Stat(inputDestination); os.IsNotExist(err) {
+		if err := syscall.Mkfifo(inputDestination, 0666); err != nil {
+			input.Close()
+			cancelFunc()
+			return fmt.Errorf("failed to create named pipe: %v", err)
+		}
 	}
 
 	// TODO - could this go in a separate module, or would it be too annoying?
 	// Would want to pass context in so we could cancel and close stuff
 	go func() {
-		defer file.Close()
 		defer input.Close()
 
-		writer := bufio.NewWriter(file)
+		pipe, err := os.OpenFile(inputDestination, os.O_RDWR, 0666)
+		if err != nil {
+			log.Printf("\nERROR: Failed to open named pipe for writing: %v", err)
+			cancelFunc()
+			return
+		}
+		defer pipe.Close()
 
+		// Adjust pipe buffer size
+		bufferSize := 1024 * 1024 * 100 // 100 MB
+
+		fd := pipe.Fd()
+		if _, _, errno := unix.Syscall(unix.SYS_FCNTL, fd, unix.F_SETPIPE_SZ, uintptr(bufferSize)); errno != 0 {
+			log.Fatalf("Failed to set pipe buffer size: %v", errno)
+		}
+
+		log.Printf("Successfully set pipe buffer size to %d bytes", bufferSize)
+
+		writer := bufio.NewWriter(pipe)
 		ticker := time.NewTicker(flushFrequency * time.Millisecond)
 		defer ticker.Stop()
 
@@ -77,14 +96,14 @@ func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 		}
 	}()
 
-	// TODO - fix this and use context cancel to wait until file is a certain size before proceeding
-	// album ID fc9bf7bb3a0c6c4218112c72fedb0a29 shows this
-	// Wait until the file is ready for streaming
-	minSize := int64(1024 * 100) // Example: Wait for 100KB of data
-	checkInterval := 50 * time.Millisecond
-	if err := waitForFileReady(inputDestination, minSize, checkInterval); err != nil {
-		return fmt.Errorf("file not ready for streaming: %w", err)
-	}
+	// // TODO - fix this and use context cancel to wait until file is a certain size before proceeding
+	// // album ID fc9bf7bb3a0c6c4218112c72fedb0a29 shows this
+	// // Wait until the file is ready for streaming
+	// minSize := int64(1024 * 100) // Example: Wait for 100KB of data
+	// checkInterval := 50 * time.Millisecond
+	// if err := waitForFileReady(inputDestination, minSize, checkInterval); err != nil {
+	// 	return fmt.Errorf("file not ready for streaming: %w", err)
+	// }
 
 	ecmd.cmd = exec.CommandContext(ctx,
 		"ffmpeg", "-hide_banner", "-loglevel", "warning",
@@ -103,7 +122,6 @@ func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 	stdout, err := ecmd.cmd.StdoutPipe()
 	if err != nil {
 		input.Close()
-		file.Close()
 		stdout.Close()
 		ecmd.stdout.Close()
 		ecmd.cmd.Cancel()
@@ -115,7 +133,6 @@ func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 	if err := ecmd.cmd.Start(); err != nil {
 		ecmd.stdout.Close()
 		ecmd.cmd.Cancel()
-		file.Close()
 		input.Close()
 		cancelFunc()
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
@@ -125,7 +142,6 @@ func (ecmd *ExecCommander) Start(ctx context.Context, input io.ReadCloser,
 		<-ctx.Done()
 		ecmd.stdout.Close()
 		ecmd.cmd.Cancel()
-		file.Close()
 		input.Close()
 		log.Println("cancelling ffmpeg as context was cancelled")
 	}()

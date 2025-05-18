@@ -9,12 +9,12 @@ import (
 	"github.com/apkatsikas/subcordant/playlist"
 )
 
-const trackName = "temptrack"
+const trackName = "/tmp/music_pipe"
 
 type SubcordantRunner struct {
-	subsonicClient  interfaces.ISubsonicClient
-	discordClient   interfaces.IDiscordClient
-	execCommander interfaces.IExecCommander
+	subsonicClient interfaces.ISubsonicClient
+	discordClient  interfaces.IDiscordClient
+	execCommander  interfaces.IExecCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	playing      bool
