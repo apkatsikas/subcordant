@@ -9,6 +9,7 @@
 * Support playlist
 * DOn't emit that ffmpeg was cancelled
 * Allow one signal kill to exit cleanly
+* option to run from disk (current) or named pipe (need windows and linux versions, and set upper limit of pipe size via envionment variable, 100mb?)
 
 ## Scenarios to test
 * Stream from subsonic is slower than reading the file from ffmpeg
