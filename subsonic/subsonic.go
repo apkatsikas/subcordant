@@ -2,11 +2,10 @@ package subsonic
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 
-	sub "github.com/delucks/go-subsonic"
+	sub "github.com/apkatsikas/subcordant/go-subsonic"
 )
 
 type SubsonicClient struct {
@@ -52,10 +51,10 @@ func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
 	return albumResult, nil
 }
 
-func (sc *SubsonicClient) Stream(trackId string) (io.ReadCloser, error) {
-	stream, err := sc.client.Stream(trackId, nil)
+func (sc *SubsonicClient) Stream(trackId string) (string, error) {
+	stream, err := sc.client.StreamUrl(trackId, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to stream with track ID of %v", trackId)
+		return "", fmt.Errorf("failed to stream with track ID of %v", trackId)
 	}
 	return stream, nil
 }

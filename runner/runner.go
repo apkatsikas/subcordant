@@ -12,9 +12,9 @@ import (
 const trackName = "temptrack"
 
 type SubcordantRunner struct {
-	subsonicClient  interfaces.ISubsonicClient
-	discordClient   interfaces.IDiscordClient
-	execCommander interfaces.IExecCommander
+	subsonicClient interfaces.ISubsonicClient
+	discordClient  interfaces.IDiscordClient
+	execCommander  interfaces.IExecCommander
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	playing      bool
@@ -80,12 +80,11 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 	if err != nil {
 		return err
 	}
-	defer stream.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = sr.execCommander.Start(ctx, stream, trackName, cancel)
+	err = sr.execCommander.Start(ctx, stream, cancel)
 	if err != nil {
 		return err
 	}
