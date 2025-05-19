@@ -2,6 +2,7 @@
 
 ## TODOs
 * Testability - we have to do a delay
+* Not sure I really need cancel funcs and some contexts now
 * Testing errors and enqueing, one song, multiple songs
 * Kick bot
 * Properly handle errors
