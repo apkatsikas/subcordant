@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	sub "github.com/apkatsikas/subcordant/go-subsonic"
+	sub "github.com/apkatsikas/go-subsonic"
 )
 
 type SubsonicClient struct {
@@ -56,5 +56,5 @@ func (sc *SubsonicClient) Stream(trackId string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to stream with track ID of %v", trackId)
 	}
-	return stream, nil
+	return stream.String(), nil
 }

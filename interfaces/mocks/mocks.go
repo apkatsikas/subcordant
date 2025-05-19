@@ -8,8 +8,8 @@ import (
 	"context"
 	"io"
 
+	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
-	"github.com/delucks/go-subsonic"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,37 +40,136 @@ func (_m *ICommandHandler) EXPECT() *ICommandHandler_Expecter {
 	return &ICommandHandler_Expecter{mock: &_m.Mock}
 }
 
-// HandlePlay provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) HandlePlay(id string) {
-	_mock.Called(id)
-	return
+// IsPlaying provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) IsPlaying() bool {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsPlaying")
+	}
+
+	var r0 bool
+	if returnFunc, ok := ret.Get(0).(func() bool); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	return r0
 }
 
-// ICommandHandler_HandlePlay_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HandlePlay'
-type ICommandHandler_HandlePlay_Call struct {
+// ICommandHandler_IsPlaying_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsPlaying'
+type ICommandHandler_IsPlaying_Call struct {
 	*mock.Call
 }
 
-// HandlePlay is a helper method to define mock.On call
-//   - id
-func (_e *ICommandHandler_Expecter) HandlePlay(id interface{}) *ICommandHandler_HandlePlay_Call {
-	return &ICommandHandler_HandlePlay_Call{Call: _e.mock.On("HandlePlay", id)}
+// IsPlaying is a helper method to define mock.On call
+func (_e *ICommandHandler_Expecter) IsPlaying() *ICommandHandler_IsPlaying_Call {
+	return &ICommandHandler_IsPlaying_Call{Call: _e.mock.On("IsPlaying")}
 }
 
-func (_c *ICommandHandler_HandlePlay_Call) Run(run func(id string)) *ICommandHandler_HandlePlay_Call {
+func (_c *ICommandHandler_IsPlaying_Call) Run(run func()) *ICommandHandler_IsPlaying_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_IsPlaying_Call) Return(b bool) *ICommandHandler_IsPlaying_Call {
+	_c.Call.Return(b)
+	return _c
+}
+
+func (_c *ICommandHandler_IsPlaying_Call) RunAndReturn(run func() bool) *ICommandHandler_IsPlaying_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Play provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) Play() error {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Play")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func() error); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ICommandHandler_Play_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Play'
+type ICommandHandler_Play_Call struct {
+	*mock.Call
+}
+
+// Play is a helper method to define mock.On call
+func (_e *ICommandHandler_Expecter) Play() *ICommandHandler_Play_Call {
+	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play")}
+}
+
+func (_c *ICommandHandler_Play_Call) Run(run func()) *ICommandHandler_Play_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_Play_Call) Return(err error) *ICommandHandler_Play_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *ICommandHandler_Play_Call) RunAndReturn(run func() error) *ICommandHandler_Play_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Queue provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) Queue(albumId string) error {
+	ret := _mock.Called(albumId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Queue")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+		r0 = returnFunc(albumId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ICommandHandler_Queue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Queue'
+type ICommandHandler_Queue_Call struct {
+	*mock.Call
+}
+
+// Queue is a helper method to define mock.On call
+//   - albumId
+func (_e *ICommandHandler_Expecter) Queue(albumId interface{}) *ICommandHandler_Queue_Call {
+	return &ICommandHandler_Queue_Call{Call: _e.mock.On("Queue", albumId)}
+}
+
+func (_c *ICommandHandler_Queue_Call) Run(run func(albumId string)) *ICommandHandler_Queue_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(string))
 	})
 	return _c
 }
 
-func (_c *ICommandHandler_HandlePlay_Call) Return() *ICommandHandler_HandlePlay_Call {
-	_c.Call.Return()
+func (_c *ICommandHandler_Queue_Call) Return(err error) *ICommandHandler_Queue_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *ICommandHandler_HandlePlay_Call) RunAndReturn(run func(id string)) *ICommandHandler_HandlePlay_Call {
-	_c.Run(run)
+func (_c *ICommandHandler_Queue_Call) RunAndReturn(run func(albumId string) error) *ICommandHandler_Queue_Call {
+	_c.Call.Return(run)
 	return _c
 }
 
@@ -230,16 +329,16 @@ func (_m *IExecCommander) EXPECT() *IExecCommander_Expecter {
 }
 
 // Start provides a mock function for the type IExecCommander
-func (_mock *IExecCommander) Start(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc) error {
-	ret := _mock.Called(ctx, input, inputDestination, cancelFunc)
+func (_mock *IExecCommander) Start(ctx context.Context, input string, cancelFunc context.CancelFunc) error {
+	ret := _mock.Called(ctx, input, cancelFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, io.ReadCloser, string, context.CancelFunc) error); ok {
-		r0 = returnFunc(ctx, input, inputDestination, cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, context.CancelFunc) error); ok {
+		r0 = returnFunc(ctx, input, cancelFunc)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -254,15 +353,14 @@ type IExecCommander_Start_Call struct {
 // Start is a helper method to define mock.On call
 //   - ctx
 //   - input
-//   - inputDestination
 //   - cancelFunc
-func (_e *IExecCommander_Expecter) Start(ctx interface{}, input interface{}, inputDestination interface{}, cancelFunc interface{}) *IExecCommander_Start_Call {
-	return &IExecCommander_Start_Call{Call: _e.mock.On("Start", ctx, input, inputDestination, cancelFunc)}
+func (_e *IExecCommander_Expecter) Start(ctx interface{}, input interface{}, cancelFunc interface{}) *IExecCommander_Start_Call {
+	return &IExecCommander_Start_Call{Call: _e.mock.On("Start", ctx, input, cancelFunc)}
 }
 
-func (_c *IExecCommander_Start_Call) Run(run func(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc)) *IExecCommander_Start_Call {
+func (_c *IExecCommander_Start_Call) Run(run func(ctx context.Context, input string, cancelFunc context.CancelFunc)) *IExecCommander_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(io.ReadCloser), args[2].(string), args[3].(context.CancelFunc))
+		run(args[0].(context.Context), args[1].(string), args[2].(context.CancelFunc))
 	})
 	return _c
 }
@@ -272,7 +370,7 @@ func (_c *IExecCommander_Start_Call) Return(err error) *IExecCommander_Start_Cal
 	return _c
 }
 
-func (_c *IExecCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input io.ReadCloser, inputDestination string, cancelFunc context.CancelFunc) error) *IExecCommander_Start_Call {
+func (_c *IExecCommander_Start_Call) RunAndReturn(run func(ctx context.Context, input string, cancelFunc context.CancelFunc) error) *IExecCommander_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -451,24 +549,22 @@ func (_c *ISubsonicClient_Init_Call) RunAndReturn(run func() error) *ISubsonicCl
 }
 
 // Stream provides a mock function for the type ISubsonicClient
-func (_mock *ISubsonicClient) Stream(trackId string) (io.ReadCloser, error) {
+func (_mock *ISubsonicClient) Stream(trackId string) (string, error) {
 	ret := _mock.Called(trackId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stream")
 	}
 
-	var r0 io.ReadCloser
+	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (io.ReadCloser, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) (string, error)); ok {
 		return returnFunc(trackId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) io.ReadCloser); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) string); ok {
 		r0 = returnFunc(trackId)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.ReadCloser)
-		}
+		r0 = ret.Get(0).(string)
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
 		r1 = returnFunc(trackId)
@@ -496,12 +592,12 @@ func (_c *ISubsonicClient_Stream_Call) Run(run func(trackId string)) *ISubsonicC
 	return _c
 }
 
-func (_c *ISubsonicClient_Stream_Call) Return(readCloser io.ReadCloser, err error) *ISubsonicClient_Stream_Call {
-	_c.Call.Return(readCloser, err)
+func (_c *ISubsonicClient_Stream_Call) Return(s string, err error) *ISubsonicClient_Stream_Call {
+	_c.Call.Return(s, err)
 	return _c
 }
 
-func (_c *ISubsonicClient_Stream_Call) RunAndReturn(run func(trackId string) (io.ReadCloser, error)) *ISubsonicClient_Stream_Call {
+func (_c *ISubsonicClient_Stream_Call) RunAndReturn(run func(trackId string) (string, error)) *ISubsonicClient_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }

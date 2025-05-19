@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"io"
 
+	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
-	"github.com/delucks/go-subsonic"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"

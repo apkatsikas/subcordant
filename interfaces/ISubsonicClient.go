@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	sub "github.com/apkatsikas/subcordant/go-subsonic"
+	sub "github.com/apkatsikas/go-subsonic"
 )
 
 type ISubsonicClient interface {

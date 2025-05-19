@@ -1,3 +1,5 @@
+github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c h1:ceGT/ngSdiaxb7fBTCVdjgfYmeqn8o8eB803onCKb6M=
+github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c/go.mod h1:eOu2jmR3ed7Dp0mXKqyf7oHXWujlTzDPFbOtoUAwDP4=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/delucks/go-subsonic v0.0.0-20240806025900-2a743ec36238 h1:uejyepOdHISrJTw7P84Y7yEC0FMyv1q3KNDRxWsviKw=
