@@ -51,6 +51,10 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 	if err := sr.queue(albumId); err != nil {
 		return err
 	}
+	// TODO - mutex
+	if sr.playing {
+		return nil
+	}
 	for {
 		sr.playing = true
 		playlist := sr.PlaylistService.GetPlaylist()

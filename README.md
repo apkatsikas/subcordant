@@ -2,6 +2,7 @@
 
 ## TODOs
 * Don't emit that ffmpeg was cancelled
+* Test for when play command is recieved while play is already running (enqueue but dont play) via go sr.Play() then normal Play - expect only x calls to deps
 * Check all TODOs and make tickets
 * Testing errors
 * Kick bot
