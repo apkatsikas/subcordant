@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -154,17 +155,22 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
-	go func() {
-		h.commandHandler.Queue(albumId)
+	go h.addToQueue(albumId)
 
-		if !h.commandHandler.IsPlaying() {
-			h.commandHandler.Play()
-		}
-	}()
-
-	message := fmt.Sprintf("Queueing album with ID of %v", albumId)
+	message := fmt.Sprintf("Queued album with ID of %v", albumId)
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(message),
+	}
+}
+
+func (h *handler) addToQueue(albumId string) {
+	h.commandHandler.Queue(albumId)
+
+	if !h.commandHandler.IsPlaying() {
+		err := h.commandHandler.Play()
+		if err != nil {
+			log.Printf("\nERROR: Play resulted in %v", err)
+		}
 	}
 }
 

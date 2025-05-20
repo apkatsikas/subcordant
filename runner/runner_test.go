@@ -63,7 +63,7 @@ func getDiscordClient() *mocks.IDiscordClient {
 
 func getStreamer(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
-	for i := 0; i < songCount; i++ {
+	for range songCount {
 		streamer.EXPECT().PrepStream(mock.AnythingOfType("*url.URL")).Return(nil)
 		streamer.EXPECT().Stream(fakeWriter).Return(nil)
 	}
