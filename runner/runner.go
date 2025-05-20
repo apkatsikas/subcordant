@@ -69,12 +69,12 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 }
 
 func (sr *SubcordantRunner) doPlay(trackId string) error {
-	stream, err := sr.subsonicClient.Stream(trackId)
+	streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
 	if err != nil {
 		return err
 	}
 
-	if err := sr.streamer.PrepStream(stream); err != nil {
+	if err := sr.streamer.PrepStream(streamUrl); err != nil {
 		return err
 	}
 

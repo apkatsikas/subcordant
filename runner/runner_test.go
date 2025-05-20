@@ -74,7 +74,7 @@ func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
 		Song: songs,
 	}, nil)
 	for _, song := range songs {
-		subsonicClient.EXPECT().Stream(song.ID).Return(&url.URL{}, nil)
+		subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil)
 	}
 	return subsonicClient
 }
