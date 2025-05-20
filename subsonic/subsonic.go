@@ -3,6 +3,7 @@ package subsonic
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 
 	sub "github.com/apkatsikas/go-subsonic"
@@ -51,10 +52,10 @@ func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
 	return albumResult, nil
 }
 
-func (sc *SubsonicClient) Stream(trackId string) (string, error) {
-	stream, err := sc.client.StreamUrl(trackId, nil)
+func (sc *SubsonicClient) Stream(trackId string) (*url.URL, error) {
+	streamUrl, err := sc.client.StreamUrl(trackId, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed to stream with track ID of %v", trackId)
+		return nil, fmt.Errorf("failed to stream with track ID of %v", trackId)
 	}
-	return stream.String(), nil
+	return streamUrl, nil
 }

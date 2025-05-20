@@ -9,12 +9,10 @@ import (
 	"github.com/apkatsikas/subcordant/playlist"
 )
 
-const trackName = "temptrack"
-
 type SubcordantRunner struct {
 	subsonicClient interfaces.ISubsonicClient
 	discordClient  interfaces.IDiscordClient
-	execCommander  interfaces.IExecCommander
+	streamer       interfaces.IStreamer
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	playing      bool
@@ -22,11 +20,11 @@ type SubcordantRunner struct {
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	execCommander interfaces.IExecCommander) error {
+	streamer interfaces.IStreamer) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
-	sr.execCommander = execCommander
+	sr.streamer = streamer
 
 	err := sr.subsonicClient.Init()
 	if err != nil {
@@ -84,7 +82,7 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = sr.execCommander.Start(ctx, stream, cancel)
+	err = sr.streamer.PrepStream(ctx, stream, cancel)
 	if err != nil {
 		return err
 	}
@@ -97,5 +95,5 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		sr.voiceSession = voiceSession
 	}
 
-	return sr.execCommander.Stream(sr.voiceSession, cancel)
+	return sr.streamer.Stream(sr.voiceSession, cancel)
 }
