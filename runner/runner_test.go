@@ -1,9 +1,8 @@
 package runner_test
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"net/url"
+	"time"
 
 	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
@@ -24,59 +23,36 @@ const albumId = "foobar"
 var anyCancelFunc = mock.AnythingOfType("context.CancelFunc")
 var fakeWriter = nopWriter{}
 
-var _ = Describe("runner", func() {
-	var songs = getSongs(1)
+var _ = DescribeTableSubtree("runner",
+	func(songCount int) {
+		var songs = getSongs(songCount)
 
-	var subcordantRunner *runner.SubcordantRunner
-	var discordClient *mocks.IDiscordClient
-	var subsonicClient *mocks.ISubsonicClient
-	var streamer *mocks.IStreamer
+		var subcordantRunner *runner.SubcordantRunner
+		var discordClient *mocks.IDiscordClient
+		var subsonicClient *mocks.ISubsonicClient
+		var streamer *mocks.IStreamer
 
-	BeforeEach(func() {
-		discordClient = getDiscordClient()
-		streamer = getStreamer(len(songs))
-		subsonicClient = getSubsonicClient(songs)
-		subcordantRunner = &runner.SubcordantRunner{}
-	})
+		BeforeEach(func() {
+			discordClient = getDiscordClient()
+			streamer = getStreamer(len(songs))
+			subsonicClient = getSubsonicClient(songs)
+			subcordantRunner = &runner.SubcordantRunner{}
+		})
 
-	It("will Init, Queue and Play without error", func() {
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
-		Expect(err).NotTo(HaveOccurred())
+		It("will Init, Queue and Play without error", func() {
+			err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+			Expect(err).NotTo(HaveOccurred())
 
-		err = subcordantRunner.Queue(albumId)
-		Expect(err).NotTo(HaveOccurred())
+			err = subcordantRunner.Queue(albumId)
+			Expect(err).NotTo(HaveOccurred())
 
-		err = subcordantRunner.Play()
-		Expect(err).NotTo(HaveOccurred())
-	})
-})
-
-var _ = Describe("runner", func() {
-	var songs = getSongs(2)
-
-	var subcordantRunner *runner.SubcordantRunner
-	var discordClient *mocks.IDiscordClient
-	var subsonicClient *mocks.ISubsonicClient
-	var streamer *mocks.IStreamer
-
-	BeforeEach(func() {
-		discordClient = getDiscordClient()
-		streamer = getStreamer(len(songs))
-		subsonicClient = getSubsonicClient(songs)
-		subcordantRunner = &runner.SubcordantRunner{}
-	})
-
-	It("will Init, Queue and Play without error with a playlist of more than 1 song", func() {
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = subcordantRunner.Queue(albumId)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = subcordantRunner.Play()
-		Expect(err).NotTo(HaveOccurred())
-	})
-})
+			err = subcordantRunner.Play()
+			Expect(err).NotTo(HaveOccurred())
+		})
+	},
+	Entry("1 song", 1),
+	Entry("2 songs", 2),
+)
 
 // TODO - should i add ginkgo helper to these functions below?
 func getDiscordClient() *mocks.IDiscordClient {
@@ -108,16 +84,11 @@ func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
 	return subsonicClient
 }
 
-func getSongs(n uint) []*subsonic.Child {
+func getSongs(n int) []*subsonic.Child {
 	songs := make([]*subsonic.Child, int(n))
 	for i := range songs {
-		b := make([]byte, 8) // 8 random bytes → 16 hex characters
-		if _, err := rand.Read(b); err != nil {
-			// fallback to something deterministic, or handle error
-			b = []byte("darnbeefbebefunk")
-		}
 		songs[i] = &subsonic.Child{
-			ID: hex.EncodeToString(b),
+			ID: time.Now().String(),
 		}
 	}
 	return songs
