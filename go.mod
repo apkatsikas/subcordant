@@ -3,6 +3,7 @@ module github.com/apkatsikas/subcordant
 go 1.24.2
 
 require (
+	github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c
 	github.com/diamondburned/arikawa/v3 v3.5.0
 	github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647
 	github.com/joho/godotenv v1.5.1
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect

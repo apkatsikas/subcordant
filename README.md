@@ -18,3 +18,5 @@
 ### Pre-requisites
 * Install ffmpeg
 * Create Discord bot
+* Set environment variables
+* Run or build and run
