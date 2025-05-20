@@ -52,7 +52,7 @@ func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
 	return albumResult, nil
 }
 
-func (sc *SubsonicClient) Stream(trackId string) (*url.URL, error) {
+func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
 	streamUrl, err := sc.client.StreamUrl(trackId, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to stream with track ID of %v", trackId)
