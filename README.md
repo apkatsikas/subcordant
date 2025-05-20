@@ -2,6 +2,7 @@
 
 ## TODOs
 * Don't emit that ffmpeg was cancelled
+* Check all TODOs and make tickets
 * Testing errors
 * Kick bot
 * Say what the album name is
