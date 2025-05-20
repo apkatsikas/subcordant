@@ -54,9 +54,10 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 	if err := sr.queue(albumId); err != nil {
 		return err
 	}
-	if sr.isAlreadyPlaying() {
+	if sr.isPlayingMutex() {
 		return nil
 	}
+	sr.setPlayingMutex(true)
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
@@ -73,14 +74,16 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 	}
 }
 
-func (sr *SubcordantRunner) isAlreadyPlaying() bool {
+func (sr *SubcordantRunner) setPlayingMutex(state bool) {
 	sr.mu.Lock()
 	defer sr.mu.Unlock()
-	if sr.playing {
-		return true
-	}
-	sr.playing = true
-	return false
+	sr.playing = state
+}
+
+func (sr *SubcordantRunner) isPlayingMutex() bool {
+	sr.mu.Lock()
+	defer sr.mu.Unlock()
+	return sr.playing
 }
 
 func (sr *SubcordantRunner) doPlay(trackId string) error {
