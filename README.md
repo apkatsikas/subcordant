@@ -13,9 +13,6 @@
 * -stream-from flag, defaults to stream, but you can also stream from disk (if the bot has access to same file system as the subsonic instance)
 * Auto determine audio channel ID
 
-## Scenarios to test
-* Stream from subsonic is slower than reading the file from ffmpeg
-
 ### Pre-requisites
 * Install ffmpeg
 * Create Discord bot
