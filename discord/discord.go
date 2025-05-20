@@ -118,10 +118,9 @@ func (dc *DiscordClient) setupHandler(hand *handler) {
 	voice.AddIntents(dc.handler.state)
 }
 
-func (dc *DiscordClient) JoinVoiceChat(cancelFunc context.CancelFunc) (io.Writer, error) {
+func (dc *DiscordClient) JoinVoiceChat() (io.Writer, error) {
 	v, err := voice.NewSession(dc.state)
 	if err != nil {
-		cancelFunc()
 		return nil, fmt.Errorf("cannot make new voice session: %w", err)
 	}
 
@@ -131,7 +130,6 @@ func (dc *DiscordClient) JoinVoiceChat(cancelFunc context.CancelFunc) (io.Writer
 	defer cancel()
 
 	if err := v.JoinChannelAndSpeak(ctx, discord.ChannelID(dc.voiceChannelId), false, true); err != nil {
-		cancelFunc()
 		v.Leave(ctx)
 		return nil, fmt.Errorf("failed to join channel: %w", err)
 	}

@@ -12,15 +12,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const albumId = "foobar"
+
 type nopWriter struct{}
 
 func (nopWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-const albumId = "foobar"
-
-var anyCancelFunc = mock.AnythingOfType("context.CancelFunc")
 var fakeWriter = nopWriter{}
 
 var _ = DescribeTableSubtree("runner",
@@ -58,16 +57,15 @@ var _ = DescribeTableSubtree("runner",
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
-	discordClient.EXPECT().JoinVoiceChat(anyCancelFunc).Return(fakeWriter, nil)
+	discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil)
 	return discordClient
 }
 
 func getStreamer(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
 	for i := 0; i < songCount; i++ {
-		streamer.EXPECT().PrepStream(
-			mock.Anything, mock.AnythingOfType("*url.URL"), anyCancelFunc).Return(nil)
-		streamer.EXPECT().Stream(fakeWriter, anyCancelFunc).Return(nil)
+		streamer.EXPECT().PrepStream(mock.AnythingOfType("*url.URL")).Return(nil)
+		streamer.EXPECT().Stream(fakeWriter).Return(nil)
 	}
 	return streamer
 }

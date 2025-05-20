@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"context"
 	"fmt"
 	"io"
 
@@ -79,21 +78,18 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	err = sr.streamer.PrepStream(ctx, stream, cancel)
+	err = sr.streamer.PrepStream(stream)
 	if err != nil {
 		return err
 	}
 
 	if sr.voiceSession == nil {
-		voiceSession, err := sr.discordClient.JoinVoiceChat(cancel)
+		voiceSession, err := sr.discordClient.JoinVoiceChat()
 		if err != nil {
 			return err
 		}
 		sr.voiceSession = voiceSession
 	}
 
-	return sr.streamer.Stream(sr.voiceSession, cancel)
+	return sr.streamer.Stream(sr.voiceSession)
 }

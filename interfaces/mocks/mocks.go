@@ -5,7 +5,6 @@
 package mocks
 
 import (
-	"context"
 	"io"
 	"net/url"
 
@@ -247,8 +246,8 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat(cancelFunc context.CancelFunc) (io.Writer, error) {
-	ret := _mock.Called(cancelFunc)
+func (_mock *IDiscordClient) JoinVoiceChat() (io.Writer, error) {
+	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
@@ -256,18 +255,18 @@ func (_mock *IDiscordClient) JoinVoiceChat(cancelFunc context.CancelFunc) (io.Wr
 
 	var r0 io.Writer
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.CancelFunc) (io.Writer, error)); ok {
-		return returnFunc(cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func() (io.Writer, error)); ok {
+		return returnFunc()
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.CancelFunc) io.Writer); ok {
-		r0 = returnFunc(cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
+		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(io.Writer)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.CancelFunc) error); ok {
-		r1 = returnFunc(cancelFunc)
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
+		r1 = returnFunc()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -280,14 +279,13 @@ type IDiscordClient_JoinVoiceChat_Call struct {
 }
 
 // JoinVoiceChat is a helper method to define mock.On call
-//   - cancelFunc
-func (_e *IDiscordClient_Expecter) JoinVoiceChat(cancelFunc interface{}) *IDiscordClient_JoinVoiceChat_Call {
-	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", cancelFunc)}
+func (_e *IDiscordClient_Expecter) JoinVoiceChat() *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat")}
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(cancelFunc context.CancelFunc)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func()) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.CancelFunc))
+		run()
 	})
 	return _c
 }
@@ -297,7 +295,7 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) Return(writer io.Writer, err error)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(cancelFunc context.CancelFunc) (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -330,16 +328,16 @@ func (_m *IStreamer) EXPECT() *IStreamer_Expecter {
 }
 
 // PrepStream provides a mock function for the type IStreamer
-func (_mock *IStreamer) PrepStream(ctx context.Context, inputUrl *url.URL, cancelFunc context.CancelFunc) error {
-	ret := _mock.Called(ctx, inputUrl, cancelFunc)
+func (_mock *IStreamer) PrepStream(inputUrl *url.URL) error {
+	ret := _mock.Called(inputUrl)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PrepStream")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *url.URL, context.CancelFunc) error); ok {
-		r0 = returnFunc(ctx, inputUrl, cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func(*url.URL) error); ok {
+		r0 = returnFunc(inputUrl)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -352,16 +350,14 @@ type IStreamer_PrepStream_Call struct {
 }
 
 // PrepStream is a helper method to define mock.On call
-//   - ctx
 //   - inputUrl
-//   - cancelFunc
-func (_e *IStreamer_Expecter) PrepStream(ctx interface{}, inputUrl interface{}, cancelFunc interface{}) *IStreamer_PrepStream_Call {
-	return &IStreamer_PrepStream_Call{Call: _e.mock.On("PrepStream", ctx, inputUrl, cancelFunc)}
+func (_e *IStreamer_Expecter) PrepStream(inputUrl interface{}) *IStreamer_PrepStream_Call {
+	return &IStreamer_PrepStream_Call{Call: _e.mock.On("PrepStream", inputUrl)}
 }
 
-func (_c *IStreamer_PrepStream_Call) Run(run func(ctx context.Context, inputUrl *url.URL, cancelFunc context.CancelFunc)) *IStreamer_PrepStream_Call {
+func (_c *IStreamer_PrepStream_Call) Run(run func(inputUrl *url.URL)) *IStreamer_PrepStream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*url.URL), args[2].(context.CancelFunc))
+		run(args[0].(*url.URL))
 	})
 	return _c
 }
@@ -371,22 +367,22 @@ func (_c *IStreamer_PrepStream_Call) Return(err error) *IStreamer_PrepStream_Cal
 	return _c
 }
 
-func (_c *IStreamer_PrepStream_Call) RunAndReturn(run func(ctx context.Context, inputUrl *url.URL, cancelFunc context.CancelFunc) error) *IStreamer_PrepStream_Call {
+func (_c *IStreamer_PrepStream_Call) RunAndReturn(run func(inputUrl *url.URL) error) *IStreamer_PrepStream_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Stream provides a mock function for the type IStreamer
-func (_mock *IStreamer) Stream(voice io.Writer, cancelFunc context.CancelFunc) error {
-	ret := _mock.Called(voice, cancelFunc)
+func (_mock *IStreamer) Stream(voice io.Writer) error {
+	ret := _mock.Called(voice)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stream")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(io.Writer, context.CancelFunc) error); ok {
-		r0 = returnFunc(voice, cancelFunc)
+	if returnFunc, ok := ret.Get(0).(func(io.Writer) error); ok {
+		r0 = returnFunc(voice)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -400,14 +396,13 @@ type IStreamer_Stream_Call struct {
 
 // Stream is a helper method to define mock.On call
 //   - voice
-//   - cancelFunc
-func (_e *IStreamer_Expecter) Stream(voice interface{}, cancelFunc interface{}) *IStreamer_Stream_Call {
-	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", voice, cancelFunc)}
+func (_e *IStreamer_Expecter) Stream(voice interface{}) *IStreamer_Stream_Call {
+	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", voice)}
 }
 
-func (_c *IStreamer_Stream_Call) Run(run func(voice io.Writer, cancelFunc context.CancelFunc)) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) Run(run func(voice io.Writer)) *IStreamer_Stream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(io.Writer), args[1].(context.CancelFunc))
+		run(args[0].(io.Writer))
 	})
 	return _c
 }
@@ -417,7 +412,7 @@ func (_c *IStreamer_Stream_Call) Return(err error) *IStreamer_Stream_Call {
 	return _c
 }
 
-func (_c *IStreamer_Stream_Call) RunAndReturn(run func(voice io.Writer, cancelFunc context.CancelFunc) error) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) RunAndReturn(run func(voice io.Writer) error) *IStreamer_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }

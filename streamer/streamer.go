@@ -1,10 +1,8 @@
 package streamer
 
 import (
-	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,10 +17,8 @@ type Streamer struct {
 	cmd    *exec.Cmd
 }
 
-func (s *Streamer) PrepStream(ctx context.Context, inputUrl *url.URL,
-	cancelFunc context.CancelFunc) error {
-
-	s.cmd = exec.CommandContext(ctx,
+func (s *Streamer) PrepStream(inputUrl *url.URL) error {
+	s.cmd = exec.Command(
 		"ffmpeg",
 		"-hide_banner",
 		"-loglevel", "warning",
@@ -46,39 +42,31 @@ func (s *Streamer) PrepStream(ctx context.Context, inputUrl *url.URL,
 		stdout.Close()
 		s.stdout.Close()
 		s.cmd.Cancel()
-		cancelFunc()
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 	s.stdout = stdout
 
 	if err := s.cmd.Start(); err != nil {
+		stdout.Close()
 		s.stdout.Close()
 		s.cmd.Cancel()
-		cancelFunc()
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
-
-	go func() {
-		<-ctx.Done()
-		s.stdout.Close()
-		s.cmd.Cancel()
-		log.Println("cancelling ffmpeg as context was cancelled")
-	}()
 
 	return nil
 }
 
-func (s *Streamer) Stream(voice io.Writer, cancelFunc context.CancelFunc) error {
+func (s *Streamer) Stream(voice io.Writer) error {
 	defer s.stdout.Close()
 	if err := oggreader.DecodeBuffered(voice, s.stdout); err != nil {
-		cancelFunc()
 		s.stdout.Close()
+		s.cmd.Cancel()
 		return fmt.Errorf("failed to decode ogg: %w", err)
 	}
 
 	if err := s.cmd.Wait(); err != nil {
-		cancelFunc()
 		s.stdout.Close()
+		s.cmd.Cancel()
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}
 	return nil
