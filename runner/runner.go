@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -15,6 +16,7 @@ type SubcordantRunner struct {
 	*playlist.PlaylistService
 	voiceSession io.Writer
 	playing      bool
+	mu           sync.Mutex
 }
 
 func (sr *SubcordantRunner) Init(
@@ -52,12 +54,10 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 	if err := sr.queue(albumId); err != nil {
 		return err
 	}
-	// TODO - mutex
-	if sr.playing {
+	if sr.isAlreadyPlaying() {
 		return nil
 	}
 	for {
-		sr.playing = true
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
 			sr.playing = false
@@ -71,6 +71,16 @@ func (sr *SubcordantRunner) Play(albumId string) error {
 		}
 		sr.PlaylistService.FinishTrack()
 	}
+}
+
+func (sr *SubcordantRunner) isAlreadyPlaying() bool {
+	sr.mu.Lock()
+	defer sr.mu.Unlock()
+	if sr.playing {
+		return true
+	}
+	sr.playing = true
+	return false
 }
 
 func (sr *SubcordantRunner) doPlay(trackId string) error {
