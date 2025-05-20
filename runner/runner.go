@@ -49,41 +49,46 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	return nil
 }
 
-// TODO - return state enum - AlreadyPlaying, PlaybackComplete
-func (sr *SubcordantRunner) Play(albumId string) error {
+// TODO - move this out
+type PlaybackState int
+
+const (
+	AlreadyPlaying PlaybackState = iota
+	PlaybackComplete
+	Invalid
+)
+
+func (sr *SubcordantRunner) Play(albumId string) (PlaybackState, error) {
 	if err := sr.queue(albumId); err != nil {
-		return err
+		return Invalid, err
 	}
-	if sr.isPlayingMutex() {
-		return nil
+	if sr.checkAndSetPlayingMutex() {
+		return AlreadyPlaying, nil
 	}
-	sr.setPlayingMutex(true)
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
 			sr.playing = false
-			return nil
+			return PlaybackComplete, nil
 		}
 
 		trackId := playlist[0]
 		if err := sr.doPlay(trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
-			return fmt.Errorf("playing track %s resulted in: %v", trackId, err)
+			return Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
 		sr.PlaylistService.FinishTrack()
 	}
 }
 
-func (sr *SubcordantRunner) setPlayingMutex(state bool) {
+func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 	sr.mu.Lock()
 	defer sr.mu.Unlock()
-	sr.playing = state
-}
-
-func (sr *SubcordantRunner) isPlayingMutex() bool {
-	sr.mu.Lock()
-	defer sr.mu.Unlock()
-	return sr.playing
+	if sr.playing {
+		return true
+	}
+	sr.playing = true
+	return false
 }
 
 func (sr *SubcordantRunner) doPlay(trackId string) error {
