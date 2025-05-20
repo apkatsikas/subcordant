@@ -155,7 +155,7 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
-	go h.addToQueue(albumId)
+	go h.play(albumId)
 
 	message := fmt.Sprintf("Queued album with ID of %v", albumId)
 	return &api.InteractionResponseData{
@@ -163,14 +163,9 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 	}
 }
 
-func (h *handler) addToQueue(albumId string) {
-	h.commandHandler.Queue(albumId)
-
-	if !h.commandHandler.IsPlaying() {
-		err := h.commandHandler.Play()
-		if err != nil {
-			log.Printf("\nERROR: Play resulted in %v", err)
-		}
+func (h *handler) play(albumId string) {
+	if err := h.commandHandler.Play(albumId); err != nil {
+		log.Printf("\nERROR: Play resulted in %v", err)
 	}
 }
 

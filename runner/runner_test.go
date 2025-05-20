@@ -38,14 +38,11 @@ var _ = DescribeTableSubtree("runner",
 			subcordantRunner = &runner.SubcordantRunner{}
 		})
 
-		It("will Init, Queue and Play without error", func() {
+		It("should Init and Play without error", func() {
 			err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = subcordantRunner.Queue(albumId)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = subcordantRunner.Play()
+			err = subcordantRunner.Play(albumId)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	},

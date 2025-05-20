@@ -25,25 +25,18 @@ func (sr *SubcordantRunner) Init(
 	sr.discordClient = discordClient
 	sr.streamer = streamer
 
-	err := sr.subsonicClient.Init()
-	if err != nil {
+	if err := sr.subsonicClient.Init(); err != nil {
 		return err
 	}
 
-	err = sr.discordClient.Init(sr)
-	if err != nil {
+	if err := sr.discordClient.Init(sr); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (sr *SubcordantRunner) IsPlaying() bool {
-	return sr.playing
-}
-
-func (sr *SubcordantRunner) Queue(albumId string) error {
+func (sr *SubcordantRunner) queue(albumId string) error {
 	album, err := sr.subsonicClient.GetAlbum(albumId)
-
 	if err != nil {
 		return err
 	}
@@ -54,7 +47,10 @@ func (sr *SubcordantRunner) Queue(albumId string) error {
 	return nil
 }
 
-func (sr *SubcordantRunner) Play() error {
+func (sr *SubcordantRunner) Play(albumId string) error {
+	if err := sr.queue(albumId); err != nil {
+		return err
+	}
 	for {
 		sr.playing = true
 		playlist := sr.PlaylistService.GetPlaylist()
@@ -78,8 +74,7 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		return err
 	}
 
-	err = sr.streamer.PrepStream(stream)
-	if err != nil {
+	if err := sr.streamer.PrepStream(stream); err != nil {
 		return err
 	}
 
