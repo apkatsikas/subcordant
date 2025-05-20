@@ -47,6 +47,7 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	return nil
 }
 
+// TODO - return state enum - AlreadyPlaying, PlaybackComplete
 func (sr *SubcordantRunner) Play(albumId string) error {
 	if err := sr.queue(albumId); err != nil {
 		return err
