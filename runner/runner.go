@@ -66,7 +66,7 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 
 		trackId := playlist[0]
 		if err := sr.doPlay(trackId); err != nil {
-			sr.playing = false
+			// TODO - should we set playing false here?
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
