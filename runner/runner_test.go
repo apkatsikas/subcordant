@@ -1,7 +1,9 @@
 package runner_test
 
 import (
+	"io"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/apkatsikas/go-subsonic"
@@ -52,6 +54,47 @@ var _ = DescribeTableSubtree("runner",
 	Entry("2 songs", 2),
 )
 
+var _ = Describe("runner", func() {
+	var songs = getSongs(2)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	BeforeEach(func() {
+		discordClient = getDiscordClient()
+		streamer = getStreamerDelay(len(songs))
+		subsonicClient = getSubsonicClient(songs)
+		subcordantRunner = &runner.SubcordantRunner{}
+	})
+
+	It("should return already playing state when invoked twice while playback is underway", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+		Expect(err).NotTo(HaveOccurred())
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(albumId)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete))
+		}()
+		time.Sleep(time.Millisecond * 1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(albumId)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.AlreadyPlaying))
+		}()
+		wg.Wait()
+	})
+})
+
 // TODO - test that we finish track if there is an error with subsonic/streamer (either function)/discord
 
 // TODO - should i add ginkgo helper to these functions below?
@@ -67,6 +110,19 @@ func getStreamer(songCount int) *mocks.IStreamer {
 	for range songCount {
 		streamer.EXPECT().PrepStream(mock.AnythingOfType("*url.URL")).Return(nil)
 		streamer.EXPECT().Stream(fakeWriter).Return(nil)
+	}
+	return streamer
+}
+
+// Simulates the delay for Stream to return as if a song is playing
+func getStreamerDelay(songCount int) *mocks.IStreamer {
+	streamer := mocks.NewIStreamer(GinkgoT())
+	for range songCount {
+		streamer.EXPECT().PrepStream(mock.AnythingOfType("*url.URL")).Return(nil)
+		streamer.EXPECT().Stream(fakeWriter).RunAndReturn(func(voice io.Writer) error {
+			time.Sleep(time.Millisecond * 50)
+			return nil
+		})
 	}
 	return streamer
 }
