@@ -66,6 +66,7 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 
 		trackId := playlist[0]
 		if err := sr.doPlay(trackId); err != nil {
+			sr.playing = false
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
@@ -94,6 +95,7 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 	}
 
 	if sr.voiceSession == nil {
+
 		voiceSession, err := sr.discordClient.JoinVoiceChat()
 		if err != nil {
 			return err

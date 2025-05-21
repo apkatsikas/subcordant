@@ -1,6 +1,7 @@
 package streamer
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -18,7 +19,7 @@ type Streamer struct {
 }
 
 func (s *Streamer) PrepStream(inputUrl *url.URL) error {
-	s.cmd = exec.Command(
+	s.cmd = exec.CommandContext(context.Background(),
 		"ffmpeg",
 		"-hide_banner",
 		"-loglevel", "warning",

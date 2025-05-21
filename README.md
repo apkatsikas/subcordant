@@ -2,6 +2,8 @@
 
 ## TODOs
 * Don't emit that ffmpeg was cancelled
+* Check all TODOs and make tickets
+* Testing errors
 * eventual code like
 func (h *handler) play(albumId string) {
 	if _, err := h.commandHandler.Play(albumId); err != nil {
@@ -27,8 +29,6 @@ to send a message if album is not found
 	Something like this - but how do we know its a disconnect?
 * Command to disconnect
 * Other commands like skip, track, playlist
-* Check all TODOs and make tickets
-* Testing errors
 * Say what the album name is
 * Allow one signal kill to exit cleanly
 * -stream-from flag, defaults to stream, but you can also stream from disk (if the bot has access to same file system as the subsonic instance)
