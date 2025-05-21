@@ -7,6 +7,7 @@ import (
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
+	"github.com/apkatsikas/subcordant/types"
 )
 
 type SubcordantRunner struct {
@@ -49,41 +50,37 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	return nil
 }
 
-// TODO - return state enum - AlreadyPlaying, PlaybackComplete
-func (sr *SubcordantRunner) Play(albumId string) error {
+func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 	if err := sr.queue(albumId); err != nil {
-		return err
+		return types.Invalid, err
 	}
-	if sr.isPlayingMutex() {
-		return nil
+	if sr.checkAndSetPlayingMutex() {
+		return types.AlreadyPlaying, nil
 	}
-	sr.setPlayingMutex(true)
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
 			sr.playing = false
-			return nil
+			return types.PlaybackComplete, nil
 		}
 
 		trackId := playlist[0]
 		if err := sr.doPlay(trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
-			return fmt.Errorf("playing track %s resulted in: %v", trackId, err)
+			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
 		sr.PlaylistService.FinishTrack()
 	}
 }
 
-func (sr *SubcordantRunner) setPlayingMutex(state bool) {
+func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 	sr.mu.Lock()
 	defer sr.mu.Unlock()
-	sr.playing = state
-}
-
-func (sr *SubcordantRunner) isPlayingMutex() bool {
-	sr.mu.Lock()
-	defer sr.mu.Unlock()
-	return sr.playing
+	if sr.playing {
+		return true
+	}
+	sr.playing = true
+	return false
 }
 
 func (sr *SubcordantRunner) doPlay(trackId string) error {

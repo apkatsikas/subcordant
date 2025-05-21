@@ -164,7 +164,7 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 }
 
 func (h *handler) play(albumId string) {
-	if err := h.commandHandler.Play(albumId); err != nil {
+	if _, err := h.commandHandler.Play(albumId); err != nil {
 		log.Printf("\nERROR: Play resulted in %v", err)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
+	"github.com/apkatsikas/subcordant/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
@@ -42,13 +43,16 @@ var _ = DescribeTableSubtree("runner",
 			err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = subcordantRunner.Play(albumId)
+			state, err := subcordantRunner.Play(albumId)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete))
 		})
 	},
 	Entry("1 song", 1),
 	Entry("2 songs", 2),
 )
+
+// TODO - test that we finish track if there is an error with subsonic/streamer (either function)/discord
 
 // TODO - should i add ginkgo helper to these functions below?
 func getDiscordClient() *mocks.IDiscordClient {
