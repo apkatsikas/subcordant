@@ -1,6 +1,8 @@
 # subcordant
 
 ## TODOs
+* log arikawa issue for disconnect
+* set idle disconnect handler - after X amount of time without playing, DC and reset
 * Don't emit that ffmpeg was cancelled
 * Check all TODOs and make tickets
 * Testing errors
