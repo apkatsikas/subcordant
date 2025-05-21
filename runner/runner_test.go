@@ -96,8 +96,6 @@ var _ = Describe("runner", func() {
 })
 
 // TODO - test that we finish track if there is an error with subsonic/streamer (either function)/discord
-
-// TODO - should i add ginkgo helper to these functions below?
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
