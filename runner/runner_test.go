@@ -106,7 +106,7 @@ var _ = Describe("runner", func() {
 		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init error"))
 	})
 
-	It("should should error on init if subsonic init fails", func() {
+	It("should should error on init if subsonic init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, mocks.NewIDiscordClient(GinkgoT()), mocks.NewIStreamer(GinkgoT()))
 		Expect(err).To(HaveOccurred())
 	})
@@ -125,9 +125,39 @@ var _ = Describe("runner", func() {
 		discordClient.EXPECT().Init(subcordantRunner).Return(fmt.Errorf("init error"))
 	})
 
-	It("should should error on init if discord init fails", func() {
+	It("should should error on init if discord init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).To(HaveOccurred())
+	})
+})
+
+var _ = Describe("runner", func() {
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+	var discordClient *mocks.IDiscordClient
+
+	var playError error
+	var playbackState types.PlaybackState
+
+	BeforeEach(func() {
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(nil, fmt.Errorf("get album error"))
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
+		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
+		Expect(err).NotTo(HaveOccurred())
+
+		playbackState, playError = subcordantRunner.Play(albumId)
+	})
+
+	It("should return an invalid state on play if get album errors", func() {
+		Expect(playbackState).To(Equal(types.Invalid))
+	})
+
+	It("should should error on play if get album errors", func() {
+		Expect(playError).To(HaveOccurred())
 	})
 })
 
