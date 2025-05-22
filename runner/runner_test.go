@@ -1,6 +1,7 @@
 package runner_test
 
 import (
+	"fmt"
 	"io"
 	"net/url"
 	"sync"
@@ -92,6 +93,22 @@ var _ = Describe("runner", func() {
 			Expect(state).To(Equal(types.AlreadyPlaying))
 		}()
 		wg.Wait()
+	})
+})
+
+var _ = Describe("runner", func() {
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+
+	BeforeEach(func() {
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init fail"))
+	})
+
+	It("should should error if subsonic init fails", func() {
+		err := subcordantRunner.Init(subsonicClient, mocks.NewIDiscordClient(GinkgoT()), mocks.NewIStreamer(GinkgoT()))
+		Expect(err).To(HaveOccurred())
 	})
 })
 

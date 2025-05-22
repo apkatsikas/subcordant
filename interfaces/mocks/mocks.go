@@ -10,6 +10,7 @@ import (
 
 	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
+	"github.com/apkatsikas/subcordant/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -41,20 +42,29 @@ func (_m *ICommandHandler) EXPECT() *ICommandHandler_Expecter {
 }
 
 // Play provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) Play(albumId string) error {
+func (_mock *ICommandHandler) Play(albumId string) (types.PlaybackState, error) {
 	ret := _mock.Called(albumId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Play")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+	var r0 types.PlaybackState
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (types.PlaybackState, error)); ok {
+		return returnFunc(albumId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) types.PlaybackState); ok {
 		r0 = returnFunc(albumId)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(albumId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // ICommandHandler_Play_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Play'
@@ -75,12 +85,12 @@ func (_c *ICommandHandler_Play_Call) Run(run func(albumId string)) *ICommandHand
 	return _c
 }
 
-func (_c *ICommandHandler_Play_Call) Return(err error) *ICommandHandler_Play_Call {
-	_c.Call.Return(err)
+func (_c *ICommandHandler_Play_Call) Return(playbackState types.PlaybackState, err error) *ICommandHandler_Play_Call {
+	_c.Call.Return(playbackState, err)
 	return _c
 }
 
-func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string) error) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
 	_c.Call.Return(run)
 	return _c
 }
