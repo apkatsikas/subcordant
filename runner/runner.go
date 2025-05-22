@@ -57,7 +57,10 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
 	}
-	// TODO - move discord join in here
+	if err := sr.joinVoice(); err != nil {
+		sr.PlaylistService.Clear()
+		return types.Invalid, err
+	}
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
@@ -66,7 +69,7 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 		}
 
 		trackId := playlist[0]
-		if err := sr.doPlay(trackId); err != nil {
+		if err := sr.play(trackId); err != nil {
 			// TODO - should we set playing false here?
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
@@ -85,7 +88,7 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 	return false
 }
 
-func (sr *SubcordantRunner) doPlay(trackId string) error {
+func (sr *SubcordantRunner) play(trackId string) error {
 	streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
 	if err != nil {
 		return err
@@ -95,6 +98,10 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		return err
 	}
 
+	return sr.streamer.Stream(sr.voiceSession)
+}
+
+func (sr *SubcordantRunner) joinVoice() error {
 	if sr.voiceSession == nil {
 
 		voiceSession, err := sr.discordClient.JoinVoiceChat()
@@ -103,6 +110,5 @@ func (sr *SubcordantRunner) doPlay(trackId string) error {
 		}
 		sr.voiceSession = voiceSession
 	}
-
-	return sr.streamer.Stream(sr.voiceSession)
+	return nil
 }

@@ -181,8 +181,7 @@ var _ = Describe("runner play if stream url errors", func() {
 			Song: songs,
 		}, nil)
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error"))
-		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
+		discordClient = getDiscordClient()
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).NotTo(HaveOccurred())
 
@@ -213,8 +212,7 @@ var _ = Describe("runner play if prep stream errors", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = getSubsonicClient(songs)
-		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
+		discordClient = getDiscordClient()
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		streamer.EXPECT().PrepStream(anyUrl).Return(fmt.Errorf("prep stream error"))
@@ -279,7 +277,7 @@ var _ = Describe("runner play if stream errors", func() {
 })
 
 var _ = Describe("runner play if join voice errors", func() {
-	const songCount = 1
+	const songCount = 3
 	var songs = getSongs(songCount)
 
 	var subcordantRunner *runner.SubcordantRunner
@@ -292,13 +290,15 @@ var _ = Describe("runner play if join voice errors", func() {
 
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
-		subsonicClient = getSubsonicClient(songs)
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Song: songs,
+		}, nil)
+		subsonicClient.EXPECT().Init().Return(nil)
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
 		discordClient.EXPECT().JoinVoiceChat().Return(nil, fmt.Errorf("join voice error"))
 		streamer = mocks.NewIStreamer(GinkgoT())
-
-		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
@@ -314,8 +314,8 @@ var _ = Describe("runner play if join voice errors", func() {
 		Expect(playError).To(HaveOccurred())
 	})
 
-	It("should finish the track", func() {
-		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(songCount - 1))
+	It("should clear the playlist", func() {
+		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(0))
 	})
 })
 
