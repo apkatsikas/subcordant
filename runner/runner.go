@@ -57,6 +57,7 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
 	}
+	// TODO - move discord join in here
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
 		if len(playlist) == 0 {
