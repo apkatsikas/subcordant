@@ -238,6 +238,46 @@ var _ = Describe("runner play if prep stream errors", func() {
 	})
 })
 
+var _ = Describe("runner play if stream errors", func() {
+	const songCount = 1
+	var songs = getSongs(songCount)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+	var discordClient *mocks.IDiscordClient
+	var streamer *mocks.IStreamer
+
+	var playError error
+	var playbackState types.PlaybackState
+
+	BeforeEach(func() {
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = getSubsonicClient(songs)
+		discordClient = getDiscordClient()
+		streamer = mocks.NewIStreamer(GinkgoT())
+
+		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
+		streamer.EXPECT().Stream(fakeWriter).Return(fmt.Errorf("stream error"))
+
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+		Expect(err).NotTo(HaveOccurred())
+
+		playbackState, playError = subcordantRunner.Play(albumId)
+	})
+
+	It("should return an invalid state", func() {
+		Expect(playbackState).To(Equal(types.Invalid))
+	})
+
+	It("should error", func() {
+		Expect(playError).To(HaveOccurred())
+	})
+
+	It("should finish the track", func() {
+		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(songCount - 1))
+	})
+})
+
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
