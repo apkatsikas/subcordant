@@ -108,7 +108,7 @@ var _ = Describe("runner", func() {
 		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init error"))
 	})
 
-	It("should should error on init if subsonic init errors", func() {
+	It("should error on init if subsonic init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, mocks.NewIDiscordClient(GinkgoT()), mocks.NewIStreamer(GinkgoT()))
 		Expect(err).To(HaveOccurred())
 	})
@@ -127,13 +127,13 @@ var _ = Describe("runner", func() {
 		discordClient.EXPECT().Init(subcordantRunner).Return(fmt.Errorf("init error"))
 	})
 
-	It("should should error on init if discord init errors", func() {
+	It("should error on init if discord init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).To(HaveOccurred())
 	})
 })
 
-var _ = Describe("runner", func() {
+var _ = Describe("runner play if get album errors", func() {
 	var subcordantRunner *runner.SubcordantRunner
 	var subsonicClient *mocks.ISubsonicClient
 	var discordClient *mocks.IDiscordClient
@@ -154,16 +154,16 @@ var _ = Describe("runner", func() {
 		playbackState, playError = subcordantRunner.Play(albumId)
 	})
 
-	It("should return an invalid state on play if get album errors", func() {
+	It("should return an invalid state", func() {
 		Expect(playbackState).To(Equal(types.Invalid))
 	})
 
-	It("should should error on play if get album errors", func() {
+	It("should error", func() {
 		Expect(playError).To(HaveOccurred())
 	})
 })
 
-var _ = Describe("runner", func() {
+var _ = Describe("runner play if stream url errors", func() {
 	var songs = getSongs(1)
 
 	var subcordantRunner *runner.SubcordantRunner
@@ -189,11 +189,11 @@ var _ = Describe("runner", func() {
 		playbackState, playError = subcordantRunner.Play(albumId)
 	})
 
-	It("should return an invalid state on play if stream url errors", func() {
+	It("should return an invalid state", func() {
 		Expect(playbackState).To(Equal(types.Invalid))
 	})
 
-	It("should should error on play if stream url errors", func() {
+	It("should error", func() {
 		Expect(playError).To(HaveOccurred())
 	})
 })
