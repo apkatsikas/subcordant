@@ -19,16 +19,18 @@ func (h *handler) play(albumId string) {
 to send a message if album is not found
 * When disconnected via Discord, cleanly exit and clear playlist
 
-	ch := make(chan *gateway.VoiceStateUpdateEvent)
-	hand.state.AddHandler(ch)
-
 	go func() {
 		for event := range ch {
-			log.Printf("ChannelID %v UserID %v Member.User.ID %v Session ID %v", event.ChannelID, event.UserID, event.Member.User.ID, event.SessionID)
+			me, err := dc.handler.state.Me()
+			if err == nil {
+				if !event.ChannelID.IsValid() && event.Member.User.ID == me.ID {
+					// DC and cleanly exit
+					// could this work for idling too?
+				}
+			}
 		}
 	}()
 
-	Something like this - but how do we know its a disconnect?
 * Command to disconnect
 * Other commands like skip, track, playlist
 * Say what the album name is
