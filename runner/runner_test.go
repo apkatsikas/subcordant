@@ -28,7 +28,7 @@ var fakeWriter = nopWriter{}
 
 var anyUrl = mock.AnythingOfType("*url.URL")
 
-var _ = DescribeTableSubtree("runner",
+var _ = DescribeTableSubtree("runner init and play",
 	func(songCount int) {
 		var songs = getSongs(songCount)
 
@@ -37,20 +37,32 @@ var _ = DescribeTableSubtree("runner",
 		var subsonicClient *mocks.ISubsonicClient
 		var streamer *mocks.IStreamer
 
+		var initError error
+		var playError error
+		var playState types.PlaybackState
+
 		BeforeEach(func() {
 			discordClient = getDiscordClient()
 			streamer = getStreamer(len(songs))
 			subsonicClient = getSubsonicClient(songs)
 			subcordantRunner = &runner.SubcordantRunner{}
+
+			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer)
+			playState, playError = subcordantRunner.Play(albumId)
 		})
 
-		It("should Init and Play without error", func() {
-			err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
-			Expect(err).NotTo(HaveOccurred())
+		It("should not error", func() {
+			Expect(initError).NotTo(HaveOccurred())
+			Expect(playError).NotTo(HaveOccurred())
+			Expect(playState).To(Equal(types.PlaybackComplete))
+		})
 
-			state, err := subcordantRunner.Play(albumId)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(state).To(Equal(types.PlaybackComplete))
+		It("should show complete playback", func() {
+			Expect(playState).To(Equal(types.PlaybackComplete))
+		})
+
+		It("should complete all tracks", func() {
+			Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
 		})
 	},
 	Entry("1 song", 1),
@@ -232,7 +244,7 @@ var _ = Describe("runner play if prep stream errors", func() {
 	})
 
 	It("should finish the track", func() {
-		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(songCount - 1))
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(songCount - 1))
 	})
 })
 
@@ -272,7 +284,7 @@ var _ = Describe("runner play if stream errors", func() {
 	})
 
 	It("should finish the track", func() {
-		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(songCount - 1))
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(songCount - 1))
 	})
 })
 
@@ -315,7 +327,7 @@ var _ = Describe("runner play if join voice errors", func() {
 	})
 
 	It("should clear the playlist", func() {
-		Expect(len(subcordantRunner.GetPlaylist())).To(Equal(0))
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
 	})
 })
 
