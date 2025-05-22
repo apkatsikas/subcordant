@@ -103,11 +103,30 @@ var _ = Describe("runner", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init fail"))
+		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init error"))
 	})
 
-	It("should should error if subsonic init fails", func() {
+	It("should should error on init if subsonic init fails", func() {
 		err := subcordantRunner.Init(subsonicClient, mocks.NewIDiscordClient(GinkgoT()), mocks.NewIStreamer(GinkgoT()))
+		Expect(err).To(HaveOccurred())
+	})
+})
+
+var _ = Describe("runner", func() {
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+	var discordClient *mocks.IDiscordClient
+
+	BeforeEach(func() {
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil)
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(subcordantRunner).Return(fmt.Errorf("init error"))
+	})
+
+	It("should should error on init if discord init fails", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).To(HaveOccurred())
 	})
 })
