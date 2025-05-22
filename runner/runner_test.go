@@ -161,7 +161,40 @@ var _ = Describe("runner", func() {
 	})
 })
 
-// TODO - test that we finish track if there is an error with subsonic/streamer (either function)/discord
+var _ = Describe("runner", func() {
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+	var discordClient *mocks.IDiscordClient
+
+	var playError error
+	var playbackState types.PlaybackState
+
+	BeforeEach(func() {
+		songs := getSongs(1)
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Song: songs,
+		}, nil)
+		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error"))
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
+		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
+		Expect(err).NotTo(HaveOccurred())
+
+		playbackState, playError = subcordantRunner.Play(albumId)
+	})
+
+	It("should return an invalid state on play if stream url errors", func() {
+		Expect(playbackState).To(Equal(types.Invalid))
+	})
+
+	It("should should error on play if stream url errors", func() {
+		Expect(playError).To(HaveOccurred())
+	})
+})
+
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
