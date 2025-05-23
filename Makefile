@@ -13,3 +13,6 @@ coverage:
 
 mocks:
 	mockery
+
+build:
+	go build -o ./subcordant ./cmd/main.go
