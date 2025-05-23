@@ -113,6 +113,50 @@ var _ = Describe("runner", func() {
 })
 
 var _ = Describe("runner", func() {
+	var songs = getSongs(3)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	BeforeEach(func() {
+		discordClient = getDiscordClient()
+		// We only want the first song to build our expectations, as the rest will be skipped
+		streamer = getStreamerDelay(1)
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Song: songs,
+		}, nil)
+		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil)
+		subcordantRunner = &runner.SubcordantRunner{}
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("should clear the playlist when reset during playback", func() {
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(albumId)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete))
+		}()
+		time.Sleep(time.Millisecond * 1)
+
+		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(len(songs)))
+		subcordantRunner.Reset()
+
+		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(0))
+
+		wg.Wait()
+	})
+})
+
+var _ = Describe("runner", func() {
 	var subcordantRunner *runner.SubcordantRunner
 	var subsonicClient *mocks.ISubsonicClient
 
