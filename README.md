@@ -5,6 +5,7 @@
 * Testing errors
 * Don't emit that ffmpeg was cancelled
 * Make issues on GitHub
+* Update README
 * set idle disconnect handler - after X amount of time without playing, DC and reset
 * eventual code like
 func (h *handler) play(albumId string) {
@@ -19,17 +20,28 @@ func (h *handler) play(albumId string) {
 to send a message if album is not found
 * When disconnected via Discord, cleanly exit and clear playlist
 
+func (dc *DiscordClient) setupHandler(hand *handler) {
+	dc.handler = hand
+	dc.handler.state.AddInteractionHandler(dc.handler)
+
+	ch := make(chan *gateway.VoiceStateUpdateEvent)
+	hand.state.AddHandler(ch)
+
 	go func() {
 		for event := range ch {
 			me, err := dc.handler.state.Me()
-			if err == nil {
-				if !event.ChannelID.IsValid() && event.Member.User.ID == me.ID {
-					// DC and cleanly exit
-					// could this work for idling too?
-				}
+			if err != nil {
+				fmt.Printf("ERROR: could not determine ME")
+				return
+			}
+			if !event.ChannelID.IsValid() && event.Member.User.ID == me.ID {
+				fmt.Printf("")
 			}
 		}
 	}()
+
+	voice.AddIntents(dc.handler.state)
+}
 
 * Command to disconnect
 * Other commands like skip, track, playlist
