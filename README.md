@@ -5,7 +5,7 @@
 * Make issues on GitHub
 * Update README
 * Supress 2025/05/23 00:52:26 Gateway error: websocket: close sent
-* Disconnect cleanly from idle
+* Disconnect cleanly from idle - how do we simulate an idle kick? does it still happen when we are "speaking"?
 * to send a message if album is not found
 * Command to disconnect
 * Auto determine audio channel ID
