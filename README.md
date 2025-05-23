@@ -1,11 +1,11 @@
 # subcordant
 
 ## TODOs
-* log arikawa issue for disconnect
-* set idle disconnect handler - after X amount of time without playing, DC and reset
-* Don't emit that ffmpeg was cancelled
 * Check all TODOs and make tickets
 * Testing errors
+* Don't emit that ffmpeg was cancelled
+* Make issues on GitHub
+* set idle disconnect handler - after X amount of time without playing, DC and reset
 * eventual code like
 func (h *handler) play(albumId string) {
 	if _, err := h.commandHandler.Play(albumId); err != nil {
