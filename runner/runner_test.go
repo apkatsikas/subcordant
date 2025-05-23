@@ -1,6 +1,7 @@
 package runner_test
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -27,6 +28,7 @@ func (nopWriter) Write(p []byte) (int, error) {
 var fakeWriter = nopWriter{}
 
 var anyUrl = mock.AnythingOfType("*url.URL")
+var anyCancelContext = mock.AnythingOfType("*context.cancelCtx")
 
 var _ = DescribeTableSubtree("runner init and play",
 	func(songCount int) {
@@ -267,7 +269,7 @@ var _ = Describe("runner play if stream errors", func() {
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
-		streamer.EXPECT().Stream(fakeWriter).Return(fmt.Errorf("stream error"))
+		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(fmt.Errorf("stream error"))
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
@@ -342,7 +344,7 @@ func getStreamer(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
 	for range songCount {
 		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
-		streamer.EXPECT().Stream(fakeWriter).Return(nil)
+		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(nil)
 	}
 	return streamer
 }
@@ -352,7 +354,7 @@ func getStreamerDelay(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
 	for range songCount {
 		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
-		streamer.EXPECT().Stream(fakeWriter).RunAndReturn(func(voice io.Writer) error {
+		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).RunAndReturn(func(_ context.Context, _ io.Writer) error {
 			time.Sleep(time.Millisecond * 50)
 			return nil
 		})

@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	"context"
 	"io"
 	"net/url"
 
@@ -92,6 +93,39 @@ func (_c *ICommandHandler_Play_Call) Return(playbackState types.PlaybackState, e
 
 func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// Reset provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) Reset() {
+	_mock.Called()
+	return
+}
+
+// ICommandHandler_Reset_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Reset'
+type ICommandHandler_Reset_Call struct {
+	*mock.Call
+}
+
+// Reset is a helper method to define mock.On call
+func (_e *ICommandHandler_Expecter) Reset() *ICommandHandler_Reset_Call {
+	return &ICommandHandler_Reset_Call{Call: _e.mock.On("Reset")}
+}
+
+func (_c *ICommandHandler_Reset_Call) Run(run func()) *ICommandHandler_Reset_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_Reset_Call) Return() *ICommandHandler_Reset_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *ICommandHandler_Reset_Call) RunAndReturn(run func()) *ICommandHandler_Reset_Call {
+	_c.Run(run)
 	return _c
 }
 
@@ -295,16 +329,16 @@ func (_c *IStreamer_PrepStream_Call) RunAndReturn(run func(inputUrl *url.URL) er
 }
 
 // Stream provides a mock function for the type IStreamer
-func (_mock *IStreamer) Stream(voice io.Writer) error {
-	ret := _mock.Called(voice)
+func (_mock *IStreamer) Stream(ctx context.Context, voice io.Writer) error {
+	ret := _mock.Called(ctx, voice)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stream")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(io.Writer) error); ok {
-		r0 = returnFunc(voice)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, io.Writer) error); ok {
+		r0 = returnFunc(ctx, voice)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -317,14 +351,15 @@ type IStreamer_Stream_Call struct {
 }
 
 // Stream is a helper method to define mock.On call
+//   - ctx
 //   - voice
-func (_e *IStreamer_Expecter) Stream(voice interface{}) *IStreamer_Stream_Call {
-	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", voice)}
+func (_e *IStreamer_Expecter) Stream(ctx interface{}, voice interface{}) *IStreamer_Stream_Call {
+	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", ctx, voice)}
 }
 
-func (_c *IStreamer_Stream_Call) Run(run func(voice io.Writer)) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) Run(run func(ctx context.Context, voice io.Writer)) *IStreamer_Stream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(io.Writer))
+		run(args[0].(context.Context), args[1].(io.Writer))
 	})
 	return _c
 }
@@ -334,7 +369,7 @@ func (_c *IStreamer_Stream_Call) Return(err error) *IStreamer_Stream_Call {
 	return _c
 }
 
-func (_c *IStreamer_Stream_Call) RunAndReturn(run func(voice io.Writer) error) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) RunAndReturn(run func(ctx context.Context, voice io.Writer) error) *IStreamer_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }

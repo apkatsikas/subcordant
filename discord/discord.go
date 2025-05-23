@@ -131,8 +131,6 @@ func (dc *DiscordClient) setupBotDisconnectHandler() {
 		isDisconnect := !event.ChannelID.IsValid()
 		if isBot && isDisconnect {
 			dc.commandHandler.Reset()
-			// TODO - remove
-			fmt.Println("Bot disconnected")
 		}
 	})
 }
