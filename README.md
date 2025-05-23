@@ -1,11 +1,10 @@
 # subcordant
 
 ## TODOs
-* Check all TODOs and make tickets
-* Testing errors
-* Don't emit that ffmpeg was cancelled
+* Don't emit that ffmpeg was cancelled - remove TODO
 * Make issues on GitHub
 * Update README
+* DC during song, during no song
 * set idle disconnect handler - after X amount of time without playing, DC and reset
 * eventual code like
 func (h *handler) play(albumId string) {
@@ -44,11 +43,11 @@ func (dc *DiscordClient) setupHandler(hand *handler) {
 }
 
 * Command to disconnect
+* Auto determine audio channel ID
 * Other commands like skip, track, playlist
 * Say what the album name is
 * Allow one signal kill to exit cleanly
 * -stream-from flag, defaults to stream, but you can also stream from disk (if the bot has access to same file system as the subsonic instance)
-* Auto determine audio channel ID
 
 ### Pre-requisites
 * Install ffmpeg
