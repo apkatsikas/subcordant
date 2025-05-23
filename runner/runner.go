@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -18,6 +19,7 @@ type SubcordantRunner struct {
 	voiceSession io.Writer
 	playing      bool
 	mu           sync.Mutex
+	cancelPlay   context.CancelFunc
 }
 
 func (sr *SubcordantRunner) Init(
@@ -52,12 +54,15 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 
 func (sr *SubcordantRunner) Reset() {
 	sr.PlaylistService.Clear()
-	sr.streamer.Kill()
+	sr.cancelPlay()
 	sr.voiceSession = nil
 	sr.playing = false
 }
 
 func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	sr.cancelPlay = cancel
+	defer cancel()
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err
 	}
@@ -76,7 +81,7 @@ func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 		}
 
 		trackId := playlist[0]
-		if err := sr.play(trackId); err != nil {
+		if err := sr.play(ctx, trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
@@ -94,7 +99,7 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 	return false
 }
 
-func (sr *SubcordantRunner) play(trackId string) error {
+func (sr *SubcordantRunner) play(context context.Context, trackId string) error {
 	streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
 	if err != nil {
 		return err
@@ -104,7 +109,7 @@ func (sr *SubcordantRunner) play(trackId string) error {
 		return err
 	}
 
-	return sr.streamer.Stream(sr.voiceSession)
+	return sr.streamer.Stream(context, sr.voiceSession)
 }
 
 func (sr *SubcordantRunner) joinVoice() error {

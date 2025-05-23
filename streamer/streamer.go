@@ -58,17 +58,29 @@ func (s *Streamer) PrepStream(inputUrl *url.URL) error {
 	return nil
 }
 
-func (s *Streamer) Kill() {
-	s.cmd.Cancel()
-	s.stdout.Close()
-}
-
-func (s *Streamer) Stream(voice io.Writer) error {
+func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
 	defer s.stdout.Close()
-	if err := oggreader.DecodeBuffered(voice, s.stdout); err != nil {
+
+	decodingDone := make(chan error, 1)
+	go func() {
+		if err := oggreader.DecodeBuffered(voice, s.stdout); err != nil {
+			decodingDone <- fmt.Errorf("failed to decode ogg: %w", err)
+			return
+		}
+		decodingDone <- nil
+	}()
+
+	select {
+	case <-ctx.Done():
 		s.stdout.Close()
 		s.cmd.Cancel()
-		return fmt.Errorf("failed to decode ogg: %w", err)
+		return nil
+	case err := <-decodingDone:
+		if err != nil {
+			s.stdout.Close()
+			s.cmd.Cancel()
+			return err
+		}
 	}
 
 	if err := s.cmd.Wait(); err != nil {
@@ -76,5 +88,6 @@ func (s *Streamer) Stream(voice io.Writer) error {
 		s.cmd.Cancel()
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}
+
 	return nil
 }
