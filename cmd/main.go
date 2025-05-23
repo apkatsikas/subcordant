@@ -11,13 +11,10 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("error loading .env file: %v", err)
-	}
+	godotenv.Load() // ignore errors if file does not exist
 
 	runner := runner.SubcordantRunner{}
-	err = runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &streamer.Streamer{})
+	err := runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &streamer.Streamer{})
 	if err != nil {
 		log.Fatalf("failed to init runner: %v", err)
 	}
