@@ -3,6 +3,7 @@
 ## TODOs
 * Don't emit that ffmpeg was cancelled - remove TODO
 * Make issues on GitHub
+* Add tests for reset
 * Update README
 * Supress 2025/05/23 00:52:26 Gateway error: websocket: close sent
 * Disconnect cleanly from idle
