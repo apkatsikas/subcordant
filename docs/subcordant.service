@@ -1,0 +1,35 @@
+make build
+create directory at /opt/subcordant
+add subcordant file
+chmod +x /opt/subcordant/subcordant
+groupadd subcordant
+useradd -m -g subcordant subcordant
+chown subcordant:subcordant /opt/subcordant
+vim /etc/systemd/system/subcordant.service
+
+[Unit]
+Description=Subcordant - Discord music bot for Subsonic-API compatible servers 
+After=network.target
+
+[Install]
+# start automatically at boot
+WantedBy=multi-user.target
+
+[Service]
+RestartSec=2s
+Type=exec
+User=subcordant
+Group=subcordant
+ExecStart=/opt/subcordant/subcordant
+Environment=SUBSONIC_URL=https://foo.bar
+Environment=SUBSONIC_USER=foobar
+Environment=SUBSONIC_PASSWORD=foobar
+Environment=DISCORD_BOT_TOKEN=foobar
+Environment=DISCORD_VOICE_CHANNEL_ID=foobar
+Restart=on-failure
+KillMode=control-group
+TimeoutStopSec=20
+
+systemctl daemon-reload
+systemctl start subcordant.service
+systemctl status subcordant.service
