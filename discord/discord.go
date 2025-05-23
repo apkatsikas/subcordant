@@ -15,6 +15,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/api/cmdroute"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/diamondburned/arikawa/v3/voice"
@@ -116,7 +117,24 @@ func (dc *DiscordClient) connect() error {
 func (dc *DiscordClient) setupHandler(hand *handler) {
 	dc.handler = hand
 	dc.handler.state.AddInteractionHandler(dc.handler)
+	dc.setupBotDisconnectHandler()
 	voice.AddIntents(dc.handler.state)
+}
+
+func (dc *DiscordClient) setupBotDisconnectHandler() {
+	dc.handler.state.AddHandler(func(event *gateway.VoiceStateUpdateEvent) {
+		me, err := dc.handler.state.Me()
+		if err != nil {
+			log.Printf("ERROR: getting bot state resulted in %v", err)
+		}
+		isBot := me.ID == event.UserID
+		isDisconnect := !event.ChannelID.IsValid()
+		if isBot && isDisconnect {
+			dc.commandHandler.Reset()
+			// TODO - remove
+			fmt.Println("Bot disconnected")
+		}
+	})
 }
 
 func (dc *DiscordClient) JoinVoiceChat() (io.Writer, error) {

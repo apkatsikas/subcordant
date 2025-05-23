@@ -50,6 +50,13 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	return nil
 }
 
+func (sr *SubcordantRunner) Reset() {
+	sr.PlaylistService.Clear()
+	sr.streamer.Kill()
+	sr.voiceSession = nil
+	sr.playing = false
+}
+
 func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err

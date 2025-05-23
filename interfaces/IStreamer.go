@@ -8,4 +8,5 @@ import (
 type IStreamer interface {
 	PrepStream(inputUrl *url.URL) error
 	Stream(voice io.Writer) error
+	Kill()
 }

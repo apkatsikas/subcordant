@@ -58,6 +58,11 @@ func (s *Streamer) PrepStream(inputUrl *url.URL) error {
 	return nil
 }
 
+func (s *Streamer) Kill() {
+	s.cmd.Cancel()
+	s.stdout.Close()
+}
+
 func (s *Streamer) Stream(voice io.Writer) error {
 	defer s.stdout.Close()
 	if err := oggreader.DecodeBuffered(voice, s.stdout); err != nil {

@@ -13,7 +13,9 @@ func (ps *PlaylistService) GetPlaylist() []string {
 }
 
 func (ps *PlaylistService) FinishTrack() {
-	ps.playlist = append(ps.playlist[:0], ps.playlist[0+1:]...)
+	if len(ps.playlist) > 0 {
+		ps.playlist = append(ps.playlist[:0], ps.playlist[0+1:]...)
+	}
 }
 
 func (ps *PlaylistService) Clear() {

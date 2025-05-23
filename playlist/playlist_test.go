@@ -37,6 +37,17 @@ var _ = Describe("playlist service", func() {
 		Expect(newPlaylist).To(Equal([]string{trackId2}))
 	})
 
+	It("will return an empty playlist after removing a song from an empty playlist", func() {
+		playlist := playlistService.GetPlaylist()
+
+		Expect(len(playlist)).To(Equal(0))
+
+		playlistService.FinishTrack()
+		newPlaylist := playlistService.GetPlaylist()
+
+		Expect(len(newPlaylist)).To(Equal(0))
+	})
+
 	It("will clear the playlist when clear is called", func() {
 		var trackId = "foobar"
 		var trackId2 = "cool"
