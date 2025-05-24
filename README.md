@@ -1,6 +1,11 @@
 # subcordant
 
+[![ subcordant Discord ][subcordant_img    ]][subcordant    ]
+
 Subcordant is a Discord bot that streams music from your Subsonic-API compatible server.
+
+[subcordant]:     https://discord.gg/db4HrbjMSt
+[subcordant_img]: https://img.shields.io/badge/subcordant-Discord-%237289da?style=flat-square
 
 ## Available Commands
 * `/play` - takes an `albumid` parameter. Connects the bot to the voice channel specified by `DISCORD_VOICE_CHANNEL_ID` environment variable, if it is not yet connected. Enqueues all tracks from the specified album, and initates playback, if not already playing.
