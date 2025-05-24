@@ -1,15 +1,21 @@
 bootstrap-test:
-	~/go/bin/ginkgo bootstrap
+	ginkgo bootstrap
 
 run-tests:
 	go test -p 1 -coverprofile coverage.out ./...
 
 run-single-test:
-	~/go/bin/ginkgo --focus "test 1" testDir
+	ginkgo --focus "test 1" testDir
 
 coverage:
-	@go tool cover -html coverage.out -o coverage.html
-	explorer.exe coverage.html
+	@go tool cover -html=coverage.out -o coverage.html
+	@if grep -qi microsoft /proc/version; then \
+		explorer.exe coverage.html; \
+	elif [ "$$(uname)" = "Darwin" ]; then \
+		open coverage.html; \
+	else \
+		xdg-open coverage.html; \
+	fi
 
 mocks:
 	mockery
