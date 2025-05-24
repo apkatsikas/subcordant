@@ -1,1 +1,47 @@
 # subcordant
+
+Subcordant is a Discord bot that streams music from your Subsonic-API compatible server.
+
+## Available Commands
+* `/play` - takes an `albumid` parameter. Connects the bot to the voice channel specified by `DISCORD_VOICE_CHANNEL_ID` environment variable, if it is not yet connected. Enqueues all tracks from the specified album, and initates playback, if not already playing.
+
+## Building
+Run `make build`.
+
+## Pre-requisites
+* [FFmpeg](https://ffmpeg.org/) must be installed and available on your path
+* Create a [Discord bot](docs/bot.md)
+
+## Running
+Run the executable, specifying the following environment variables:
+* SUBSONIC_URL
+* SUBSONIC_USER
+* SUBSONIC_PASSWORD
+* DISCORD_BOT_TOKEN
+* DISCORD_VOICE_CHANNEL_ID
+
+## Installing as a systemd unit
+These instructions are for installing subcordant as a [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) on Linux. This enables subcordant to run on machine startup.
+
+0. Run `make build`
+0. Create a directory at `/opt/subcordant`
+0. Add your subcordant executable to this path
+0. Run `chmod +x /opt/subcordant/subcordant`
+0. Run `groupadd subcordant`
+0. Run `useradd -m -g subcordant subcordant`
+0. Run `chown subcordant:subcordant /opt/subcordant`
+0. Run `vim /etc/systemd/system/subcordant.service` and copy the contents of [docs/subcordant.service](docs/subcordant.service) into the file, replacing all the environment variable instances of `foobar` with your values.
+0. Run `systemctl daemon-reload`
+0. Run `systemctl start subcordant.service`
+0. Run `systemctl status subcordant.service`
+
+## Contributing
+Please see the Issues associated with this repo to help contribute.
+
+### Testing
+Run `make run-tests`.
+
+Subcordant makes use of the following:
+* [Ginkgo](https://github.com/onsi/ginkgo) - testing framework
+* [Mockery](https://vektra.github.io/mockery/latest/) - for generating mocks from interfaces
+* [Testify](https://github.com/stretchr/testify?tab=readme-ov-file#mock-package) - for the mock package

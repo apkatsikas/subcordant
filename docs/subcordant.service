@@ -1,0 +1,22 @@
+[Unit]
+Description=Subcordant - Discord music bot for Subsonic-API compatible servers 
+After=network.target
+
+[Install]
+# start automatically at boot
+WantedBy=multi-user.target
+
+[Service]
+RestartSec=2s
+Type=exec
+User=subcordant
+Group=subcordant
+ExecStart=/opt/subcordant/subcordant
+Environment=SUBSONIC_URL=https://foobar
+Environment=SUBSONIC_USER=foobar
+Environment=SUBSONIC_PASSWORD=foobar
+Environment=DISCORD_BOT_TOKEN=foobar
+Environment=DISCORD_VOICE_CHANNEL_ID=foobar
+Restart=on-failure
+KillMode=control-group
+TimeoutStopSec=20
