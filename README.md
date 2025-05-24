@@ -1,6 +1,6 @@
 # subcordant
 
-[![ subcordant Discord ][dgophers_img    ]][subcordant    ]
+[![ subcordant Discord ][subcordant_img    ]][subcordant    ]
 
 Subcordant is a Discord bot that streams music from your Subsonic-API compatible server.
 
