@@ -15,4 +15,4 @@ mocks:
 	mockery
 
 build:
-	go build -o ./subcordant ./cmd/main.go
+	go build -o subcordant ./cmd/main.go
