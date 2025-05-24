@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"os/exec"
 	"strconv"
 
@@ -36,8 +35,8 @@ func (s *Streamer) PrepStream(inputUrl *url.URL) error {
 		"-", // Output to stdout
 	)
 
-	// TODO - remove when we are publishing
-	s.cmd.Stderr = os.Stderr
+	// Enable this for debugging ffmpeg issues
+	//s.cmd.Stderr = os.Stderr
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
