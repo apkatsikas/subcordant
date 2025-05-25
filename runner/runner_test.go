@@ -419,14 +419,11 @@ func getStreamer(songCount int) *mocks.IStreamer {
 // Simulates the delay for Stream to return as if a song is playing
 func getStreamerDelay(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
-	// TODO - use times
-	for range songCount {
-		streamer.EXPECT().PrepStream(anyUrl).Return(nil).Once()
-		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).RunAndReturn(func(_ context.Context, _ io.Writer) error {
-			time.Sleep(time.Millisecond * 50)
-			return nil
-		}).Once()
-	}
+	streamer.EXPECT().PrepStream(anyUrl).Return(nil).Times(songCount)
+	streamer.EXPECT().Stream(anyCancelContext, fakeWriter).RunAndReturn(func(_ context.Context, _ io.Writer) error {
+		time.Sleep(time.Millisecond * 50)
+		return nil
+	}).Times(songCount)
 	return streamer
 }
 
