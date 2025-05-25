@@ -43,8 +43,13 @@ func (sr *SubcordantRunner) Init(
 func (sr *SubcordantRunner) queue(albumId string) error {
 	album, err := sr.subsonicClient.GetAlbum(albumId)
 	if err != nil {
+		message := fmt.Sprintf("Could not find album with ID of %v", albumId)
+		sr.discordClient.SendMessage(message)
 		return err
 	}
+
+	message := fmt.Sprintf("Queued album: %v", album.Name)
+	sr.discordClient.SendMessage(message)
 
 	for _, song := range album.Song {
 		sr.PlaylistService.Add(song.ID)
