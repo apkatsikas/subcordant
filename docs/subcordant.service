@@ -19,4 +19,5 @@ Environment=DISCORD_BOT_TOKEN=foobar
 Environment=DISCORD_VOICE_CHANNEL_ID=foobar
 Restart=on-failure
 KillMode=control-group
+KillSignal=SIGINT
 TimeoutStopSec=20
