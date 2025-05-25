@@ -18,6 +18,7 @@ import (
 )
 
 const albumId = "foobar"
+const albumName = "foobar album"
 
 type nopWriter struct{}
 
@@ -44,7 +45,7 @@ var _ = DescribeTableSubtree("runner init and play",
 		var playState types.PlaybackState
 
 		BeforeEach(func() {
-			discordClient = getDiscordClient(1)
+			discordClient = getDiscordClient([]string{albumName})
 			streamer = getStreamer(len(songs))
 			subsonicClient = getSubsonicClient(songs)
 			subcordantRunner = &runner.SubcordantRunner{}
@@ -84,7 +85,7 @@ var _ = Describe("runner", func() {
 	var streamer *mocks.IStreamer
 
 	BeforeEach(func() {
-		discordClient = getDiscordClient(2)
+		discordClient = getDiscordClient([]string{album1Name, album2Name})
 		streamer = getStreamerDelay(songCount)
 		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*subsonic.Child{
 			album1Name: album1Songs,
@@ -129,12 +130,13 @@ var _ = Describe("runner", func() {
 	var streamer *mocks.IStreamer
 
 	BeforeEach(func() {
-		discordClient = getDiscordClient(1)
+		discordClient = getDiscordClient([]string{albumName})
 		// We only want the first song to build our expectations, as the rest will be skipped
 		streamer = getStreamerDelay(1)
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil).Once()
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Name: albumName,
 			Song: songs,
 		}, nil).Once()
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil).Once()
@@ -247,10 +249,11 @@ var _ = Describe("runner play if stream url errors", func() {
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil).Once()
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Name: albumName,
 			Song: songs,
 		}, nil).Once()
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error")).Once()
-		discordClient = getDiscordClient(1)
+		discordClient = getDiscordClient([]string{albumName})
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).NotTo(HaveOccurred())
 
@@ -281,7 +284,7 @@ var _ = Describe("runner play if prep stream errors", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = getSubsonicClient(songs)
-		discordClient = getDiscordClient(1)
+		discordClient = getDiscordClient([]string{albumName})
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		streamer.EXPECT().PrepStream(anyUrl).Return(fmt.Errorf("prep stream error")).Once()
@@ -320,7 +323,7 @@ var _ = Describe("runner play if stream errors", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = getSubsonicClient(songs)
-		discordClient = getDiscordClient(1)
+		discordClient = getDiscordClient([]string{albumName})
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		streamer.EXPECT().PrepStream(anyUrl).Return(nil).Once()
@@ -390,12 +393,13 @@ var _ = Describe("runner play if join voice errors", func() {
 	})
 })
 
-func getDiscordClient(playCommandCount int) *mocks.IDiscordClient {
+func getDiscordClient(albums []string) *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
 	discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil).Once()
-	// TODO - use variable and make specific
-	discordClient.EXPECT().SendMessage(mock.AnythingOfType("string")).Times(playCommandCount)
+	for _, album := range albums {
+		discordClient.EXPECT().SendMessage(fmt.Sprintf("Queued album: %v", album)).Once()
+	}
 
 	return discordClient
 }
@@ -427,6 +431,7 @@ func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
 	subsonicClient.EXPECT().Init().Return(nil).Once()
 	subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+		Name: albumName,
 		Song: songs,
 	}, nil).Once()
 	for _, song := range songs {
@@ -439,8 +444,9 @@ func getMultipleAlbumSubsonicClient(albumSongs map[string][]*subsonic.Child) *mo
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
 	subsonicClient.EXPECT().Init().Return(nil).Once()
 
-	for anAlbumId, songs := range albumSongs {
-		subsonicClient.EXPECT().GetAlbum(anAlbumId).Return(&subsonic.AlbumID3{
+	for albumName, songs := range albumSongs {
+		subsonicClient.EXPECT().GetAlbum(albumName).Return(&subsonic.AlbumID3{
+			Name: albumName,
 			Song: songs,
 		}, nil).Once()
 		for _, song := range songs {
