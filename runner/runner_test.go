@@ -72,7 +72,10 @@ var _ = DescribeTableSubtree("runner init and play",
 )
 
 var _ = Describe("runner", func() {
-	var songs = getSongs(2)
+	const album1Name = "album1"
+	const album2Name = "album2"
+	var album1Songs = getSongs(2)
+	var album2Songs = getSongs(2)
 
 	var subcordantRunner *runner.SubcordantRunner
 	var discordClient *mocks.IDiscordClient
@@ -81,8 +84,11 @@ var _ = Describe("runner", func() {
 
 	BeforeEach(func() {
 		discordClient = getDiscordClient()
-		streamer = getStreamerDelay(len(songs))
-		subsonicClient = getSubsonicClient(songs)
+		streamer = getStreamerDelay(len(album1Songs) + len(album2Songs))
+		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*subsonic.Child{
+			album1Name: album1Songs,
+			album2Name: album2Songs,
+		})
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
 
@@ -96,7 +102,7 @@ var _ = Describe("runner", func() {
 		go func() {
 			defer wg.Done()
 			defer GinkgoRecover()
-			state, err := subcordantRunner.Play(albumId)
+			state, err := subcordantRunner.Play(album1Name)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(state).To(Equal(types.PlaybackComplete))
 		}()
@@ -104,7 +110,7 @@ var _ = Describe("runner", func() {
 		go func() {
 			defer wg.Done()
 			defer GinkgoRecover()
-			state, err := subcordantRunner.Play(albumId)
+			state, err := subcordantRunner.Play(album2Name)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(state).To(Equal(types.AlreadyPlaying))
 		}()
@@ -125,11 +131,11 @@ var _ = Describe("runner", func() {
 		// We only want the first song to build our expectations, as the rest will be skipped
 		streamer = getStreamerDelay(1)
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().Init().Return(nil).Once()
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
 			Song: songs,
-		}, nil)
-		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil)
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil).Once()
 		subcordantRunner = &runner.SubcordantRunner{}
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
@@ -163,7 +169,7 @@ var _ = Describe("runner", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init error"))
+		subsonicClient.EXPECT().Init().Return(fmt.Errorf("init error")).Once()
 	})
 
 	It("should error on init if subsonic init errors", func() {
@@ -180,9 +186,9 @@ var _ = Describe("runner", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().Init().Return(nil).Once()
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(subcordantRunner).Return(fmt.Errorf("init error"))
+		discordClient.EXPECT().Init(subcordantRunner).Return(fmt.Errorf("init error")).Once()
 	})
 
 	It("should error on init if discord init errors", func() {
@@ -202,10 +208,10 @@ var _ = Describe("runner play if get album errors", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
-		subsonicClient.EXPECT().GetAlbum(albumId).Return(nil, fmt.Errorf("get album error"))
+		subsonicClient.EXPECT().Init().Return(nil).Once()
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(nil, fmt.Errorf("get album error")).Once()
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
+		discordClient.EXPECT().Init(subcordantRunner).Return(nil).Once()
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).NotTo(HaveOccurred())
 
@@ -234,11 +240,11 @@ var _ = Describe("runner play if stream url errors", func() {
 	BeforeEach(func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil)
+		subsonicClient.EXPECT().Init().Return(nil).Once()
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
 			Song: songs,
-		}, nil)
-		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error"))
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error")).Once()
 		discordClient = getDiscordClient()
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).NotTo(HaveOccurred())
@@ -273,7 +279,7 @@ var _ = Describe("runner play if prep stream errors", func() {
 		discordClient = getDiscordClient()
 		streamer = mocks.NewIStreamer(GinkgoT())
 
-		streamer.EXPECT().PrepStream(anyUrl).Return(fmt.Errorf("prep stream error"))
+		streamer.EXPECT().PrepStream(anyUrl).Return(fmt.Errorf("prep stream error")).Once()
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
@@ -312,8 +318,8 @@ var _ = Describe("runner play if stream errors", func() {
 		discordClient = getDiscordClient()
 		streamer = mocks.NewIStreamer(GinkgoT())
 
-		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
-		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(fmt.Errorf("stream error"))
+		streamer.EXPECT().PrepStream(anyUrl).Return(nil).Once()
+		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(fmt.Errorf("stream error")).Once()
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
@@ -351,11 +357,11 @@ var _ = Describe("runner play if join voice errors", func() {
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
 			Song: songs,
-		}, nil)
-		subsonicClient.EXPECT().Init().Return(nil)
+		}, nil).Once()
+		subsonicClient.EXPECT().Init().Return(nil).Once()
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
-		discordClient.EXPECT().Init(subcordantRunner).Return(nil)
-		discordClient.EXPECT().JoinVoiceChat().Return(nil, fmt.Errorf("join voice error"))
+		discordClient.EXPECT().Init(subcordantRunner).Return(nil).Once()
+		discordClient.EXPECT().JoinVoiceChat().Return(nil, fmt.Errorf("join voice error")).Once()
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
@@ -379,16 +385,16 @@ var _ = Describe("runner play if join voice errors", func() {
 
 func getDiscordClient() *mocks.IDiscordClient {
 	discordClient := mocks.NewIDiscordClient(GinkgoT())
-	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil)
-	discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil)
+	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
+	discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil).Once()
 	return discordClient
 }
 
 func getStreamer(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
 	for range songCount {
-		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
-		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(nil)
+		streamer.EXPECT().PrepStream(anyUrl).Return(nil).Once()
+		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(nil).Once()
 	}
 	return streamer
 }
@@ -397,24 +403,40 @@ func getStreamer(songCount int) *mocks.IStreamer {
 func getStreamerDelay(songCount int) *mocks.IStreamer {
 	streamer := mocks.NewIStreamer(GinkgoT())
 	for range songCount {
-		streamer.EXPECT().PrepStream(anyUrl).Return(nil)
+		streamer.EXPECT().PrepStream(anyUrl).Return(nil).Once()
 		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).RunAndReturn(func(_ context.Context, _ io.Writer) error {
 			time.Sleep(time.Millisecond * 50)
 			return nil
-		})
+		}).Once()
 	}
 	return streamer
 }
 
 func getSubsonicClient(songs []*subsonic.Child) *mocks.ISubsonicClient {
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
-	subsonicClient.EXPECT().Init().Return(nil)
+	subsonicClient.EXPECT().Init().Return(nil).Once()
 	subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
 		Song: songs,
-	}, nil)
+	}, nil).Once()
 	for _, song := range songs {
-		subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil)
+		subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil).Once()
 	}
+	return subsonicClient
+}
+
+func getMultipleAlbumSubsonicClient(albumSongs map[string][]*subsonic.Child) *mocks.ISubsonicClient {
+	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
+	subsonicClient.EXPECT().Init().Return(nil).Once()
+
+	for anAlbumId, songs := range albumSongs {
+		subsonicClient.EXPECT().GetAlbum(anAlbumId).Return(&subsonic.AlbumID3{
+			Song: songs,
+		}, nil).Once()
+		for _, song := range songs {
+			subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil).Once()
+		}
+	}
+
 	return subsonicClient
 }
 
@@ -422,7 +444,7 @@ func getSongs(n int) []*subsonic.Child {
 	songs := make([]*subsonic.Child, int(n))
 	for i := range songs {
 		songs[i] = &subsonic.Child{
-			ID: time.Now().String(),
+			ID: fmt.Sprintf("%v%v", time.Now().String(), i),
 		}
 	}
 	return songs
