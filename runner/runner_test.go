@@ -216,8 +216,7 @@ var _ = Describe("runner play if get album errors", func() {
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(nil, fmt.Errorf("get album error")).Once()
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(subcordantRunner).Return(nil).Once()
-		// TODO - specific error here
-		discordClient.EXPECT().SendMessage(mock.AnythingOfType("string"))
+		discordClient.EXPECT().SendMessage(fmt.Sprintf("Could not find album with ID of %v", albumId)).Once()
 		err := subcordantRunner.Init(subsonicClient, discordClient, mocks.NewIStreamer(GinkgoT()))
 		Expect(err).NotTo(HaveOccurred())
 
@@ -364,14 +363,14 @@ var _ = Describe("runner play if join voice errors", func() {
 		subcordantRunner = &runner.SubcordantRunner{}
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Name: albumName,
 			Song: songs,
 		}, nil).Once()
 		subsonicClient.EXPECT().Init().Return(nil).Once()
 		discordClient = mocks.NewIDiscordClient(GinkgoT())
 		discordClient.EXPECT().Init(subcordantRunner).Return(nil).Once()
 		discordClient.EXPECT().JoinVoiceChat().Return(nil, fmt.Errorf("join voice error")).Once()
-		// TODO - specific here
-		discordClient.EXPECT().SendMessage(mock.AnythingOfType("string"))
+		discordClient.EXPECT().SendMessage(getQueuedAlbumMessage(albumName))
 		streamer = mocks.NewIStreamer(GinkgoT())
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
@@ -398,10 +397,14 @@ func getDiscordClient(albums []string) *mocks.IDiscordClient {
 	discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
 	discordClient.EXPECT().JoinVoiceChat().Return(fakeWriter, nil).Once()
 	for _, album := range albums {
-		discordClient.EXPECT().SendMessage(fmt.Sprintf("Queued album: %v", album)).Once()
+		discordClient.EXPECT().SendMessage(getQueuedAlbumMessage(album)).Once()
 	}
 
 	return discordClient
+}
+
+func getQueuedAlbumMessage(albumName string) string {
+	return fmt.Sprintf("Queued album: %v", albumName)
 }
 
 func getStreamer(songCount int) *mocks.IStreamer {
