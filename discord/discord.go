@@ -184,7 +184,7 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 	go h.play(albumId)
 
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString(fmt.Sprintf("Working on %v command...", cmd.Name)),
+		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with albumid of %v", cmd.Name, albumId)),
 	}
 }
 
