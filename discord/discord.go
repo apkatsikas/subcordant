@@ -104,6 +104,13 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	return nil
 }
 
+func (dc *DiscordClient) SendMessage(message string) {
+	_, err := dc.state.SendMessage(dc.LastChannelId, message)
+	if err != nil {
+		log.Printf("\nERROR: send message resulted in %v", err)
+	}
+}
+
 func (dc *DiscordClient) connect() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -158,6 +165,7 @@ type handler struct {
 	*cmdroute.Router
 	state          *state.State
 	commandHandler interfaces.ICommandHandler
+	LastChannelId  discord.ChannelID
 }
 
 func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
@@ -171,11 +179,12 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
+	h.LastChannelId = cmd.Event.ChannelID
+
 	go h.play(albumId)
 
-	message := fmt.Sprintf("Queued album with ID of %v", albumId)
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString(message),
+		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with albumid of %v", cmd.Name, albumId)),
 	}
 }
 

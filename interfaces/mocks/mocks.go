@@ -256,6 +256,40 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() (io.Writer,
 	return _c
 }
 
+// SendMessage provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) SendMessage(message string) {
+	_mock.Called(message)
+	return
+}
+
+// IDiscordClient_SendMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMessage'
+type IDiscordClient_SendMessage_Call struct {
+	*mock.Call
+}
+
+// SendMessage is a helper method to define mock.On call
+//   - message
+func (_e *IDiscordClient_Expecter) SendMessage(message interface{}) *IDiscordClient_SendMessage_Call {
+	return &IDiscordClient_SendMessage_Call{Call: _e.mock.On("SendMessage", message)}
+}
+
+func (_c *IDiscordClient_SendMessage_Call) Run(run func(message string)) *IDiscordClient_SendMessage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_SendMessage_Call) Return() *IDiscordClient_SendMessage_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *IDiscordClient_SendMessage_Call) RunAndReturn(run func(message string)) *IDiscordClient_SendMessage_Call {
+	_c.Run(run)
+	return _c
+}
+
 // NewIStreamer creates a new instance of IStreamer. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewIStreamer(t interface {
