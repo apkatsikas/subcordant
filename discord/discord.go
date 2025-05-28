@@ -161,14 +161,19 @@ func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, switchToChannel 
 			"Bot could not get info on itself. Error was %v", err)
 	}
 
-	botVoiceState, botVoiceStateErr := dc.handler.state.VoiceState(guildId, bot.ID)
-	botNotInVoice := botVoiceStateErr != nil
-	if botNotInVoice {
-		if err := dc.newSessionAndJoin(ctx, switchToChannel); err != nil {
-			return dontSwitchChannels, fmt.Errorf("failed to create new session and join: %w", err)
+	botVoiceState, err := dc.handler.state.VoiceState(guildId, bot.ID)
+
+	if err != nil {
+		botNotInVoice := errors.Is(err, store.ErrNotFound)
+		if botNotInVoice {
+			if err := dc.enterVoice(ctx, switchToChannel); err != nil {
+				return dontSwitchChannels, fmt.Errorf("failed to create new session and join: %w", err)
+			}
+			return dontSwitchChannels, nil
 		}
-		return dontSwitchChannels, nil
+		return dontSwitchChannels, fmt.Errorf("got an unexpected error getting voice state for bot %w", err)
 	}
+
 	if !botVoiceState.ChannelID.IsValid() {
 		dc.voiceSession.Leave(ctx)
 		dc.voiceSession = nil
@@ -196,13 +201,13 @@ func (dc *DiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) error {
 		return fmt.Errorf("bot failed to leave channel it was in %v", err)
 	}
 
-	if err := dc.newSessionAndJoin(ctx, channelId); err != nil {
+	if err := dc.enterVoice(ctx, channelId); err != nil {
 		return fmt.Errorf("failed to create new session and join: %w", err)
 	}
 	return nil
 }
 
-func (dc *DiscordClient) newSessionAndJoin(ctx context.Context, channelId discord.ChannelID) error {
+func (dc *DiscordClient) enterVoice(ctx context.Context, channelId discord.ChannelID) error {
 	v, err := voice.NewSession(dc.state)
 	if err != nil {
 		return fmt.Errorf("cannot make new voice session: %w", err)
