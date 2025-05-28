@@ -124,7 +124,7 @@ var _ = Describe("runner init and play resulting in a channel change during play
 			defer GinkgoRecover()
 			state, err := subcordantRunner.Play(album1Name, guildId, dontSwitchChannels)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(state).To(Equal(types.PlaybackComplete), "Play 1 failed")
+			Expect(state).To(Equal(types.PlaybackComplete))
 		}()
 		time.Sleep(time.Millisecond * 1)
 		go func() {
@@ -132,7 +132,66 @@ var _ = Describe("runner init and play resulting in a channel change during play
 			defer GinkgoRecover()
 			state, err := subcordantRunner.Play(album2Name, guildId, switchToChannel)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(state).To(Equal(types.PlaybackComplete), "Play 2 failed")
+			Expect(state).To(Equal(types.PlaybackComplete))
+		}()
+		wg.Wait()
+	})
+})
+
+var _ = Describe("runner init and play resulting in a failed channel change during playback", func() {
+	const album1Name = "album1"
+	const album2Name = "album2"
+	const albumSongCount = 2
+	var album1Songs = getSongs(albumSongCount)
+	var songCount = 1
+	var firstSongFromAlbum1 = []*subsonic.Child{album1Songs[0]}
+
+	var sf = discord.NewSnowflake(time.Now())
+	var switchToChannel = discord.ChannelID(sf)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	BeforeEach(func() {
+		// Only the first album will produce a message about queuing - only pass in 1
+		discordClient = getDiscordClient([]string{album1Name})
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(songCount)
+		discordClient.EXPECT().SendMessage("Failed to switch channels, error is Failed to switch voice channel").Once()
+
+		discordClient.EXPECT().JoinVoiceChat(guildId, switchToChannel).Return(switchToChannel, nil).Once()
+		discordClient.EXPECT().SwitchVoiceChannel(switchToChannel).Return(
+			fmt.Errorf("Failed to switch voice channel")).Once()
+
+		streamer = getStreamerDelay(songCount)
+		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*subsonic.Child{
+			album1Name: firstSongFromAlbum1,
+		})
+		subcordantRunner = &runner.SubcordantRunner{}
+	})
+
+	It("should return an invalid state when invoked twice while playback is underway", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+		Expect(err).NotTo(HaveOccurred())
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(album1Name, guildId, dontSwitchChannels)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete))
+		}()
+		time.Sleep(time.Millisecond * 1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(album2Name, guildId, switchToChannel)
+			Expect(err).To(HaveOccurred())
+			Expect(state).To(Equal(types.Invalid))
 		}()
 		wg.Wait()
 	})
