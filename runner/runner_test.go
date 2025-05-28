@@ -79,6 +79,65 @@ var _ = DescribeTableSubtree("runner init and play",
 	Entry("2 songs", 2),
 )
 
+var _ = Describe("runner init and play resulting in a channel change during playback", func() {
+	const album1Name = "album1"
+	const album2Name = "album2"
+	const albumSongCount = 2
+	var album1Songs = getSongs(albumSongCount)
+	var album2Songs = getSongs(albumSongCount)
+	// Reduce song count by 1, as the first album will not finish playing
+	var songCount = len(album1Songs) + len(album2Songs) - 1
+	var firstSongFromAlbum1 = []*subsonic.Child{album1Songs[0]}
+
+	var sf = discord.NewSnowflake(time.Now())
+	var switchToChannel = discord.ChannelID(sf)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	BeforeEach(func() {
+		discordClient = getDiscordClient([]string{album1Name, album2Name})
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(songCount)
+
+		discordClient.EXPECT().JoinVoiceChat(guildId, switchToChannel).Return(switchToChannel, nil).Once()
+		discordClient.EXPECT().SwitchVoiceChannel(switchToChannel).Return(nil).Once()
+
+		streamer = getStreamerDelay(songCount)
+		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*subsonic.Child{
+			album1Name: firstSongFromAlbum1,
+			album2Name: album2Songs,
+		})
+		subcordantRunner = &runner.SubcordantRunner{}
+	})
+
+	It("should return playback complete state when invoked twice while playback is underway", func() {
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
+		Expect(err).NotTo(HaveOccurred())
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(album1Name, guildId, dontSwitchChannels)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete), "Play 1 failed")
+		}()
+		time.Sleep(time.Millisecond * 1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(album2Name, guildId, switchToChannel)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete), "Play 2 failed")
+		}()
+		wg.Wait()
+	})
+})
+
 var _ = Describe("runner", func() {
 	const album1Name = "album1"
 	const album2Name = "album2"
