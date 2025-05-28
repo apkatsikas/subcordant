@@ -3,11 +3,13 @@ package discord
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/apkatsikas/subcordant/constants"
@@ -17,6 +19,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/diamondburned/arikawa/v3/state/store"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/diamondburned/arikawa/v3/voice"
 	"github.com/diamondburned/arikawa/v3/voice/udp"
@@ -32,7 +35,9 @@ const (
 
 type DiscordClient struct {
 	*handler
-	voiceChannelId discord.Snowflake
+	voiceSession   *voice.Session
+	selfDisconnect bool
+	mu             sync.Mutex
 }
 
 var commands = []api.CreateCommandData{
@@ -58,18 +63,6 @@ func createBotAndHandler(commandHandler interfaces.ICommandHandler) (*handler, e
 	return newHandler(state.New("Bot "+botToken), commandHandler), nil
 }
 
-func getChannelId() (discord.Snowflake, error) {
-	idStr := os.Getenv("DISCORD_VOICE_CHANNEL_ID")
-	if idStr == "" {
-		return 0, fmt.Errorf("DISCORD_VOICE_CHANNEL_ID must be set")
-	}
-	id, err := discord.ParseSnowflake(idStr)
-	if err != nil {
-		return 0, fmt.Errorf("failed to convert channel id %v to Snowflake", idStr)
-	}
-	return id, nil
-}
-
 func setUdpDialer(v *voice.Session) {
 	// Optimize Opus frame duration. This step is optional, but it is
 	// recommended.
@@ -79,16 +72,15 @@ func setUdpDialer(v *voice.Session) {
 	))
 }
 
+func (dc *DiscordClient) GetVoice() io.Writer {
+	return dc.voiceSession
+}
+
 func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	hand, err := createBotAndHandler(commandHandler)
 	if err != nil {
 		return err
 	}
-	voiceChannelId, err := getChannelId()
-	if err != nil {
-		return err
-	}
-	dc.voiceChannelId = voiceChannelId
 
 	dc.setupHandler(hand)
 
@@ -136,29 +128,95 @@ func (dc *DiscordClient) setupBotDisconnectHandler() {
 		}
 		isBot := me.ID == event.UserID
 		isDisconnect := !event.ChannelID.IsValid()
+
 		if isBot && isDisconnect {
+			if dc.selfDisconnect {
+				dc.selfDisconnect = false
+				return
+			}
+
 			dc.commandHandler.Reset()
+			if dc.voiceSession != nil {
+				err := dc.voiceSession.Leave(context.Background())
+				if err != nil {
+					log.Printf("\nERROR: failed to leave voice session: %v", err)
+				}
+				dc.voiceSession = nil
+			}
 		}
 	})
 }
 
-func (dc *DiscordClient) JoinVoiceChat() (io.Writer, error) {
-	v, err := voice.NewSession(dc.state)
-	if err != nil {
-		return nil, fmt.Errorf("cannot make new voice session: %w", err)
-	}
-
-	setUdpDialer(v)
+// Returning a channel ID indicates that the user is asking the bot to change channels
+func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error) {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	if err := v.JoinChannelAndSpeak(ctx, discord.ChannelID(dc.voiceChannelId), false, true); err != nil {
-		v.Leave(ctx)
-		return nil, fmt.Errorf("failed to join channel: %w", err)
+	bot, err := dc.handler.state.Me()
+	if err != nil {
+		return discord.NullChannelID, fmt.Errorf("was not able to join a voice channel."+
+			"Bot could not get info on itself. Error was %v", err)
 	}
 
-	return v, nil
+	botVoiceState, botVoiceStateErr := dc.handler.state.VoiceState(guildId, bot.ID)
+	botNotInVoice := botVoiceStateErr != nil
+	if botNotInVoice {
+		if err := dc.newSessionAndJoin(ctx, channelId); err != nil {
+			return discord.NullChannelID, fmt.Errorf("failed to create new session and join: %w", err)
+		}
+		return discord.NullChannelID, nil
+	}
+	if !botVoiceState.ChannelID.IsValid() {
+		dc.voiceSession.Leave(ctx)
+		dc.voiceSession = nil
+		return discord.NullChannelID, fmt.Errorf("channel ID of bot was not valid")
+	}
+
+	alreadyInChannel := botVoiceState.ChannelID == channelId
+	if alreadyInChannel {
+		return discord.NullChannelID, nil
+	}
+
+	return channelId, nil
+}
+
+func (dc *DiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) error {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	dc.selfDisconnect = true
+	err := dc.voiceSession.Leave(ctx)
+	if err != nil {
+		return fmt.Errorf("bot failed to leave channel it was in %v", err)
+	}
+
+	if err := dc.newSessionAndJoin(ctx, channelId); err != nil {
+		return fmt.Errorf("failed to create new session and join: %w", err)
+	}
+	return nil
+}
+
+func (dc *DiscordClient) newSessionAndJoin(ctx context.Context, channelId discord.ChannelID) error {
+	v, err := voice.NewSession(dc.state)
+	if err != nil {
+		return fmt.Errorf("cannot make new voice session: %w", err)
+	}
+
+	setUdpDialer(v)
+	dc.voiceSession = v
+
+	if err := dc.voiceSession.JoinChannelAndSpeak(ctx, channelId, false, true); err != nil {
+		dc.voiceSession.Leave(ctx)
+		dc.voiceSession = nil
+		return fmt.Errorf("failed to join channel: %w", err)
+	}
+	return nil
 }
 
 type handler struct {
@@ -179,17 +237,34 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 		}
 	}
 
+	vs, err := h.state.VoiceState(cmd.Event.GuildID, cmd.Event.Member.User.ID)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return &api.InteractionResponseData{
+				Content: option.NewNullableString("User sending command must be in a voice channel, but was not found in one."),
+			}
+		}
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(fmt.Sprintf("Failed to get voice state: %v", err)),
+		}
+	}
+	if !vs.ChannelID.IsValid() {
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(fmt.Sprintf("Channel ID was not valid: %v", err)),
+		}
+	}
+
 	h.LastChannelId = cmd.Event.ChannelID
 
-	go h.play(albumId)
+	go h.play(albumId, cmd.Event.GuildID, vs.ChannelID)
 
 	return &api.InteractionResponseData{
 		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with albumid of %v", cmd.Name, albumId)),
 	}
 }
 
-func (h *handler) play(albumId string) {
-	if _, err := h.commandHandler.Play(albumId); err != nil {
+func (h *handler) play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) {
+	if _, err := h.commandHandler.Play(albumId, guildId, channelId); err != nil {
 		log.Printf("\nERROR: Play resulted in %v", err)
 	}
 }

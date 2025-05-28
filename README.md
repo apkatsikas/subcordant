@@ -8,7 +8,7 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 [subcordant_img]: https://img.shields.io/badge/subcordant-Discord-%237289da?style=flat-square
 
 ## Available Commands
-* `/play` - takes an `albumid` parameter. Connects the bot to the voice channel specified by `DISCORD_VOICE_CHANNEL_ID` environment variable, if it is not yet connected. Enqueues all tracks from the specified album, and initates playback, if not already playing.
+* `/play` - takes an `albumid` parameter. Connects the bot to the voice channel currently occupied by the command issuer, if it is not yet connected. Enqueues all tracks from the specified album, and initates playback, if not already playing. If the bot is already present in a different voice channel, playback will stop, the current playlist will be cleared and the bot will join the new channel.
 
 ## Building
 Run `make build`.
@@ -23,7 +23,6 @@ Run the executable, specifying the following environment variables:
 * SUBSONIC_USER
 * SUBSONIC_PASSWORD
 * DISCORD_BOT_TOKEN
-* DISCORD_VOICE_CHANNEL_ID
 
 ## Installing as a systemd unit
 These instructions are for installing subcordant as a [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) on Linux. This enables subcordant to run on machine startup.
