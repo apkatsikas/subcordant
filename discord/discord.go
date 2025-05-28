@@ -30,7 +30,8 @@ const (
 	optionAlbumId = "albumid"
 
 	// Optional to tweak the Opus stream.
-	timeIncrement = 2880
+	timeIncrement      = 2880
+	dontSwitchChannels = discord.NullChannelID
 )
 
 type DiscordClient struct {
@@ -147,8 +148,7 @@ func (dc *DiscordClient) setupBotDisconnectHandler() {
 	})
 }
 
-// Returning a channel ID indicates that the user is asking the bot to change channels
-func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error) {
+func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, switchToChannel discord.ChannelID) (discord.ChannelID, error) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
@@ -157,30 +157,30 @@ func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, channelId discor
 
 	bot, err := dc.handler.state.Me()
 	if err != nil {
-		return discord.NullChannelID, fmt.Errorf("was not able to join a voice channel."+
+		return dontSwitchChannels, fmt.Errorf("was not able to join a voice channel."+
 			"Bot could not get info on itself. Error was %v", err)
 	}
 
 	botVoiceState, botVoiceStateErr := dc.handler.state.VoiceState(guildId, bot.ID)
 	botNotInVoice := botVoiceStateErr != nil
 	if botNotInVoice {
-		if err := dc.newSessionAndJoin(ctx, channelId); err != nil {
-			return discord.NullChannelID, fmt.Errorf("failed to create new session and join: %w", err)
+		if err := dc.newSessionAndJoin(ctx, switchToChannel); err != nil {
+			return dontSwitchChannels, fmt.Errorf("failed to create new session and join: %w", err)
 		}
-		return discord.NullChannelID, nil
+		return dontSwitchChannels, nil
 	}
 	if !botVoiceState.ChannelID.IsValid() {
 		dc.voiceSession.Leave(ctx)
 		dc.voiceSession = nil
-		return discord.NullChannelID, fmt.Errorf("channel ID of bot was not valid")
+		return dontSwitchChannels, fmt.Errorf("channel ID of bot was not valid")
 	}
 
-	alreadyInChannel := botVoiceState.ChannelID == channelId
+	alreadyInChannel := botVoiceState.ChannelID == switchToChannel
 	if alreadyInChannel {
-		return discord.NullChannelID, nil
+		return dontSwitchChannels, nil
 	}
 
-	return channelId, nil
+	return switchToChannel, nil
 }
 
 func (dc *DiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) error {
