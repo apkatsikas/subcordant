@@ -12,6 +12,7 @@ import (
 	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/types"
+	"github.com/diamondburned/arikawa/v3/discord"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -43,8 +44,8 @@ func (_m *ICommandHandler) EXPECT() *ICommandHandler_Expecter {
 }
 
 // Play provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) Play(albumId string) (types.PlaybackState, error) {
-	ret := _mock.Called(albumId)
+func (_mock *ICommandHandler) Play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error) {
+	ret := _mock.Called(albumId, guildId, channelId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Play")
@@ -52,16 +53,16 @@ func (_mock *ICommandHandler) Play(albumId string) (types.PlaybackState, error) 
 
 	var r0 types.PlaybackState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (types.PlaybackState, error)); ok {
-		return returnFunc(albumId)
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
+		return returnFunc(albumId, guildId, channelId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) types.PlaybackState); ok {
-		r0 = returnFunc(albumId)
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
+		r0 = returnFunc(albumId, guildId, channelId)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(albumId)
+	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
+		r1 = returnFunc(albumId, guildId, channelId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -75,13 +76,15 @@ type ICommandHandler_Play_Call struct {
 
 // Play is a helper method to define mock.On call
 //   - albumId
-func (_e *ICommandHandler_Expecter) Play(albumId interface{}) *ICommandHandler_Play_Call {
-	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", albumId)}
+//   - guildId
+//   - channelId
+func (_e *ICommandHandler_Expecter) Play(albumId interface{}, guildId interface{}, channelId interface{}) *ICommandHandler_Play_Call {
+	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", albumId, guildId, channelId)}
 }
 
-func (_c *ICommandHandler_Play_Call) Run(run func(albumId string)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) Run(run func(albumId string, guildId discord.GuildID, channelId discord.ChannelID)) *ICommandHandler_Play_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
 	})
 	return _c
 }
@@ -91,7 +94,7 @@ func (_c *ICommandHandler_Play_Call) Return(playbackState types.PlaybackState, e
 	return _c
 }
 
-func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -156,6 +159,52 @@ func (_m *IDiscordClient) EXPECT() *IDiscordClient_Expecter {
 	return &IDiscordClient_Expecter{mock: &_m.Mock}
 }
 
+// GetVoice provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) GetVoice() io.Writer {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVoice")
+	}
+
+	var r0 io.Writer
+	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.Writer)
+		}
+	}
+	return r0
+}
+
+// IDiscordClient_GetVoice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVoice'
+type IDiscordClient_GetVoice_Call struct {
+	*mock.Call
+}
+
+// GetVoice is a helper method to define mock.On call
+func (_e *IDiscordClient_Expecter) GetVoice() *IDiscordClient_GetVoice_Call {
+	return &IDiscordClient_GetVoice_Call{Call: _e.mock.On("GetVoice")}
+}
+
+func (_c *IDiscordClient_GetVoice_Call) Run(run func()) *IDiscordClient_GetVoice_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_GetVoice_Call) Return(writer io.Writer) *IDiscordClient_GetVoice_Call {
+	_c.Call.Return(writer)
+	return _c
+}
+
+func (_c *IDiscordClient_GetVoice_Call) RunAndReturn(run func() io.Writer) *IDiscordClient_GetVoice_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Init provides a mock function for the type IDiscordClient
 func (_mock *IDiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	ret := _mock.Called(commandHandler)
@@ -202,27 +251,25 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat() (io.Writer, error) {
-	ret := _mock.Called()
+func (_mock *IDiscordClient) JoinVoiceChat(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error) {
+	ret := _mock.Called(guildId, channelId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
 	}
 
-	var r0 io.Writer
+	var r0 discord.ChannelID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (io.Writer, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(discord.GuildID, discord.ChannelID) (discord.ChannelID, error)); ok {
+		return returnFunc(guildId, channelId)
 	}
-	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(discord.GuildID, discord.ChannelID) discord.ChannelID); ok {
+		r0 = returnFunc(guildId, channelId)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.Writer)
-		}
+		r0 = ret.Get(0).(discord.ChannelID)
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(discord.GuildID, discord.ChannelID) error); ok {
+		r1 = returnFunc(guildId, channelId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -235,23 +282,25 @@ type IDiscordClient_JoinVoiceChat_Call struct {
 }
 
 // JoinVoiceChat is a helper method to define mock.On call
-func (_e *IDiscordClient_Expecter) JoinVoiceChat() *IDiscordClient_JoinVoiceChat_Call {
-	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat")}
+//   - guildId
+//   - channelId
+func (_e *IDiscordClient_Expecter) JoinVoiceChat(guildId interface{}, channelId interface{}) *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", guildId, channelId)}
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func()) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(guildId discord.GuildID, channelId discord.ChannelID)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		run(args[0].(discord.GuildID), args[1].(discord.ChannelID))
 	})
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Return(writer io.Writer, err error) *IDiscordClient_JoinVoiceChat_Call {
-	_c.Call.Return(writer, err)
+func (_c *IDiscordClient_JoinVoiceChat_Call) Return(channelID discord.ChannelID, err error) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Return(channelID, err)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func() (io.Writer, error)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -287,6 +336,51 @@ func (_c *IDiscordClient_SendMessage_Call) Return() *IDiscordClient_SendMessage_
 
 func (_c *IDiscordClient_SendMessage_Call) RunAndReturn(run func(message string)) *IDiscordClient_SendMessage_Call {
 	_c.Run(run)
+	return _c
+}
+
+// SwitchVoiceChannel provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) error {
+	ret := _mock.Called(channelId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SwitchVoiceChannel")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(discord.ChannelID) error); ok {
+		r0 = returnFunc(channelId)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// IDiscordClient_SwitchVoiceChannel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SwitchVoiceChannel'
+type IDiscordClient_SwitchVoiceChannel_Call struct {
+	*mock.Call
+}
+
+// SwitchVoiceChannel is a helper method to define mock.On call
+//   - channelId
+func (_e *IDiscordClient_Expecter) SwitchVoiceChannel(channelId interface{}) *IDiscordClient_SwitchVoiceChannel_Call {
+	return &IDiscordClient_SwitchVoiceChannel_Call{Call: _e.mock.On("SwitchVoiceChannel", channelId)}
+}
+
+func (_c *IDiscordClient_SwitchVoiceChannel_Call) Run(run func(channelId discord.ChannelID)) *IDiscordClient_SwitchVoiceChannel_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(discord.ChannelID))
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_SwitchVoiceChannel_Call) Return(err error) *IDiscordClient_SwitchVoiceChannel_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *IDiscordClient_SwitchVoiceChannel_Call) RunAndReturn(run func(channelId discord.ChannelID) error) *IDiscordClient_SwitchVoiceChannel_Call {
+	_c.Call.Return(run)
 	return _c
 }
 

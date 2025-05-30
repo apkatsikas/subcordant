@@ -3,12 +3,12 @@ package runner
 import (
 	"context"
 	"fmt"
-	"io"
 	"sync"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
 	"github.com/apkatsikas/subcordant/types"
+	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 type SubcordantRunner struct {
@@ -16,10 +16,9 @@ type SubcordantRunner struct {
 	discordClient  interfaces.IDiscordClient
 	streamer       interfaces.IStreamer
 	*playlist.PlaylistService
-	voiceSession io.Writer
-	playing      bool
-	mu           sync.Mutex
-	cancelPlay   context.CancelFunc
+	playing    bool
+	mu         sync.Mutex
+	cancelPlay context.CancelFunc
 }
 
 func (sr *SubcordantRunner) Init(
@@ -59,24 +58,44 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 
 func (sr *SubcordantRunner) Reset() {
 	sr.PlaylistService.Clear()
-	sr.cancelPlay()
-	sr.voiceSession = nil
+	if sr.cancelPlay != nil {
+		sr.cancelPlay()
+	}
 	sr.playing = false
 }
 
-func (sr *SubcordantRunner) Play(albumId string) (types.PlaybackState, error) {
+func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	sr.cancelPlay = cancel
 	defer cancel()
+
+	switchToChannel, err := sr.discordClient.JoinVoiceChat(guildId, switchToChannel)
+	if err != nil {
+		sr.Reset()
+		sr.discordClient.SendMessage(fmt.Sprintf("Could not join voice, error is %v", err))
+		return types.Invalid, err
+	}
+
+	wantToSwitchChannels := switchToChannel.IsValid()
+	if wantToSwitchChannels {
+		sr.Reset()
+		err := sr.discordClient.SwitchVoiceChannel(switchToChannel)
+		if err != nil {
+			sr.Reset()
+			sr.discordClient.SendMessage(fmt.Sprintf("Failed to switch channels, error is %v", err))
+			return types.Invalid, err
+		}
+	}
+
+	// Set the cancel play function after any potential SubcordantRunner Reset functions are called
+	// this way it cancels the previous function (ongoing playback) if needed
+	// and we avoid overwriting it accidentally with the new value
+	sr.cancelPlay = cancel
+
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err
 	}
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
-	}
-	if err := sr.joinVoice(); err != nil {
-		sr.PlaylistService.Clear()
-		return types.Invalid, err
 	}
 	for {
 		playlist := sr.PlaylistService.GetPlaylist()
@@ -114,17 +133,5 @@ func (sr *SubcordantRunner) play(context context.Context, trackId string) error 
 		return err
 	}
 
-	return sr.streamer.Stream(context, sr.voiceSession)
-}
-
-func (sr *SubcordantRunner) joinVoice() error {
-	if sr.voiceSession == nil {
-
-		voiceSession, err := sr.discordClient.JoinVoiceChat()
-		if err != nil {
-			return err
-		}
-		sr.voiceSession = voiceSession
-	}
-	return nil
+	return sr.streamer.Stream(context, sr.discordClient.GetVoice())
 }
