@@ -171,7 +171,7 @@ var _ = Describe("runner init and play resulting in a failed channel change duri
 		subcordantRunner = &runner.SubcordantRunner{}
 	})
 
-	It("should return an invalid state when invoked twice while playback is underway", func() {
+	It("should return an invalid state when invoked twice - on the second time - while playback is underway", func() {
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer)
 		Expect(err).NotTo(HaveOccurred())
 
