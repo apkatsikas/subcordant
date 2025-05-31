@@ -51,7 +51,7 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	sr.discordClient.SendMessage(message)
 
 	for _, song := range album.Song {
-		sr.PlaylistService.Add(song.ID)
+		sr.PlaylistService.Add(song)
 	}
 	return nil
 }
@@ -105,7 +105,7 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		}
 
 		trackId := playlist[0]
-		if err := sr.play(ctx, trackId); err != nil {
+		if err := sr.play(ctx, trackId.Path); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
@@ -124,12 +124,12 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 }
 
 func (sr *SubcordantRunner) play(context context.Context, trackId string) error {
-	streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
-	if err != nil {
-		return err
-	}
+	// streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if err := sr.streamer.PrepStream(streamUrl); err != nil {
+	if err := sr.streamer.PrepStream(trackId); err != nil {
 		return err
 	}
 

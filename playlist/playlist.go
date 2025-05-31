@@ -1,14 +1,16 @@
 package playlist
 
+import sub "github.com/apkatsikas/go-subsonic"
+
 type PlaylistService struct {
-	playlist []string
+	playlist []*sub.Child
 }
 
-func (ps *PlaylistService) Add(trackId string) {
+func (ps *PlaylistService) Add(trackId *sub.Child) {
 	ps.playlist = append(ps.playlist, trackId)
 }
 
-func (ps *PlaylistService) GetPlaylist() []string {
+func (ps *PlaylistService) GetPlaylist() []*sub.Child {
 	return ps.playlist
 }
 
@@ -19,5 +21,5 @@ func (ps *PlaylistService) FinishTrack() {
 }
 
 func (ps *PlaylistService) Clear() {
-	ps.playlist = []string{}
+	ps.playlist = []*sub.Child{}
 }
