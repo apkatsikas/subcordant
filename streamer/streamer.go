@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/url"
+	"os"
 	"os/exec"
 	"strconv"
 
@@ -17,16 +17,18 @@ type Streamer struct {
 	cmd    *exec.Cmd
 }
 
-func (s *Streamer) PrepStream(inputUrl *url.URL) error {
+func (s *Streamer) PrepStream(inputUrl string) error {
 	s.cmd = exec.CommandContext(context.Background(),
 		"ffmpeg",
 		"-hide_banner",
 		"-loglevel", "warning",
-		"-reconnect", "1", // These flags keep the stream running
-		"-reconnect_streamed", "1", // by reconnecting after being disconnected
-		"-reconnect_delay_max", "5", // from subsonic
+		// THESE NEED TO BE TURNED OFF
+		// if we are using a file as input instead of URL
+		// "-reconnect", "1", // These flags keep the stream running
+		// "-reconnect_streamed", "1", // by reconnecting after being disconnected
+		// "-reconnect_delay_max", "5", // from subsonic
 		"-threads", "1",
-		"-i", inputUrl.String(),
+		"-i", inputUrl,
 		"-c:a", "libopus",
 		"-b:a", "128k",
 		"-frame_duration", strconv.Itoa(constants.FrameDuration),
@@ -36,7 +38,7 @@ func (s *Streamer) PrepStream(inputUrl *url.URL) error {
 	)
 
 	// Enable this for debugging ffmpeg issues
-	//s.cmd.Stderr = os.Stderr
+	s.cmd.Stderr = os.Stderr
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
