@@ -1,3 +1,6 @@
+# TODOs
+Check all TODOs
+
 # subcordant
 
 [![ subcordant Discord ][subcordant_img    ]][subcordant    ]
