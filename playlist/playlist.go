@@ -1,5 +1,7 @@
 package playlist
 
+import "slices"
+
 type PlaylistService struct {
 	playlist []string
 }
@@ -14,7 +16,7 @@ func (ps *PlaylistService) GetPlaylist() []string {
 
 func (ps *PlaylistService) FinishTrack() {
 	if len(ps.playlist) > 0 {
-		ps.playlist = append(ps.playlist[:0], ps.playlist[0+1:]...)
+		ps.playlist = slices.Delete(ps.playlist, 0, 1)
 	}
 }
 
