@@ -130,7 +130,7 @@ func (sr *SubcordantRunner) play(context context.Context, track types.Track) err
 		return err
 	}
 
-	if err := sr.streamer.PrepStream(streamUrl); err != nil {
+	if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
 		return err
 	}
 

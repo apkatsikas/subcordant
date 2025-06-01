@@ -17,22 +17,18 @@ type Streamer struct {
 	cmd    *exec.Cmd
 }
 
-func (s *Streamer) PrepStream(inputUrl *url.URL) error {
+func (s *Streamer) PrepStreamFromStream(inputUrl *url.URL) error {
+	return s.prepStream(true, inputUrl.String())
+}
+
+func (s *Streamer) PrepStreamFromFile(inputPath string) error {
+	return s.prepStream(true, inputPath)
+}
+
+func (s *Streamer) prepStream(streamFromUrl bool, inputString string) error {
+	args := getArgs(streamFromUrl, inputString)
 	s.cmd = exec.CommandContext(context.Background(),
-		"ffmpeg",
-		"-hide_banner",
-		"-loglevel", "warning",
-		"-reconnect", "1", // These flags keep the stream running
-		"-reconnect_streamed", "1", // by reconnecting after being disconnected
-		"-reconnect_delay_max", "5", // from subsonic
-		"-threads", "1",
-		"-i", inputUrl.String(),
-		"-c:a", "libopus",
-		"-b:a", "128k",
-		"-frame_duration", strconv.Itoa(constants.FrameDuration),
-		"-vbr", "off",
-		"-f", "opus",
-		"-", // Output to stdout
+		"ffmpeg", args...,
 	)
 
 	// Enable this for debugging ffmpeg issues
@@ -89,4 +85,41 @@ func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
 	}
 
 	return nil
+}
+
+func getArgs(streamFromUrl bool, inputString string) []string {
+	args := preInputArgs()
+	if streamFromUrl {
+		args = append(args, reconnectArgs()...)
+	}
+	args = append(args, inputAndPostArgs(inputString)...)
+	return args
+}
+
+func preInputArgs() []string {
+	return []string{
+		"-hide_banner",
+		"-loglevel", "warning",
+		"-threads", "1",
+	}
+}
+
+func reconnectArgs() []string {
+	return []string{
+		"-reconnect", "1", // These flags keep the stream running
+		"-reconnect_streamed", "1", // by reconnecting after being disconnected
+		"-reconnect_delay_max", "5", // from subsonic
+	}
+}
+
+func inputAndPostArgs(inputString string) []string {
+	return []string{
+		"-i", inputString,
+		"-c:a", "libopus",
+		"-b:a", "128k",
+		"-frame_duration", strconv.Itoa(constants.FrameDuration),
+		"-vbr", "off",
+		"-f", "opus",
+		"-", // Output to stdout
+	}
 }

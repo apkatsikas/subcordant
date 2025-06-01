@@ -7,6 +7,7 @@ import (
 )
 
 type IStreamer interface {
-	PrepStream(inputUrl *url.URL) error
+	PrepStreamFromStream(streamUrl *url.URL) error
+	PrepStreamFromFile(file string) error
 	Stream(ctx context.Context, voice io.Writer) error
 }
