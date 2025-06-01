@@ -51,6 +51,12 @@ var _ = DescribeTableSubtree("runner init and play",
 		var playState types.PlaybackState
 
 		BeforeEach(func() {
+			// os.Args = []string{"cmd", "-streamFrom", "file"}
+			// flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+			// fu := flagutil.Get()
+			// fu.Setup()
+
 			discordClient = getDiscordClient([]string{albumName})
 			discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(songCount)
 			streamer = getStreamer(len(songs))
