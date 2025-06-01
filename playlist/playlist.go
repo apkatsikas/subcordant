@@ -1,16 +1,20 @@
 package playlist
 
-import "slices"
+import (
+	"slices"
+
+	"github.com/apkatsikas/subcordant/types"
+)
 
 type PlaylistService struct {
-	playlist []string
+	playlist []types.Track
 }
 
-func (ps *PlaylistService) Add(trackId string) {
-	ps.playlist = append(ps.playlist, trackId)
+func (ps *PlaylistService) Add(track types.Track) {
+	ps.playlist = append(ps.playlist, track)
 }
 
-func (ps *PlaylistService) GetPlaylist() []string {
+func (ps *PlaylistService) GetPlaylist() []types.Track {
 	return ps.playlist
 }
 
@@ -21,5 +25,5 @@ func (ps *PlaylistService) FinishTrack() {
 }
 
 func (ps *PlaylistService) Clear() {
-	ps.playlist = []string{}
+	ps.playlist = []types.Track{}
 }
