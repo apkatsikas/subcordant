@@ -35,7 +35,7 @@ func (sc *SubsonicClient) Init() error {
 	sc.client.BaseUrl = subsonicUrl
 	sc.client.User = subsonicUser
 	sc.client.PasswordAuth = true
-	sc.client.ClientName = "coolhacker"
+	sc.client.ClientName = "subcordant bot"
 
 	authErr := sc.client.Authenticate(subsonicPassword)
 	if authErr != nil {
