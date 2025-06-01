@@ -7,6 +7,7 @@ import (
 	"os"
 
 	sub "github.com/apkatsikas/go-subsonic"
+	"github.com/apkatsikas/subcordant/types"
 )
 
 type SubsonicClient struct {
@@ -58,4 +59,11 @@ func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
 		return nil, fmt.Errorf("failed to stream with track ID of %v", trackId)
 	}
 	return streamUrl, nil
+}
+
+func ToTrack(c *sub.Child) types.Track {
+	return types.Track{
+		ID:   c.ID,
+		Path: c.Path,
+	}
 }

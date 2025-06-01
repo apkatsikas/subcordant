@@ -7,6 +7,7 @@ import (
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
+	"github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
 	"github.com/diamondburned/arikawa/v3/discord"
 )
@@ -51,7 +52,7 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	sr.discordClient.SendMessage(message)
 
 	for _, song := range album.Song {
-		sr.PlaylistService.Add(song.ID)
+		sr.PlaylistService.Add(subsonic.ToTrack(song))
 	}
 	return nil
 }
@@ -123,8 +124,8 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 	return false
 }
 
-func (sr *SubcordantRunner) play(context context.Context, trackId string) error {
-	streamUrl, err := sr.subsonicClient.StreamUrl(trackId)
+func (sr *SubcordantRunner) play(context context.Context, track types.Track) error {
+	streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
 	if err != nil {
 		return err
 	}
