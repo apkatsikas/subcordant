@@ -411,47 +411,92 @@ func (_m *IStreamer) EXPECT() *IStreamer_Expecter {
 	return &IStreamer_Expecter{mock: &_m.Mock}
 }
 
-// PrepStream provides a mock function for the type IStreamer
-func (_mock *IStreamer) PrepStream(inputUrl *url.URL) error {
-	ret := _mock.Called(inputUrl)
+// PrepStreamFromFile provides a mock function for the type IStreamer
+func (_mock *IStreamer) PrepStreamFromFile(file string) error {
+	ret := _mock.Called(file)
 
 	if len(ret) == 0 {
-		panic("no return value specified for PrepStream")
+		panic("no return value specified for PrepStreamFromFile")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*url.URL) error); ok {
-		r0 = returnFunc(inputUrl)
+	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
+		r0 = returnFunc(file)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// IStreamer_PrepStream_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PrepStream'
-type IStreamer_PrepStream_Call struct {
+// IStreamer_PrepStreamFromFile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PrepStreamFromFile'
+type IStreamer_PrepStreamFromFile_Call struct {
 	*mock.Call
 }
 
-// PrepStream is a helper method to define mock.On call
-//   - inputUrl
-func (_e *IStreamer_Expecter) PrepStream(inputUrl interface{}) *IStreamer_PrepStream_Call {
-	return &IStreamer_PrepStream_Call{Call: _e.mock.On("PrepStream", inputUrl)}
+// PrepStreamFromFile is a helper method to define mock.On call
+//   - file
+func (_e *IStreamer_Expecter) PrepStreamFromFile(file interface{}) *IStreamer_PrepStreamFromFile_Call {
+	return &IStreamer_PrepStreamFromFile_Call{Call: _e.mock.On("PrepStreamFromFile", file)}
 }
 
-func (_c *IStreamer_PrepStream_Call) Run(run func(inputUrl *url.URL)) *IStreamer_PrepStream_Call {
+func (_c *IStreamer_PrepStreamFromFile_Call) Run(run func(file string)) *IStreamer_PrepStreamFromFile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *IStreamer_PrepStreamFromFile_Call) Return(err error) *IStreamer_PrepStreamFromFile_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *IStreamer_PrepStreamFromFile_Call) RunAndReturn(run func(file string) error) *IStreamer_PrepStreamFromFile_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// PrepStreamFromStream provides a mock function for the type IStreamer
+func (_mock *IStreamer) PrepStreamFromStream(streamUrl *url.URL) error {
+	ret := _mock.Called(streamUrl)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PrepStreamFromStream")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*url.URL) error); ok {
+		r0 = returnFunc(streamUrl)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// IStreamer_PrepStreamFromStream_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PrepStreamFromStream'
+type IStreamer_PrepStreamFromStream_Call struct {
+	*mock.Call
+}
+
+// PrepStreamFromStream is a helper method to define mock.On call
+//   - streamUrl
+func (_e *IStreamer_Expecter) PrepStreamFromStream(streamUrl interface{}) *IStreamer_PrepStreamFromStream_Call {
+	return &IStreamer_PrepStreamFromStream_Call{Call: _e.mock.On("PrepStreamFromStream", streamUrl)}
+}
+
+func (_c *IStreamer_PrepStreamFromStream_Call) Run(run func(streamUrl *url.URL)) *IStreamer_PrepStreamFromStream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(*url.URL))
 	})
 	return _c
 }
 
-func (_c *IStreamer_PrepStream_Call) Return(err error) *IStreamer_PrepStream_Call {
+func (_c *IStreamer_PrepStreamFromStream_Call) Return(err error) *IStreamer_PrepStreamFromStream_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *IStreamer_PrepStream_Call) RunAndReturn(run func(inputUrl *url.URL) error) *IStreamer_PrepStream_Call {
+func (_c *IStreamer_PrepStreamFromStream_Call) RunAndReturn(run func(streamUrl *url.URL) error) *IStreamer_PrepStreamFromStream_Call {
 	_c.Call.Return(run)
 	return _c
 }
