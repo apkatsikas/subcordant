@@ -125,6 +125,7 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 }
 
 func (sr *SubcordantRunner) play(context context.Context, track types.Track) error {
+	// TODO - add configurable client name
 	// TODO - check flag to see if we need the url
 	// or if we can just pass track.Path
 	// into sr.streamer.PrepStreamFromFile()
