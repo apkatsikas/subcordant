@@ -24,6 +24,12 @@ Run the executable, specifying the following environment variables:
 * SUBSONIC_PASSWORD
 * DISCORD_BOT_TOKEN
 
+### Flags
+The following flags are available:
+* `streamFrom` - valid values are `stream` or `file`, defaults to `stream` if not specified. Subcordant will stream to the voice chat using:
+    * `stream` - the Subsonic `/stream` endpoint
+    * `file` - the file path returned from the `path` field on the song. This mode will only work if subcordant has access to the audio library folder, and that the API returns the actual absolute path of the song. For Navidrome, an admin can toggle to allow the subcordant player to `Report Real Path`, or use the [Subsonic.DefaultReportRealPath](https://www.navidrome.org/docs/usage/configuration-options/#:~:text=subsonic.defaultreportrealpath) configuration option. Consult your server's documentation for more information.
+
 ## Installing as a systemd unit
 These instructions are for installing subcordant as a [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) on Linux. This enables subcordant to run on machine startup.
 
