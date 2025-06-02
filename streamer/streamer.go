@@ -22,11 +22,11 @@ func (s *Streamer) PrepStreamFromStream(inputUrl *url.URL) error {
 }
 
 func (s *Streamer) PrepStreamFromFile(inputPath string) error {
-	return s.prepStream(true, inputPath)
+	return s.prepStream(false, inputPath)
 }
 
-func (s *Streamer) prepStream(streamFromUrl bool, inputString string) error {
-	args := getArgs(streamFromUrl, inputString)
+func (s *Streamer) prepStream(streamFromStream bool, inputString string) error {
+	args := getArgs(streamFromStream, inputString)
 	s.cmd = exec.CommandContext(context.Background(),
 		"ffmpeg", args...,
 	)
@@ -87,9 +87,9 @@ func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
 	return nil
 }
 
-func getArgs(streamFromUrl bool, inputString string) []string {
+func getArgs(streamFromStream bool, inputString string) []string {
 	args := preInputArgs()
-	if streamFromUrl {
+	if streamFromStream {
 		args = append(args, reconnectArgs()...)
 	}
 	args = append(args, inputAndPostArgs(inputString)...)
