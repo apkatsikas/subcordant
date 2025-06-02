@@ -9,6 +9,7 @@ import (
 	"github.com/apkatsikas/subcordant/playlist"
 	"github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
+	flagutil "github.com/apkatsikas/subcordant/util/flag"
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -20,15 +21,17 @@ type SubcordantRunner struct {
 	playing    bool
 	mu         sync.Mutex
 	cancelPlay context.CancelFunc
+	flagutil.StreamFrom
 }
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	streamer interfaces.IStreamer) error {
+	streamer interfaces.IStreamer, streamFrom flagutil.StreamFrom) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
 	sr.streamer = streamer
+	sr.StreamFrom = streamFrom
 
 	if err := sr.subsonicClient.Init(); err != nil {
 		return err
@@ -125,17 +128,20 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 }
 
 func (sr *SubcordantRunner) play(context context.Context, track types.Track) error {
-	// TODO - check flag to see if we need the url
-	// or if we can just pass track.Path
-	// into sr.streamer.PrepStreamFromFile()
-	streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
-	if err != nil {
-		return err
+	if sr.StreamFrom == flagutil.StreamFromStream {
+		streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
+		if err != nil {
+			return err
+		}
+
+		if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
+			return err
+		}
+		return sr.streamer.Stream(context, sr.discordClient.GetVoice())
 	}
 
-	if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
+	if err := sr.streamer.PrepStreamFromFile(track.Path); err != nil {
 		return err
 	}
-
 	return sr.streamer.Stream(context, sr.discordClient.GetVoice())
 }

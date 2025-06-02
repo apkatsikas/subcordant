@@ -6,16 +6,16 @@ import (
 	"sync"
 )
 
-type StreamSource string
+type StreamFrom string
 
-func (s *StreamSource) String() string {
+func (s *StreamFrom) String() string {
 	return string(*s)
 }
 
-func (s *StreamSource) Set(value string) error {
+func (s *StreamFrom) Set(value string) error {
 	switch value {
-	case string(StreamSourceFile), string(StreamSourceStream):
-		*s = StreamSource(value)
+	case string(StreamFromFile), string(StreamFromStream):
+		*s = StreamFrom(value)
 		return nil
 	default:
 		return fmt.Errorf("invalid value for streamFrom: %s", value)
@@ -23,12 +23,12 @@ func (s *StreamSource) Set(value string) error {
 }
 
 const (
-	StreamSourceFile   StreamSource = "file"
-	StreamSourceStream StreamSource = "stream"
+	StreamFromFile   StreamFrom = "file"
+	StreamFromStream StreamFrom = "stream"
 )
 
 type FlagUtil struct {
-	StreamFrom StreamSource
+	StreamFrom StreamFrom
 }
 
 func (fu *FlagUtil) Setup() {

@@ -18,7 +18,7 @@ func main() {
 	fu.Setup()
 
 	runner := runner.SubcordantRunner{}
-	err := runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &streamer.Streamer{})
+	err := runner.Init(&subsonic.SubsonicClient{}, &discord.DiscordClient{}, &streamer.Streamer{}, fu.StreamFrom)
 	if err != nil {
 		log.Fatalf("failed to init runner: %v", err)
 	}
