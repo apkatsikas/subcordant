@@ -447,7 +447,7 @@ var _ = Describe("runner play if stream url errors", func() {
 	})
 })
 
-var _ = Describe("runner play if prep stream errors", func() {
+var _ = Describe("runner play if prep stream from file errors, using stream from stream", func() {
 	const songCount = 1
 	var songs = getSongs(songCount)
 
@@ -468,6 +468,45 @@ var _ = Describe("runner play if prep stream errors", func() {
 		streamer.EXPECT().PrepStreamFromStream(anyUrl).Return(fmt.Errorf("prep stream error")).Once()
 
 		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		Expect(err).NotTo(HaveOccurred())
+
+		playbackState, playError = subcordantRunner.Play(albumId, guildId, dontSwitchChannels)
+	})
+
+	It("should return an invalid state", func() {
+		Expect(playbackState).To(Equal(types.Invalid))
+	})
+
+	It("should error", func() {
+		Expect(playError).To(HaveOccurred())
+	})
+
+	It("should finish the track", func() {
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(songCount - 1))
+	})
+})
+
+var _ = Describe("runner play if prep stream from file errors, using stream from file", func() {
+	const songCount = 1
+	var songs = getSongs(songCount)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var subsonicClient *mocks.ISubsonicClient
+	var discordClient *mocks.IDiscordClient
+	var streamer *mocks.IStreamer
+
+	var playError error
+	var playbackState types.PlaybackState
+
+	BeforeEach(func() {
+		subcordantRunner = &runner.SubcordantRunner{}
+		subsonicClient = getSubsonicClient(songs, false)
+		discordClient = getDiscordClient([]string{albumName})
+		streamer = mocks.NewIStreamer(GinkgoT())
+
+		streamer.EXPECT().PrepStreamFromFile(anyString).Return(fmt.Errorf("prep stream error")).Once()
+
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromFile)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(albumId, guildId, dontSwitchChannels)
