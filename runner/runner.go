@@ -128,19 +128,19 @@ func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {
 }
 
 func (sr *SubcordantRunner) play(context context.Context, track types.Track) error {
-	if sr.StreamFrom == flagutil.StreamFromStream {
-		streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
-		if err != nil {
-			return err
-		}
-
-		if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
+	if sr.StreamFrom == flagutil.StreamFromFile {
+		if err := sr.streamer.PrepStreamFromFile(track.Path); err != nil {
 			return err
 		}
 		return sr.streamer.Stream(context, sr.discordClient.GetVoice())
 	}
 
-	if err := sr.streamer.PrepStreamFromFile(track.Path); err != nil {
+	streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
 		return err
 	}
 	return sr.streamer.Stream(context, sr.discordClient.GetVoice())
