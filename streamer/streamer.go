@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"os"
 	"os/exec"
 	"strconv"
 
@@ -22,6 +23,10 @@ func (s *Streamer) PrepStreamFromStream(inputUrl *url.URL) error {
 }
 
 func (s *Streamer) PrepStreamFromFile(inputPath string) error {
+	if _, err := os.Stat(inputPath); err != nil {
+		return fmt.Errorf(
+			"failed to prepare stream with file %v, error was %w", inputPath, err)
+	}
 	return s.prepStream(false, inputPath)
 }
 
