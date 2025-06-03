@@ -68,6 +68,11 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
+func (sr *SubcordantRunner) Disconnect() {
+	sr.Reset()
+	sr.discordClient.LeaveVoiceSession()
+}
+
 func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
