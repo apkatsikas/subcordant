@@ -60,6 +60,8 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 	return nil
 }
 
+// TODO - add test for reset while playback is happening
+// make sure a few delayed tracks are over
 func (sr *SubcordantRunner) Reset() {
 	sr.PlaylistService.Clear()
 	if sr.cancelPlay != nil {
