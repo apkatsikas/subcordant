@@ -341,6 +341,54 @@ var _ = Describe("runner", func() {
 })
 
 var _ = Describe("runner", func() {
+	const songCount = 3
+	var songs = getSongs(songCount)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	BeforeEach(func() {
+		discordClient = getDiscordClient([]string{albumName})
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Once()
+		discordClient.EXPECT().LeaveVoiceSession().Return().Once()
+		// We only want the first song to build our expectations, as the rest will be skipped
+		streamer = getStreamerDelay(1)
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil).Once()
+		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
+			Name: albumName,
+			Song: songs,
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil).Once()
+		subcordantRunner = &runner.SubcordantRunner{}
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("should clear the playlist when disconnected during playback", func() {
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer GinkgoRecover()
+			state, err := subcordantRunner.Play(albumId, guildId, dontSwitchChannels)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(state).To(Equal(types.PlaybackComplete))
+		}()
+		time.Sleep(time.Millisecond * 1)
+
+		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(len(songs)))
+		subcordantRunner.Disconnect()
+
+		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(0))
+
+		wg.Wait()
+	})
+})
+
+var _ = Describe("runner", func() {
 	var subcordantRunner *runner.SubcordantRunner
 	var subsonicClient *mocks.ISubsonicClient
 

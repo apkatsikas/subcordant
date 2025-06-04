@@ -24,9 +24,10 @@ import (
 )
 
 const (
-	playCommand   = "play"
-	clearCommand  = "clear"
-	optionAlbumId = "albumid"
+	playCommand       = "play"
+	clearCommand      = "clear"
+	disconnectCommand = "disconnect"
+	optionAlbumId     = "albumid"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
@@ -55,6 +56,11 @@ var commands = []api.CreateCommandData{
 	{
 		Name:        clearCommand,
 		Description: "clears the playlist and stops playback",
+	},
+	{
+		Name: disconnectCommand,
+		Description: "disconnects the subcordant bot from the voice channel, " +
+			"stopping playback and clearing the playlist",
 	},
 }
 
@@ -140,15 +146,19 @@ func (dc *DiscordClient) setupBotDisconnectHandler() {
 			}
 
 			dc.commandHandler.Reset()
-			if dc.voiceSession != nil {
-				err := dc.voiceSession.Leave(context.Background())
-				if err != nil {
-					log.Printf("\nERROR: failed to leave voice session: %v", err)
-				}
-				dc.voiceSession = nil
-			}
+			dc.LeaveVoiceSession()
 		}
 	})
+}
+
+func (dc *DiscordClient) LeaveVoiceSession() {
+	if dc.voiceSession != nil {
+		err := dc.voiceSession.Leave(context.Background())
+		if err != nil {
+			log.Printf("\nERROR: failed to leave voice session: %v", err)
+		}
+		dc.voiceSession = nil
+	}
 }
 
 func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, switchToChannel discord.ChannelID) (discord.ChannelID, error) {

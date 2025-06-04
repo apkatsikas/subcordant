@@ -43,6 +43,39 @@ func (_m *ICommandHandler) EXPECT() *ICommandHandler_Expecter {
 	return &ICommandHandler_Expecter{mock: &_m.Mock}
 }
 
+// Disconnect provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) Disconnect() {
+	_mock.Called()
+	return
+}
+
+// ICommandHandler_Disconnect_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Disconnect'
+type ICommandHandler_Disconnect_Call struct {
+	*mock.Call
+}
+
+// Disconnect is a helper method to define mock.On call
+func (_e *ICommandHandler_Expecter) Disconnect() *ICommandHandler_Disconnect_Call {
+	return &ICommandHandler_Disconnect_Call{Call: _e.mock.On("Disconnect")}
+}
+
+func (_c *ICommandHandler_Disconnect_Call) Run(run func()) *ICommandHandler_Disconnect_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_Disconnect_Call) Return() *ICommandHandler_Disconnect_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *ICommandHandler_Disconnect_Call) RunAndReturn(run func()) *ICommandHandler_Disconnect_Call {
+	_c.Run(run)
+	return _c
+}
+
 // Play provides a mock function for the type ICommandHandler
 func (_mock *ICommandHandler) Play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error) {
 	ret := _mock.Called(albumId, guildId, channelId)
@@ -302,6 +335,39 @@ func (_c *IDiscordClient_JoinVoiceChat_Call) Return(channelID discord.ChannelID,
 
 func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// LeaveVoiceSession provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) LeaveVoiceSession() {
+	_mock.Called()
+	return
+}
+
+// IDiscordClient_LeaveVoiceSession_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LeaveVoiceSession'
+type IDiscordClient_LeaveVoiceSession_Call struct {
+	*mock.Call
+}
+
+// LeaveVoiceSession is a helper method to define mock.On call
+func (_e *IDiscordClient_Expecter) LeaveVoiceSession() *IDiscordClient_LeaveVoiceSession_Call {
+	return &IDiscordClient_LeaveVoiceSession_Call{Call: _e.mock.On("LeaveVoiceSession")}
+}
+
+func (_c *IDiscordClient_LeaveVoiceSession_Call) Run(run func()) *IDiscordClient_LeaveVoiceSession_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_LeaveVoiceSession_Call) Return() *IDiscordClient_LeaveVoiceSession_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *IDiscordClient_LeaveVoiceSession_Call) RunAndReturn(run func()) *IDiscordClient_LeaveVoiceSession_Call {
+	_c.Run(run)
 	return _c
 }
 

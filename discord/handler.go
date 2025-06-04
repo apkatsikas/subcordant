@@ -73,6 +73,13 @@ func (h *handler) cmdClear(_ context.Context, _ cmdroute.CommandData) *api.Inter
 	}
 }
 
+func (h *handler) cmdDisconnect(_ context.Context, _ cmdroute.CommandData) *api.InteractionResponseData {
+	h.commandHandler.Disconnect()
+	return &api.InteractionResponseData{
+		Content: option.NewNullableString("Disconnecting..."),
+	}
+}
+
 func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *handler {
 	hand := &handler{state: state}
 	hand.commandHandler = commandHandler
@@ -82,6 +89,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	hand.Use(cmdroute.Deferrable(state, cmdroute.DeferOpts{}))
 	hand.AddFunc(playCommand, hand.cmdPlay)
 	hand.AddFunc(clearCommand, hand.cmdClear)
+	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
 
 	return hand
 }

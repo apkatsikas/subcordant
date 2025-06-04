@@ -12,4 +12,5 @@ type IDiscordClient interface {
 	SwitchVoiceChannel(channelId discord.ChannelID) error
 	SendMessage(message string)
 	GetVoice() io.Writer
+	LeaveVoiceSession()
 }
