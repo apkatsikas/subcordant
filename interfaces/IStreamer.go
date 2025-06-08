@@ -10,4 +10,5 @@ type IStreamer interface {
 	PrepStreamFromStream(streamUrl *url.URL) error
 	PrepStreamFromFile(file string) error
 	Stream(ctx context.Context, voice io.Writer) error
+	Playing() bool
 }

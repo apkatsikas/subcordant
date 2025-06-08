@@ -27,6 +27,7 @@ const (
 	playCommand       = "play"
 	clearCommand      = "clear"
 	disconnectCommand = "disconnect"
+	skipCommand       = "skip"
 	optionAlbumId     = "albumid"
 
 	// Optional to tweak the Opus stream.
@@ -61,6 +62,10 @@ var commands = []api.CreateCommandData{
 		Name: disconnectCommand,
 		Description: "disconnects the subcordant bot from the voice channel, " +
 			"stopping playback and clearing the playlist",
+	},
+	{
+		Name:        skipCommand,
+		Description: "skips the currently playing track",
 	},
 }
 
@@ -167,6 +172,10 @@ func (dc *DiscordClient) JoinVoiceChat(guildId discord.GuildID, switchToChannel 
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+
+	if !switchToChannel.IsValid() {
+		return dontSwitchChannels, nil
+	}
 
 	bot, err := dc.handler.state.Me()
 	if err != nil {

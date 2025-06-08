@@ -43,20 +43,30 @@ func (sr *SubcordantRunner) Init(
 	return nil
 }
 
-func (sr *SubcordantRunner) queue(albumId string) error {
-	album, err := sr.subsonicClient.GetAlbum(albumId)
-	if err != nil {
-		message := fmt.Sprintf("Could not find album with ID of %v", albumId)
+func (sr *SubcordantRunner) queue(trackList types.TrackList) error {
+	if trackList.AlbumId != "" {
+		album, err := sr.subsonicClient.GetAlbum(trackList.AlbumId)
+		if err != nil {
+			message := fmt.Sprintf("Could not find album with ID of %v", trackList.AlbumId)
+			sr.discordClient.SendMessage(message)
+			return err
+		}
+
+		message := fmt.Sprintf("Queued album: %v", album.Name)
 		sr.discordClient.SendMessage(message)
-		return err
-	}
 
-	message := fmt.Sprintf("Queued album: %v", album.Name)
-	sr.discordClient.SendMessage(message)
-
-	for _, song := range album.Song {
-		sr.PlaylistService.Add(subsonic.ToTrack(song))
+		for _, song := range album.Song {
+			sr.PlaylistService.Add(subsonic.ToTrack(song))
+		}
+		return nil
 	}
+	if len(trackList.Tracks) > 0 {
+		for _, track := range trackList.Tracks {
+			sr.Add(track)
+		}
+	}
+	// TODO - return error
+
 	return nil
 }
 
@@ -73,26 +83,12 @@ func (sr *SubcordantRunner) Disconnect() {
 	sr.discordClient.LeaveVoiceSession()
 }
 
-func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+func (sr *SubcordantRunner) Play(trackList types.TrackList, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	switchToChannel, err := sr.discordClient.JoinVoiceChat(guildId, switchToChannel)
-	if err != nil {
-		sr.Reset()
-		sr.discordClient.SendMessage(fmt.Sprintf("Could not join voice, error is %v", err))
+	if err := sr.voiceChat(guildId, switchToChannel); err != nil {
 		return types.Invalid, err
-	}
-
-	wantToSwitchChannels := switchToChannel.IsValid()
-	if wantToSwitchChannels {
-		sr.Reset()
-		err := sr.discordClient.SwitchVoiceChannel(switchToChannel)
-		if err != nil {
-			sr.Reset()
-			sr.discordClient.SendMessage(fmt.Sprintf("Failed to switch channels, error is %v", err))
-			return types.Invalid, err
-		}
 	}
 
 	// Set the cancel play function after any potential SubcordantRunner Reset functions are called
@@ -100,7 +96,7 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 	// and we avoid overwriting it accidentally with the new value
 	sr.cancelPlay = cancel
 
-	if err := sr.queue(albumId); err != nil {
+	if err := sr.queue(trackList); err != nil {
 		return types.Invalid, err
 	}
 	if sr.checkAndSetPlayingMutex() {
@@ -120,6 +116,53 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		}
 		sr.PlaylistService.FinishTrack()
 	}
+}
+
+func (sr *SubcordantRunner) Skip() {
+	// TODO - some kind of mutex
+	sr.FinishTrack()
+
+	remainingPlaylist := sr.GetPlaylist()
+
+	sr.Clear()
+
+	if sr.cancelPlay != nil {
+		sr.cancelPlay()
+	}
+	sr.playing = false
+
+	// TODO - something better
+	for sr.streamer.Playing() {
+		//time.Sleep(10 * time.Millisecond)
+	}
+
+	if len(remainingPlaylist) > 0 {
+		sr.Play(types.TrackList{
+			AlbumId: "",
+			Tracks:  remainingPlaylist,
+		}, discord.NullGuildID, discord.NullChannelID)
+	}
+}
+
+func (sr *SubcordantRunner) voiceChat(guildId discord.GuildID, switchToChannel discord.ChannelID) error {
+	switchToChannel, err := sr.discordClient.JoinVoiceChat(guildId, switchToChannel)
+	if err != nil {
+		sr.Reset()
+		sr.discordClient.SendMessage(fmt.Sprintf("Could not join voice, error is %v", err))
+		return err
+	}
+
+	wantToSwitchChannels := switchToChannel.IsValid()
+	if wantToSwitchChannels {
+		sr.Reset()
+		err := sr.discordClient.SwitchVoiceChannel(switchToChannel)
+		if err != nil {
+			sr.Reset()
+			sr.discordClient.SendMessage(fmt.Sprintf("Failed to switch channels, error is %v", err))
+			return err
+		}
+	}
+	return nil
 }
 
 func (sr *SubcordantRunner) checkAndSetPlayingMutex() bool {

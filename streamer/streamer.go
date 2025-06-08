@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -14,8 +15,9 @@ import (
 )
 
 type Streamer struct {
-	stdout io.ReadCloser
-	cmd    *exec.Cmd
+	stdout  io.ReadCloser
+	cmd     *exec.Cmd
+	playing bool
 }
 
 func (s *Streamer) PrepStreamFromStream(inputUrl *url.URL) error {
@@ -31,13 +33,14 @@ func (s *Streamer) PrepStreamFromFile(inputPath string) error {
 }
 
 func (s *Streamer) prepStream(streamFromStream bool, inputString string) error {
+	log.Printf("\nprepStream START for %v", inputString)
 	args := getArgs(streamFromStream, inputString)
 	s.cmd = exec.CommandContext(context.Background(),
 		"ffmpeg", args...,
 	)
 
-	// Enable this for debugging ffmpeg issues
-	//s.cmd.Stderr = os.Stderr
+	//Enable this for debugging ffmpeg issues
+	s.cmd.Stderr = os.Stderr
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
@@ -55,10 +58,20 @@ func (s *Streamer) prepStream(streamFromStream bool, inputString string) error {
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
 
+	log.Printf("\nprepStream END for %v", inputString)
 	return nil
 }
 
+func (s *Streamer) Playing() bool {
+	return s.playing
+}
+
 func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
+	log.Println("STREAM START")
+	s.playing = true
+	defer func() {
+		s.playing = false
+	}()
 	defer s.stdout.Close()
 
 	decodingDone := make(chan error, 1)
@@ -89,6 +102,7 @@ func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}
 
+	log.Println("STREAM END")
 	return nil
 }
 

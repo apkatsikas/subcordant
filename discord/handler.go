@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/apkatsikas/subcordant/interfaces"
+	"github.com/apkatsikas/subcordant/types"
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/api/cmdroute"
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -60,10 +61,24 @@ func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.In
 	}
 }
 
+func (h *handler) cmdSkip(_ context.Context, _ cmdroute.CommandData) *api.InteractionResponseData {
+	go h.skip()
+	return &api.InteractionResponseData{
+		Content: option.NewNullableString("Skipping track..."),
+	}
+}
+
 func (h *handler) play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) {
-	if _, err := h.commandHandler.Play(albumId, guildId, channelId); err != nil {
+	if _, err := h.commandHandler.Play(types.TrackList{
+		AlbumId: albumId,
+		Tracks:  []types.Track{},
+	}, guildId, channelId); err != nil {
 		log.Printf("\nERROR: Play resulted in %v", err)
 	}
+}
+
+func (h *handler) skip() {
+	h.commandHandler.Skip()
 }
 
 func (h *handler) cmdClear(_ context.Context, _ cmdroute.CommandData) *api.InteractionResponseData {
@@ -90,6 +105,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	hand.AddFunc(playCommand, hand.cmdPlay)
 	hand.AddFunc(clearCommand, hand.cmdClear)
 	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
+	hand.AddFunc(skipCommand, hand.cmdSkip)
 
 	return hand
 }
