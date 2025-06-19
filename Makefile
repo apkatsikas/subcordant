@@ -2,7 +2,7 @@ bootstrap-test:
 	ginkgo bootstrap
 
 run-tests:
-	go test -p 1 -coverprofile coverage.out ./...
+	go test -p 1 -race -coverprofile coverage.out ./...
 
 run-single-test:
 	ginkgo --focus "test 1" testDir
@@ -39,3 +39,6 @@ mocks:
 
 build:
 	go build -o subcordant ./cmd/main.go
+
+check-build:
+	go build -o subcordant -race ./cmd/main.go
