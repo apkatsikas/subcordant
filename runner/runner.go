@@ -61,6 +61,8 @@ func (sr *SubcordantRunner) queue(albumId string) error {
 }
 
 func (sr *SubcordantRunner) Reset() {
+	sr.mu.Lock()
+	defer sr.mu.Unlock()
 	sr.PlaylistService.Clear()
 	if sr.cancelPlay != nil {
 		sr.cancelPlay()
@@ -107,18 +109,22 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		return types.AlreadyPlaying, nil
 	}
 	for {
-		playlist := sr.PlaylistService.GetPlaylist()
-		if len(playlist) == 0 {
+		sr.mu.Lock()
+		if len(sr.PlaylistService.GetPlaylist()) == 0 {
 			sr.playing = false
+			sr.mu.Unlock()
 			return types.PlaybackComplete, nil
 		}
 
-		trackId := playlist[0]
+		trackId := sr.PlaylistService.GetPlaylist()[0]
+		sr.mu.Unlock()
 		if err := sr.play(ctx, trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
+		sr.mu.Lock()
 		sr.PlaylistService.FinishTrack()
+		sr.mu.Unlock()
 	}
 }
 
