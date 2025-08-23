@@ -97,19 +97,19 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		}
 	}
 
-	// Set the cancel play function after any potential SubcordantRunner Reset functions are called
-	// this way it cancels the previous function (ongoing playback) if needed
-	// and we avoid overwriting it accidentally with the new value
-	sr.cancelPlay = cancel
-
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err
 	}
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
 	}
+
 	for {
 		sr.mu.Lock()
+		// Set the cancel play function after any potential SubcordantRunner Reset functions are called
+		// this way it cancels the previous function (ongoing playback) if needed
+		// and we avoid overwriting it accidentally with the new value
+		sr.cancelPlay = cancel
 		if len(sr.PlaylistService.GetPlaylist()) == 0 {
 			sr.playing = false
 			sr.mu.Unlock()
