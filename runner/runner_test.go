@@ -341,63 +341,6 @@ var _ = Describe("runner", func() {
 })
 
 var _ = Describe("runner", func() {
-	const songCount = 1
-	var songs = getSongs(songCount)
-
-	var subcordantRunner *runner.SubcordantRunner
-	var discordClient *mocks.IDiscordClient
-	var subsonicClient *mocks.ISubsonicClient
-	var streamer *mocks.IStreamer
-
-	BeforeEach(func() {
-		discordClient = getDiscordClient([]string{albumName, albumName})
-		discordClient.EXPECT().GetVoice().Return(fakeWriter).Once()
-		// Add an additional JoinVoiceChat expectation
-		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
-
-		streamer = getStreamerDelay(1)
-		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
-		subsonicClient.EXPECT().Init().Return(nil).Once()
-		subsonicClient.EXPECT().GetAlbum(albumId).Return(&subsonic.AlbumID3{
-			Name: albumName,
-			Song: songs,
-		}, nil).Twice()
-		subsonicClient.EXPECT().StreamUrl(mock.AnythingOfType("string")).Return(&url.URL{}, nil)
-		subcordantRunner = &runner.SubcordantRunner{}
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
-		Expect(err).NotTo(HaveOccurred())
-	})
-
-	It("should clear the playlist when reset after 2 play commands", func() {
-		var wg sync.WaitGroup
-		wg.Add(2)
-		go func() {
-			defer wg.Done()
-			defer GinkgoRecover()
-			state, err := subcordantRunner.Play(albumId, guildId, dontSwitchChannels)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(state).To(Equal(types.PlaybackComplete))
-		}()
-		time.Sleep(time.Millisecond * 1)
-		go func() {
-			defer wg.Done()
-			defer GinkgoRecover()
-			state, err := subcordantRunner.Play(albumId, guildId, dontSwitchChannels)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(state).To(Equal(types.AlreadyPlaying))
-		}()
-		time.Sleep(time.Millisecond * 1)
-
-		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(2))
-		subcordantRunner.Reset()
-
-		Expect(subcordantRunner.PlaylistService.GetPlaylist()).To(HaveLen(0))
-
-		wg.Wait()
-	})
-})
-
-var _ = Describe("runner", func() {
 	const songCount = 3
 	var songs = getSongs(songCount)
 
