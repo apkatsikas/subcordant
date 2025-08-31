@@ -72,6 +72,10 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
+// Play does not actually get cancelled from cancel,
+// it just cancels the downstream streamer function
+// but normally it runs out of tracks
+// with skip we dont clear the playlist so it kinda fucks up
 // TODO Test last song, test after 2 plays, test no songs
 // no user in voice, user in different channel
 // skip after skip
