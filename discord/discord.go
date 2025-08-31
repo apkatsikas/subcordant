@@ -27,6 +27,7 @@ const (
 	playCommand       = "play"
 	clearCommand      = "clear"
 	disconnectCommand = "disconnect"
+	skipCommand       = "skip"
 	optionAlbumId     = "albumid"
 
 	// Optional to tweak the Opus stream.
@@ -61,6 +62,10 @@ var commands = []api.CreateCommandData{
 		Name: disconnectCommand,
 		Description: "disconnects the subcordant bot from the voice channel, " +
 			"stopping playback and clearing the playlist",
+	},
+	{
+		Name:        skipCommand,
+		Description: "skips the surrently playing song",
 	},
 }
 

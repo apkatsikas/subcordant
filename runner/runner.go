@@ -3,7 +3,9 @@ package runner
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
+	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -70,6 +72,27 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
+// TODO Test last song, test after 2 plays, test no songs
+// no user in voice, user in different channel
+// skip after skip
+func (sr *SubcordantRunner) Skip() {
+	sr.mu.Lock()
+	if sr.cancelPlay != nil {
+		sr.cancelPlay()
+	}
+	time.Sleep(time.Millisecond * 2000)
+	sr.playing = false
+	sr.FinishTrack()
+	// TODO - variable
+	time.Sleep(time.Millisecond * 750)
+	log.Printf("Skip()")
+	sr.mu.Unlock()
+	err := sr.playFromSkip()
+	if err != nil {
+		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
+	}
+}
+
 func (sr *SubcordantRunner) Disconnect() {
 	sr.Reset()
 	sr.discordClient.LeaveVoiceSession()
@@ -121,6 +144,36 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		if err := sr.play(ctx, trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
+		}
+		sr.mu.Lock()
+		sr.PlaylistService.FinishTrack()
+		sr.mu.Unlock()
+	}
+}
+
+func (sr *SubcordantRunner) playFromSkip() error {
+	log.Printf("playFromSkip()")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	log.Printf("going to checkAndSetPlayingMutex")
+	sr.checkAndSetPlayingMutex()
+	log.Printf("checked mutex and set")
+	for {
+		log.Printf("In for")
+		sr.mu.Lock()
+		sr.cancelPlay = cancel
+		if len(sr.PlaylistService.GetPlaylist()) == 0 {
+			sr.playing = false
+			sr.mu.Unlock()
+			return fmt.Errorf("tried to play but no songs are left on the playlist")
+		}
+
+		trackId := sr.PlaylistService.GetPlaylist()[0]
+		sr.mu.Unlock()
+		log.Printf("gonna play from skip!")
+		if err := sr.play(ctx, trackId); err != nil {
+			sr.PlaylistService.FinishTrack()
+			return fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
 		sr.mu.Lock()
 		sr.PlaylistService.FinishTrack()
