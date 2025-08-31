@@ -75,6 +75,8 @@ func (sr *SubcordantRunner) Reset() {
 // TODO Test last song, test after 2 plays, test no songs
 // no user in voice, user in different channel
 // skip after skip
+// Run with race
+// add tests (race)
 func (sr *SubcordantRunner) Skip() {
 	sr.mu.Lock()
 	if sr.cancelPlay != nil {
