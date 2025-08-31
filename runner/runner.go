@@ -76,25 +76,26 @@ func (sr *SubcordantRunner) Reset() {
 // it just cancels the downstream streamer function
 // but normally it runs out of tracks
 // with skip we dont clear the playlist so it kinda fucks up
+// trying something new with putting aside the playlist
 // TODO Test last song, test after 2 plays, test no songs
 // no user in voice, user in different channel
 // skip after skip
 // Run with race
 // add tests (race)
+// Got an error trying to play after skip playing track { } resulted in: failed to finish ffmpeg: exit status 183
 func (sr *SubcordantRunner) Skip() {
 	sr.mu.Lock()
 	sr.FinishTrack()
+	remainingTracks := sr.PlaylistService.GetPlaylist()
 	if sr.cancelPlay != nil {
 		sr.cancelPlay()
 	}
 	sr.playing = false
-	log.Printf("Skip()")
-	//time.Sleep(time.Millisecond * 5000)
-	// TODO - fix issue
-	//Got an error trying to play after skip playing track resulted in: failed to decode ogg: read |0: file already closed
-	// TODO - variable
-	time.Sleep(time.Millisecond * 1500)
 	sr.mu.Unlock()
+	time.Sleep(time.Millisecond * 1500)
+	for _, t := range remainingTracks {
+		sr.PlaylistService.Add(t)
+	}
 	err := sr.playFromSkip()
 	if err != nil {
 		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
