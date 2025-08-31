@@ -82,14 +82,14 @@ func (sr *SubcordantRunner) Skip() {
 	if sr.cancelPlay != nil {
 		sr.cancelPlay()
 	}
+	sr.playing = false
+	sr.FinishTrack()
+	log.Printf("Skip()")
 	time.Sleep(time.Millisecond * 2000)
 	// TODO - fix issue
 	//Got an error trying to play after skip playing track resulted in: failed to decode ogg: read |0: file already closed
-	sr.playing = false
-	sr.FinishTrack()
 	// TODO - variable
 	time.Sleep(time.Millisecond * 750)
-	log.Printf("Skip()")
 	sr.mu.Unlock()
 	err := sr.playFromSkip()
 	if err != nil {
