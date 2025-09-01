@@ -3,7 +3,6 @@ package runner
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -72,34 +71,27 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
-// Play does not actually get cancelled from cancel,
-// it just cancels the downstream streamer function
-// but normally it runs out of tracks
-// with skip we dont clear the playlist so it kinda fucks up
-// trying something new with putting aside the playlist
-// TODO Test last song, test after 2 plays, test no songs
-// no user in voice, user in different channel
-// skip after skip
-// Run with race
-// add tests (race)
-// Got an error trying to play after skip playing track { } resulted in: failed to finish ffmpeg: exit status 183
 func (sr *SubcordantRunner) Skip() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	sr.mu.Lock()
 	sr.FinishTrack()
-	remainingTracks := sr.PlaylistService.GetPlaylist()
+	remaining := sr.GetPlaylist()
+	sr.Clear()
 	if sr.cancelPlay != nil {
 		sr.cancelPlay()
 	}
 	sr.playing = false
 	sr.mu.Unlock()
 	time.Sleep(time.Millisecond * 1500)
-	for _, t := range remainingTracks {
-		sr.PlaylistService.Add(t)
+	for _, track := range remaining {
+		sr.Add(track)
 	}
-	err := sr.playFromSkip()
+	state, err := sr.playLooper(ctx, cancel)
 	if err != nil {
 		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
 	}
+	fmt.Printf("State is %v", state)
 }
 
 func (sr *SubcordantRunner) Disconnect() {
@@ -132,11 +124,20 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err
 	}
+
+	return sr.playLooper(ctx, cancel)
+}
+
+func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.CancelFunc) (types.PlaybackState, error) {
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
 	}
-
 	for {
+		select {
+		case <-ctx.Done():
+			return types.PlaybackComplete, nil
+		default:
+		}
 		sr.mu.Lock()
 		// Set the cancel play function after any potential SubcordantRunner Reset functions are called
 		// this way it cancels the previous function (ongoing playback) if needed
@@ -153,36 +154,6 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		if err := sr.play(ctx, trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
-		}
-		sr.mu.Lock()
-		sr.PlaylistService.FinishTrack()
-		sr.mu.Unlock()
-	}
-}
-
-func (sr *SubcordantRunner) playFromSkip() error {
-	log.Printf("playFromSkip()")
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	log.Printf("going to checkAndSetPlayingMutex")
-	sr.checkAndSetPlayingMutex()
-	log.Printf("checked mutex and set")
-	for {
-		log.Printf("In for")
-		sr.mu.Lock()
-		sr.cancelPlay = cancel
-		if len(sr.PlaylistService.GetPlaylist()) == 0 {
-			sr.playing = false
-			sr.mu.Unlock()
-			return fmt.Errorf("tried to play but no songs are left on the playlist")
-		}
-
-		trackId := sr.PlaylistService.GetPlaylist()[0]
-		sr.mu.Unlock()
-		log.Printf("gonna play from skip!")
-		if err := sr.play(ctx, trackId); err != nil {
-			sr.PlaylistService.FinishTrack()
-			return fmt.Errorf("playing track %s resulted in: %v", trackId, err)
 		}
 		sr.mu.Lock()
 		sr.PlaylistService.FinishTrack()
