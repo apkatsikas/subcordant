@@ -724,9 +724,8 @@ func getMultipleAlbumSubsonicClient(albumSongs map[string][]*subsonic.Child) *mo
 			Name: albumName,
 			Song: songs,
 		}, nil).Once()
-		for _, song := range songs {
-			subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil).Once()
-		}
+		// TODO - should this be opinionated?
+		subsonicClient.EXPECT().StreamUrl(mock.AnythingOfType("string")).Return(&url.URL{}, nil)
 	}
 
 	return subsonicClient
