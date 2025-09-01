@@ -71,6 +71,9 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
+// TODO - add test
+// run with race
+// fix existing test
 func (sr *SubcordantRunner) Skip() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
