@@ -83,7 +83,8 @@ func (sr *SubcordantRunner) Skip() {
 	}
 	sr.playing = false
 	sr.mu.Unlock()
-	time.Sleep(time.Millisecond * 1500)
+	// TODO - variable and try to improve
+	time.Sleep(time.Millisecond * 3000)
 	for _, track := range remaining {
 		sr.Add(track)
 	}
