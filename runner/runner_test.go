@@ -129,8 +129,7 @@ var _ = Describe("runner init and play resulting in a channel change during play
 	const albumSongCount = 2
 	var album1Songs = getSongs(albumSongCount)
 	var album2Songs = getSongs(albumSongCount)
-	// Reduce song count by 1, as the first album will not finish playing
-	var songCount = len(album1Songs) + len(album2Songs) - 1
+	var songCount = albumSongCount
 	var firstSongFromAlbum1 = []*subsonic.Child{album1Songs[0]}
 
 	var sf = discord.NewSnowflake(time.Now())
