@@ -87,7 +87,7 @@ func (sr *SubcordantRunner) Skip() {
 	sr.playing = false
 	sr.mu.Unlock()
 	// TODO - variable and try to improve
-	time.Sleep(time.Millisecond * 3000)
+	time.Sleep(time.Millisecond * 3500)
 	for _, track := range remaining {
 		sr.Add(track)
 	}
@@ -95,6 +95,7 @@ func (sr *SubcordantRunner) Skip() {
 	if err != nil {
 		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
 	}
+	// TODO - remove and ignore state
 	fmt.Printf("State is %v", state)
 }
 
