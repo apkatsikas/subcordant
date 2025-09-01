@@ -123,6 +123,11 @@ var _ = DescribeTableSubtree("runner init and play",
 	Entry("1 song, stream from set to file", 2),
 )
 
+// TODO - this test can't be accurately simulated
+// as a cancel func being run would normally interrupt the streamer.Stream
+// function, but in our case its always hardcoded to 50ms, so this
+// means the test won't behave like it would in real life
+// probably just delete this and undo changes to any test methods
 var _ = Describe("runner init and play resulting in a channel change during playback", func() {
 	const album1Name = "album1"
 	const album2Name = "album2"
