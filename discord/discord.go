@@ -59,13 +59,23 @@ var commandMap = map[string]string{
 	helpCommand:       helpCommandDescription,
 }
 
+var commandOrder = []string{
+	playCommand,
+	skipCommand,
+	clearCommand,
+	disconnectCommand,
+	helpCommand,
+}
+
 func prettyPrintCommands() string {
 	var sb strings.Builder
 	sb.WriteString("**Available Commands:**\n\n")
 
-	for cmd, desc := range commandMap {
+	for _, cmd := range commandOrder {
+		desc := commandMap[cmd]
 		sb.WriteString(fmt.Sprintf("- **%s**: %s\n", cmd, desc))
 	}
+
 	return sb.String()
 }
 
