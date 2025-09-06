@@ -19,7 +19,7 @@ jobs:
 
     - name: Build Go project for target OS and Arch
       run: |
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/${{ matrix.goos }}_${{ matrix.goarch }}/main" ./cmd/main.go
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/${{ matrix.goos }}_${{ matrix.goarch }}/subcordant" ./cmd/main.go
       env:
         CGO_ENABLED: 0
 
