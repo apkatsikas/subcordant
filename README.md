@@ -16,7 +16,7 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 
 ## Downloading
 
-TODO - descibe download and unzip process.
+Download a binary of Subcordant from the releases page for your desired platform.
 
 ## Building
 Run `make build`.
@@ -41,7 +41,7 @@ The following flags are available:
 ## Installing as a systemd unit
 These instructions are for installing subcordant as a [systemd unit](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) on Linux. This enables subcordant to run on machine startup.
 
-0. Run `make build`
+0. Run `make build` or download a binary from the releases page
 0. Create a directory at `/opt/subcordant`
 0. Add your subcordant executable to this path
 0. Run `chmod +x /opt/subcordant/subcordant`
