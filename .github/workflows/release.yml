@@ -51,9 +51,6 @@ jobs:
       with:
         path: dist/releases
 
-    - name: Show downloaded files
-      run: ls -R dist/releases
-
     - name: Upload release assets
       uses: softprops/action-gh-release@v1
       with:
