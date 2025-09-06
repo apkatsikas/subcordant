@@ -123,11 +123,6 @@ var _ = DescribeTableSubtree("runner init and play",
 	Entry("1 song, stream from set to file", 2),
 )
 
-// TODO - this test can't be accurately simulated
-// as a cancel func being run would normally interrupt the streamer.Stream
-// function, but in our case its always hardcoded to 50ms, so this
-// means the test won't behave like it would in real life
-// probably just delete this and undo changes to any test methods
 var _ = Describe("runner init and play resulting in a channel change during playback", func() {
 	const album1Name = "album1"
 	const album2Name = "album2"
@@ -153,7 +148,11 @@ var _ = Describe("runner init and play resulting in a channel change during play
 		discordClient.EXPECT().SwitchVoiceChannel(switchToChannel).Return(nil).Once()
 
 		streamer = getStreamerDelay(songCount)
-		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*subsonic.Child{
+		// This test can't be accurately simulated
+		// as a cancel func being run would normally interrupt the streamer.Stream
+		// function, but in our case its always hardcoded to 50ms, so this
+		// means the test won't behave like it would in real life
+		subsonicClient = getMultipleAlbumOneStreamSubsonicClient(map[string][]*subsonic.Child{
 			album1Name: firstSongFromAlbum1,
 			album2Name: album2Songs,
 		})
@@ -729,7 +728,23 @@ func getMultipleAlbumSubsonicClient(albumSongs map[string][]*subsonic.Child) *mo
 			Name: albumName,
 			Song: songs,
 		}, nil).Once()
-		// TODO - should this be opinionated?
+		for _, song := range songs {
+			subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil).Once()
+		}
+	}
+
+	return subsonicClient
+}
+
+func getMultipleAlbumOneStreamSubsonicClient(albumSongs map[string][]*subsonic.Child) *mocks.ISubsonicClient {
+	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
+	subsonicClient.EXPECT().Init().Return(nil).Once()
+
+	for albumName, songs := range albumSongs {
+		subsonicClient.EXPECT().GetAlbum(albumName).Return(&subsonic.AlbumID3{
+			Name: albumName,
+			Song: songs,
+		}, nil).Once()
 		subsonicClient.EXPECT().StreamUrl(mock.AnythingOfType("string")).Return(&url.URL{}, nil)
 	}
 

@@ -14,6 +14,8 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
+var timeBetweenSkips = time.Millisecond * 3500
+
 type SubcordantRunner struct {
 	subsonicClient interfaces.ISubsonicClient
 	discordClient  interfaces.IDiscordClient
@@ -73,6 +75,7 @@ func (sr *SubcordantRunner) Reset() {
 
 // TODO
 // run with race
+// create issue for static wait between skips
 func (sr *SubcordantRunner) Skip() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -85,17 +88,14 @@ func (sr *SubcordantRunner) Skip() {
 	}
 	sr.playing = false
 	sr.mu.Unlock()
-	// TODO - variable and try to improve
-	time.Sleep(time.Millisecond * 3500)
+	time.Sleep(timeBetweenSkips)
 	for _, track := range remaining {
 		sr.Add(track)
 	}
-	state, err := sr.playLooper(ctx, cancel)
+	_, err := sr.playLooper(ctx, cancel)
 	if err != nil {
 		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
 	}
-	// TODO - remove and ignore state
-	fmt.Printf("State is %v", state)
 }
 
 func (sr *SubcordantRunner) Disconnect() {
