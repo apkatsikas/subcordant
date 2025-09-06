@@ -72,20 +72,33 @@ func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
 
 	select {
 	case <-ctx.Done():
-		s.stdout.Close()
-		s.cmd.Cancel()
+		if s.stdout != nil && s.stdout.Close() != nil {
+			s.stdout.Close()
+		}
+		if s.cmd != nil && s.cmd.Cancel != nil {
+			s.cmd.Cancel()
+		}
+
 		return nil
 	case err := <-decodingDone:
 		if err != nil {
-			s.stdout.Close()
-			s.cmd.Cancel()
+			if s.stdout != nil && s.stdout.Close() != nil {
+				s.stdout.Close()
+			}
+			if s.cmd != nil && s.cmd.Cancel != nil {
+				s.cmd.Cancel()
+			}
 			return err
 		}
 	}
 
 	if err := s.cmd.Wait(); err != nil {
-		s.stdout.Close()
-		s.cmd.Cancel()
+		if s.stdout != nil && s.stdout.Close() != nil {
+			s.stdout.Close()
+		}
+		if s.cmd != nil && s.cmd.Cancel != nil {
+			s.cmd.Cancel()
+		}
 		return fmt.Errorf("failed to finish ffmpeg: %w", err)
 	}
 

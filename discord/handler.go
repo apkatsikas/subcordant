@@ -23,7 +23,7 @@ type handler struct {
 	LastChannelId  discord.ChannelID
 }
 
-func (h *handler) cmdPlay(ctx context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
+func (h *handler) cmdPlay(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
 	var albumId string
 	err := json.Unmarshal(cmd.Options.Find(optionAlbumId).Value, &albumId)
 	if err != nil {
@@ -80,6 +80,13 @@ func (h *handler) cmdDisconnect(_ context.Context, _ cmdroute.CommandData) *api.
 	}
 }
 
+func (h *handler) cmdSkip(_ context.Context, _ cmdroute.CommandData) *api.InteractionResponseData {
+	go h.commandHandler.Skip()
+	return &api.InteractionResponseData{
+		Content: option.NewNullableString("Skipping track..."),
+	}
+}
+
 func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *handler {
 	hand := &handler{state: state}
 	hand.commandHandler = commandHandler
@@ -90,6 +97,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	hand.AddFunc(playCommand, hand.cmdPlay)
 	hand.AddFunc(clearCommand, hand.cmdClear)
 	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
+	hand.AddFunc(skipCommand, hand.cmdSkip)
 
 	return hand
 }

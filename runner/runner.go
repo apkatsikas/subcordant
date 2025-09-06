@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces"
 	"github.com/apkatsikas/subcordant/playlist"
@@ -12,6 +13,8 @@ import (
 	flagutil "github.com/apkatsikas/subcordant/util/flag"
 	"github.com/diamondburned/arikawa/v3/discord"
 )
+
+var timeBetweenSkips = time.Millisecond * 3500
 
 type SubcordantRunner struct {
 	subsonicClient interfaces.ISubsonicClient
@@ -70,6 +73,28 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
+func (sr *SubcordantRunner) Skip() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sr.mu.Lock()
+	sr.FinishTrack()
+	remaining := sr.GetPlaylist()
+	sr.Clear()
+	if sr.cancelPlay != nil {
+		sr.cancelPlay()
+	}
+	sr.playing = false
+	sr.mu.Unlock()
+	time.Sleep(timeBetweenSkips)
+	for _, track := range remaining {
+		sr.Add(track)
+	}
+	_, err := sr.playLooper(ctx, cancel)
+	if err != nil {
+		sr.discordClient.SendMessage(fmt.Sprintf("Got an error trying to play after skip %v", err))
+	}
+}
+
 func (sr *SubcordantRunner) Disconnect() {
 	sr.Reset()
 	sr.discordClient.LeaveVoiceSession()
@@ -100,11 +125,20 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 	if err := sr.queue(albumId); err != nil {
 		return types.Invalid, err
 	}
+
+	return sr.playLooper(ctx, cancel)
+}
+
+func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.CancelFunc) (types.PlaybackState, error) {
 	if sr.checkAndSetPlayingMutex() {
 		return types.AlreadyPlaying, nil
 	}
-
 	for {
+		select {
+		case <-ctx.Done():
+			return types.PlaybackComplete, nil
+		default:
+		}
 		sr.mu.Lock()
 		// Set the cancel play function after any potential SubcordantRunner Reset functions are called
 		// this way it cancels the previous function (ongoing playback) if needed
