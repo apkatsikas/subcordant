@@ -73,9 +73,6 @@ func (sr *SubcordantRunner) Reset() {
 	sr.playing = false
 }
 
-// TODO
-// run with race
-// create issue for static wait between skips
 func (sr *SubcordantRunner) Skip() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
