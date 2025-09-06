@@ -53,7 +53,8 @@ jobs:
         done
 
     - name: Upload release assets
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v2
       with:
-        artifacts: dist/releases/*.tar.gz
-        tag: ${{ github.ref_name }}  # Use the release tag that triggered the workflow
+        files: dist/releases/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
