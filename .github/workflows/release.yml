@@ -37,7 +37,7 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: release-binaries
+        name: release-binaries-${{ matrix.goos }}-${{ matrix.goarch }}
         path: dist/releases/*.tar.gz
 
   upload:
@@ -49,7 +49,6 @@ jobs:
     - name: Download all build artifacts
       uses: actions/download-artifact@v4
       with:
-        name: release-binaries
         path: dist/releases
 
     - name: Upload release assets
