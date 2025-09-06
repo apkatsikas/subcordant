@@ -87,6 +87,12 @@ func (h *handler) cmdSkip(_ context.Context, _ cmdroute.CommandData) *api.Intera
 	}
 }
 
+func (h *handler) cmdHelp(_ context.Context, _ cmdroute.CommandData) *api.InteractionResponseData {
+	return &api.InteractionResponseData{
+		Content: option.NewNullableString(prettyPrintCommands()),
+	}
+}
+
 func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *handler {
 	hand := &handler{state: state}
 	hand.commandHandler = commandHandler
@@ -98,6 +104,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	hand.AddFunc(clearCommand, hand.cmdClear)
 	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
 	hand.AddFunc(skipCommand, hand.cmdSkip)
+	hand.AddFunc(helpCommand, hand.cmdHelp)
 
 	return hand
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,11 +25,19 @@ import (
 )
 
 const (
-	playCommand       = "play"
-	clearCommand      = "clear"
-	disconnectCommand = "disconnect"
-	skipCommand       = "skip"
-	optionAlbumId     = "albumid"
+	playCommand                  = "play"
+	playCommandDescription       = "play an album by album ID"
+	clearCommand                 = "clear"
+	clearCommandDescription      = "clears the playlist and stops playback"
+	disconnectCommand            = "disconnect"
+	disconnectCommandDescription = "disconnects the subcordant bot from the voice channel, " +
+		"stopping playback and clearing the playlist"
+	skipCommand            = "skip"
+	skipCommandDescription = "skips the surrently playing song"
+	helpCommand            = "help"
+	helpCommandDescription = "describes all Subcordant commands"
+
+	optionAlbumId = "albumid"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
@@ -42,10 +51,28 @@ type DiscordClient struct {
 	mu             sync.Mutex
 }
 
+var commandMap = map[string]string{
+	playCommand:       playCommandDescription,
+	clearCommand:      clearCommandDescription,
+	disconnectCommand: disconnectCommandDescription,
+	skipCommand:       skipCommandDescription,
+	helpCommand:       helpCommandDescription,
+}
+
+func prettyPrintCommands() string {
+	var sb strings.Builder
+	sb.WriteString("**Available Commands:**\n\n")
+
+	for cmd, desc := range commandMap {
+		sb.WriteString(fmt.Sprintf("- **%s**: %s\n", cmd, desc))
+	}
+	return sb.String()
+}
+
 var commands = []api.CreateCommandData{
 	{
 		Name:        playCommand,
-		Description: "play an album by album ID",
+		Description: playCommandDescription,
 		Options: []discord.CommandOption{
 			&discord.StringOption{
 				OptionName:  optionAlbumId,
@@ -56,16 +83,19 @@ var commands = []api.CreateCommandData{
 	},
 	{
 		Name:        clearCommand,
-		Description: "clears the playlist and stops playback",
+		Description: clearCommandDescription,
 	},
 	{
-		Name: disconnectCommand,
-		Description: "disconnects the subcordant bot from the voice channel, " +
-			"stopping playback and clearing the playlist",
+		Name:        disconnectCommand,
+		Description: disconnectCommandDescription,
 	},
 	{
 		Name:        skipCommand,
-		Description: "skips the surrently playing song",
+		Description: skipCommandDescription,
+	},
+	{
+		Name:        helpCommand,
+		Description: helpCommandDescription,
 	},
 }
 
