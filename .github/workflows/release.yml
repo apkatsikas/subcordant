@@ -32,7 +32,7 @@ jobs:
         fi
         version=${GITHUB_REF_NAME} # v0.8.1-beta.2, etc.
         tar -czf "dist/releases/subcordant-${version}-${{ matrix.goos }}-${archname}.tar.gz" \
-          -C "dist/${{ matrix.goos }}_${{ matrix.goarch }}" main
+          -C "dist/${{ matrix.goos }}_${{ matrix.goarch }}" subcordant
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
