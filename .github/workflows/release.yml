@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        goos: [windows, darwin, linux]
+        goarch: [amd64, arm64]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+          go-version-file: ./go.mod
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Build Go project for target OS and Arch
+      run: |
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/{{ matrix.goos }}_{{ matrix.goarch }}/main" ./cmd/main.go
+      env:
+        CGO_ENABLED: 0  # Disable cgo to avoid issues with cross-compilation
+
+    - name: Compress the binaries
+      run: |
+        # Create tar.gz archives for each binary
+        mkdir -p dist/releases
+        for os in windows darwin linux; do
+          for arch in amd64 arm64; do
+            if [[ "$os" == "darwin" && "$arch" == "amd64" ]]; then
+              arch="x86_64"  # For macOS, make sure we use the correct x86_64 name for macOS AMD64
+            fi
+            if [[ -f "dist/${os}_${arch}/main" ]]; then
+              tar -czf "dist/releases/${os}_${arch}.tar.gz" -C "dist" "${os}_${arch}/main"
+            fi
+          done
+        done
+
+    - name: Upload release assets
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: dist/releases/*.tar.gz
+        tag: ${{ github.ref_name }}  # Use the release tag that triggered the workflow
