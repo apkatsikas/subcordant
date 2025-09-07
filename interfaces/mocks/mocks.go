@@ -9,8 +9,8 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
+	"github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
 	"github.com/diamondburned/arikawa/v3/discord"
 	mock "github.com/stretchr/testify/mock"
@@ -77,8 +77,8 @@ func (_c *ICommandHandler_Disconnect_Call) RunAndReturn(run func()) *ICommandHan
 }
 
 // Play provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) Play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error) {
-	ret := _mock.Called(albumId, guildId, channelId)
+func (_mock *ICommandHandler) Play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error) {
+	ret := _mock.Called(subsonicId, guildId, channelId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Play")
@@ -87,15 +87,15 @@ func (_mock *ICommandHandler) Play(albumId string, guildId discord.GuildID, chan
 	var r0 types.PlaybackState
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
-		return returnFunc(albumId, guildId, channelId)
+		return returnFunc(subsonicId, guildId, channelId)
 	}
 	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
-		r0 = returnFunc(albumId, guildId, channelId)
+		r0 = returnFunc(subsonicId, guildId, channelId)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
 	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(albumId, guildId, channelId)
+		r1 = returnFunc(subsonicId, guildId, channelId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -108,14 +108,14 @@ type ICommandHandler_Play_Call struct {
 }
 
 // Play is a helper method to define mock.On call
-//   - albumId
+//   - subsonicId
 //   - guildId
 //   - channelId
-func (_e *ICommandHandler_Expecter) Play(albumId interface{}, guildId interface{}, channelId interface{}) *ICommandHandler_Play_Call {
-	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", albumId, guildId, channelId)}
+func (_e *ICommandHandler_Expecter) Play(subsonicId interface{}, guildId interface{}, channelId interface{}) *ICommandHandler_Play_Call {
+	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", subsonicId, guildId, channelId)}
 }
 
-func (_c *ICommandHandler_Play_Call) Run(run func(albumId string, guildId discord.GuildID, channelId discord.ChannelID)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) Run(run func(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID)) *ICommandHandler_Play_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
 	})
@@ -127,7 +127,7 @@ func (_c *ICommandHandler_Play_Call) Return(playbackState types.PlaybackState, e
 	return _c
 }
 
-func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -161,6 +161,39 @@ func (_c *ICommandHandler_Reset_Call) Return() *ICommandHandler_Reset_Call {
 }
 
 func (_c *ICommandHandler_Reset_Call) RunAndReturn(run func()) *ICommandHandler_Reset_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Skip provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) Skip() {
+	_mock.Called()
+	return
+}
+
+// ICommandHandler_Skip_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Skip'
+type ICommandHandler_Skip_Call struct {
+	*mock.Call
+}
+
+// Skip is a helper method to define mock.On call
+func (_e *ICommandHandler_Expecter) Skip() *ICommandHandler_Skip_Call {
+	return &ICommandHandler_Skip_Call{Call: _e.mock.On("Skip")}
+}
+
+func (_c *ICommandHandler_Skip_Call) Run(run func()) *ICommandHandler_Skip_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_Skip_Call) Return() *ICommandHandler_Skip_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *ICommandHandler_Skip_Call) RunAndReturn(run func()) *ICommandHandler_Skip_Call {
 	_c.Run(run)
 	return _c
 }
@@ -640,58 +673,58 @@ func (_m *ISubsonicClient) EXPECT() *ISubsonicClient_Expecter {
 	return &ISubsonicClient_Expecter{mock: &_m.Mock}
 }
 
-// GetAlbum provides a mock function for the type ISubsonicClient
-func (_mock *ISubsonicClient) GetAlbum(albumId string) (*subsonic.AlbumID3, error) {
-	ret := _mock.Called(albumId)
+// GetTracks provides a mock function for the type ISubsonicClient
+func (_mock *ISubsonicClient) GetTracks(id string) (*subsonic.TracksResult, error) {
+	ret := _mock.Called(id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAlbum")
+		panic("no return value specified for GetTracks")
 	}
 
-	var r0 *subsonic.AlbumID3
+	var r0 *subsonic.TracksResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic.AlbumID3, error)); ok {
-		return returnFunc(albumId)
+	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic.TracksResult, error)); ok {
+		return returnFunc(id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) *subsonic.AlbumID3); ok {
-		r0 = returnFunc(albumId)
+	if returnFunc, ok := ret.Get(0).(func(string) *subsonic.TracksResult); ok {
+		r0 = returnFunc(id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*subsonic.AlbumID3)
+			r0 = ret.Get(0).(*subsonic.TracksResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(albumId)
+		r1 = returnFunc(id)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// ISubsonicClient_GetAlbum_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAlbum'
-type ISubsonicClient_GetAlbum_Call struct {
+// ISubsonicClient_GetTracks_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTracks'
+type ISubsonicClient_GetTracks_Call struct {
 	*mock.Call
 }
 
-// GetAlbum is a helper method to define mock.On call
-//   - albumId
-func (_e *ISubsonicClient_Expecter) GetAlbum(albumId interface{}) *ISubsonicClient_GetAlbum_Call {
-	return &ISubsonicClient_GetAlbum_Call{Call: _e.mock.On("GetAlbum", albumId)}
+// GetTracks is a helper method to define mock.On call
+//   - id
+func (_e *ISubsonicClient_Expecter) GetTracks(id interface{}) *ISubsonicClient_GetTracks_Call {
+	return &ISubsonicClient_GetTracks_Call{Call: _e.mock.On("GetTracks", id)}
 }
 
-func (_c *ISubsonicClient_GetAlbum_Call) Run(run func(albumId string)) *ISubsonicClient_GetAlbum_Call {
+func (_c *ISubsonicClient_GetTracks_Call) Run(run func(id string)) *ISubsonicClient_GetTracks_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(string))
 	})
 	return _c
 }
 
-func (_c *ISubsonicClient_GetAlbum_Call) Return(albumID3 *subsonic.AlbumID3, err error) *ISubsonicClient_GetAlbum_Call {
-	_c.Call.Return(albumID3, err)
+func (_c *ISubsonicClient_GetTracks_Call) Return(tracksResult *subsonic.TracksResult, err error) *ISubsonicClient_GetTracks_Call {
+	_c.Call.Return(tracksResult, err)
 	return _c
 }
 
-func (_c *ISubsonicClient_GetAlbum_Call) RunAndReturn(run func(albumId string) (*subsonic.AlbumID3, error)) *ISubsonicClient_GetAlbum_Call {
+func (_c *ISubsonicClient_GetTracks_Call) RunAndReturn(run func(id string) (*subsonic.TracksResult, error)) *ISubsonicClient_GetTracks_Call {
 	_c.Call.Return(run)
 	return _c
 }

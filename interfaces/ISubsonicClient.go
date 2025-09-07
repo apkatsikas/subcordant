@@ -3,11 +3,11 @@ package interfaces
 import (
 	"net/url"
 
-	sub "github.com/apkatsikas/go-subsonic"
+	"github.com/apkatsikas/subcordant/subsonic"
 )
 
 type ISubsonicClient interface {
 	Init() error
-	GetAlbum(albumId string) (*sub.AlbumID3, error)
+	GetTracks(id string) (*subsonic.TracksResult, error)
 	StreamUrl(trackId string) (*url.URL, error)
 }

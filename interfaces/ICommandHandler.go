@@ -6,7 +6,7 @@ import (
 )
 
 type ICommandHandler interface {
-	Play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)
+	Play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)
 	Reset()
 	Disconnect()
 	Skip()

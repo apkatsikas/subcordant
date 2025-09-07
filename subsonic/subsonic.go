@@ -14,6 +14,11 @@ type SubsonicClient struct {
 	client *sub.Client
 }
 
+type TracksResult struct {
+	Name   string
+	Tracks []*sub.Child
+}
+
 func (sc *SubsonicClient) Init() error {
 	subsonicUrl := os.Getenv("SUBSONIC_URL")
 	subsonicUser := os.Getenv("SUBSONIC_USER")
@@ -44,13 +49,28 @@ func (sc *SubsonicClient) Init() error {
 	return nil
 }
 
-func (sc *SubsonicClient) GetAlbum(albumId string) (*sub.AlbumID3, error) {
-	albumResult, err := sc.client.GetAlbum(albumId)
+func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
+	tracks := &TracksResult{Tracks: []*sub.Child{}}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to get album with ID %v - %v", albumId, err)
+	if album, err := sc.client.GetAlbum(id); err == nil && album != nil {
+		tracks.Tracks = append(tracks.Tracks, album.Song...)
+		tracks.Name = fmt.Sprintf("album - %v", album.Name)
+		return tracks, nil
 	}
-	return albumResult, nil
+
+	if playlist, err := sc.client.GetPlaylist(id); err == nil && playlist != nil {
+		tracks.Tracks = append(tracks.Tracks, playlist.Entry...)
+		tracks.Name = fmt.Sprintf("playlist - %v", playlist.Name)
+		return tracks, nil
+	}
+
+	if track, err := sc.client.GetSong(id); err == nil && track != nil {
+		tracks.Tracks = append(tracks.Tracks, track)
+		tracks.Name = fmt.Sprintf("track - %v", track.Title)
+		return tracks, nil
+	}
+
+	return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
 }
 
 func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
