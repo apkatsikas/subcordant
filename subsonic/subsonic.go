@@ -2,6 +2,7 @@ package subsonic
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -51,9 +52,10 @@ func (sc *SubsonicClient) Init() error {
 
 func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
 	tracks := &TracksResult{}
+	tracks.Tracks = []*sub.Child{}
 	albumResult, err := sc.client.GetAlbum(id)
 
-	if err != nil {
+	if err != nil || albumResult != nil {
 		playlistResult, err := sc.client.GetPlaylist(id)
 
 		if err != nil {
@@ -62,13 +64,16 @@ func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
 				return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
 			}
 			tracks.Tracks = append(tracks.Tracks, track)
-			tracks.Name = track.Title
+			tracks.Name = fmt.Sprintf("track - %v", track.Title)
+			return tracks, nil
 		}
 		tracks.Tracks = append(tracks.Tracks, playlistResult.Entry...)
-		tracks.Name = playlistResult.Name
+		tracks.Name = fmt.Sprintf("playlist - %v", playlistResult.Name)
+		return tracks, nil
 	}
+	log.Printf("Got %v", albumResult)
 	tracks.Tracks = append(tracks.Tracks, albumResult.Song...)
-	tracks.Name = albumResult.Name
+	tracks.Name = fmt.Sprintf("album - %v", albumResult.Name)
 	return tracks, nil
 }
 

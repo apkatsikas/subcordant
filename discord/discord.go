@@ -37,7 +37,7 @@ const (
 	helpCommand            = "help"
 	helpCommandDescription = "describes all Subcordant commands"
 
-	optionalSubsonicId = "subsonicId"
+	optionalSubsonicId = "subsonicid"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
