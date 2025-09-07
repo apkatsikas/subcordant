@@ -17,9 +17,18 @@ jobs:
       with:
         go-version-file: ./go.mod
 
+    - name: Set binary name
+      id: binname
+      run: |
+        if [[ "${{ matrix.goos }}" == "windows" ]]; then
+          echo "binary_name=subcordant.exe" >> $GITHUB_OUTPUT
+        else
+          echo "binary_name=subcordant" >> $GITHUB_OUTPUT
+        fi
+
     - name: Build Go project for target OS and Arch
       run: |
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/${{ matrix.goos }}_${{ matrix.goarch }}/subcordant" ./cmd/main.go
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/${{ matrix.goos }}_${{ matrix.goarch }}/${{ steps.binname.outputs.binary_name }}" ./cmd/main.go
       env:
         CGO_ENABLED: 0
 
@@ -32,7 +41,7 @@ jobs:
         fi
         version=${GITHUB_REF_NAME} # v0.8.1-beta.2, etc.
         tar -czf "dist/releases/subcordant-${version}-${{ matrix.goos }}-${archname}.tar.gz" \
-          -C "dist/${{ matrix.goos }}_${{ matrix.goarch }}" subcordant
+          -C "dist/${{ matrix.goos }}_${{ matrix.goarch }}" ${{ steps.binname.outputs.binary_name }}
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
