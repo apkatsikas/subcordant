@@ -20,6 +20,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// TODO - fix tests
+// add tests
 const albumId = "foobar"
 
 var guildId discord.GuildID = discord.NullGuildID
