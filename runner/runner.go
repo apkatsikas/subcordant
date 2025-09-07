@@ -49,8 +49,7 @@ func (sr *SubcordantRunner) Init(
 func (sr *SubcordantRunner) queue(subsonicId string) error {
 	tracks, err := sr.subsonicClient.GetTracks(subsonicId)
 	if err != nil {
-		message := fmt.Sprintf("Could not find tracks with ID of %v", subsonicId)
-		sr.discordClient.SendMessage(message)
+		sr.discordClient.SendMessage(err.Error())
 		return err
 	}
 

@@ -49,32 +49,28 @@ func (sc *SubsonicClient) Init() error {
 	return nil
 }
 
-// TODO - dry it up?
-// add delay between API requests?
 func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
-	tracks := &TracksResult{}
-	tracks.Tracks = []*sub.Child{}
-	albumResult, err := sc.client.GetAlbum(id)
+	tracks := &TracksResult{Tracks: []*sub.Child{}}
 
-	if err != nil || albumResult == nil {
-		playlistResult, err := sc.client.GetPlaylist(id)
-
-		if err != nil || playlistResult == nil {
-			track, err := sc.client.GetSong(id)
-			if err != nil || track == nil {
-				return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
-			}
-			tracks.Tracks = append(tracks.Tracks, track)
-			tracks.Name = fmt.Sprintf("track - %v", track.Title)
-			return tracks, nil
-		}
-		tracks.Tracks = append(tracks.Tracks, playlistResult.Entry...)
-		tracks.Name = fmt.Sprintf("playlist - %v", playlistResult.Name)
+	if album, err := sc.client.GetAlbum(id); err == nil && album != nil {
+		tracks.Tracks = append(tracks.Tracks, album.Song...)
+		tracks.Name = fmt.Sprintf("album - %v", album.Name)
 		return tracks, nil
 	}
-	tracks.Tracks = append(tracks.Tracks, albumResult.Song...)
-	tracks.Name = fmt.Sprintf("album - %v", albumResult.Name)
-	return tracks, nil
+
+	if playlist, err := sc.client.GetPlaylist(id); err == nil && playlist != nil {
+		tracks.Tracks = append(tracks.Tracks, playlist.Entry...)
+		tracks.Name = fmt.Sprintf("playlist - %v", playlist.Name)
+		return tracks, nil
+	}
+
+	if track, err := sc.client.GetSong(id); err == nil && track != nil {
+		tracks.Tracks = append(tracks.Tracks, track)
+		tracks.Name = fmt.Sprintf("track - %v", track.Title)
+		return tracks, nil
+	}
+
+	return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
 }
 
 func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
