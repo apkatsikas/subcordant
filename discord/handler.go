@@ -24,8 +24,8 @@ type handler struct {
 }
 
 func (h *handler) cmdPlay(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
-	var albumId string
-	err := json.Unmarshal(cmd.Options.Find(optionAlbumId).Value, &albumId)
+	var subsonicId string
+	err := json.Unmarshal(cmd.Options.Find(optionalSubsonicId).Value, &subsonicId)
 	if err != nil {
 		errorMessage := fmt.Sprintf("ERROR: Failed to unmarshal JSON: %v", err)
 
@@ -53,15 +53,15 @@ func (h *handler) cmdPlay(_ context.Context, cmd cmdroute.CommandData) *api.Inte
 
 	h.LastChannelId = cmd.Event.ChannelID
 
-	go h.play(albumId, cmd.Event.GuildID, vs.ChannelID)
+	go h.play(subsonicId, cmd.Event.GuildID, vs.ChannelID)
 
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with albumid of %v", cmd.Name, albumId)),
+		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with subsonic ID of %v", cmd.Name, subsonicId)),
 	}
 }
 
-func (h *handler) play(albumId string, guildId discord.GuildID, channelId discord.ChannelID) {
-	if _, err := h.commandHandler.Play(albumId, guildId, channelId); err != nil {
+func (h *handler) play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) {
+	if _, err := h.commandHandler.Play(subsonicId, guildId, channelId); err != nil {
 		log.Printf("\nERROR: Play resulted in %v", err)
 	}
 }

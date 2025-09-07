@@ -26,7 +26,7 @@ import (
 
 const (
 	playCommand                  = "play"
-	playCommandDescription       = "play an album by album ID"
+	playCommandDescription       = "play an album, playlist or track by ID"
 	clearCommand                 = "clear"
 	clearCommandDescription      = "clears the playlist and stops playback"
 	disconnectCommand            = "disconnect"
@@ -37,7 +37,7 @@ const (
 	helpCommand            = "help"
 	helpCommandDescription = "describes all Subcordant commands"
 
-	optionAlbumId = "albumid"
+	optionalSubsonicId = "subsonicId"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
@@ -85,8 +85,8 @@ var commands = []api.CreateCommandData{
 		Description: playCommandDescription,
 		Options: []discord.CommandOption{
 			&discord.StringOption{
-				OptionName:  optionAlbumId,
-				Description: "ID of the album",
+				OptionName:  optionalSubsonicId,
+				Description: "ID of the subsonic album, playlist or track",
 				Required:    true,
 			},
 		},

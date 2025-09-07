@@ -46,18 +46,18 @@ func (sr *SubcordantRunner) Init(
 	return nil
 }
 
-func (sr *SubcordantRunner) queue(albumId string) error {
-	album, err := sr.subsonicClient.GetAlbum(albumId)
+func (sr *SubcordantRunner) queue(subsonicId string) error {
+	tracks, err := sr.subsonicClient.GetTracks(subsonicId)
 	if err != nil {
-		message := fmt.Sprintf("Could not find album with ID of %v", albumId)
+		message := fmt.Sprintf("Could not find tracks with ID of %v", subsonicId)
 		sr.discordClient.SendMessage(message)
 		return err
 	}
 
-	message := fmt.Sprintf("Queued album: %v", album.Name)
+	message := fmt.Sprintf("Queued tracks: %v", tracks.Name)
 	sr.discordClient.SendMessage(message)
 
-	for _, song := range album.Song {
+	for _, song := range tracks.Tracks {
 		sr.PlaylistService.Add(subsonic.ToTrack(song))
 	}
 	return nil
