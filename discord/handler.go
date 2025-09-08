@@ -25,15 +25,52 @@ type handler struct {
 
 func (h *handler) cmdPlay(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
 	var subsonicId string
-	err := json.Unmarshal(cmd.Options.Find(optionalSubsonicId).Value, &subsonicId)
-	if err != nil {
-		errorMessage := fmt.Sprintf("ERROR: Failed to unmarshal JSON: %v", err)
-
+	if err := json.Unmarshal(cmd.Options.Find(optionalSubsonicId).Value, &subsonicId); err != nil {
 		return &api.InteractionResponseData{
-			Content: option.NewNullableString(errorMessage),
+			Content: option.NewNullableString(fmt.Sprintf("ERROR: Failed to unmarshal JSON: %v", err)),
 		}
 	}
 
+	return h.runPlayCommand(
+		cmd,
+		func(guildId discord.GuildID, channelId discord.ChannelID) error {
+			_, err := h.commandHandler.Play(subsonicId, guildId, channelId)
+			return err
+		},
+		fmt.Sprintf("Received %v command with subsonic ID of %v", cmd.Name, subsonicId),
+	)
+}
+
+func (h *handler) cmdPlayTrackFromAlbum(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
+	var albumId string
+	if err := json.Unmarshal(cmd.Options.Find("albumId").Value, &albumId); err != nil {
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(fmt.Sprintf("ERROR: Failed to unmarshal albumId: %v", err)),
+		}
+	}
+
+	var trackNumber int
+	if err := json.Unmarshal(cmd.Options.Find("trackNumber").Value, &trackNumber); err != nil {
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(fmt.Sprintf("ERROR: Failed to unmarshal trackNumber: %v", err)),
+		}
+	}
+
+	return h.runPlayCommand(
+		cmd,
+		func(guildId discord.GuildID, channelId discord.ChannelID) error {
+			_, err := h.commandHandler.PlayTrackFromAlbum(albumId, trackNumber, guildId, channelId)
+			return err
+		},
+		fmt.Sprintf("Received %v command with album ID %v and track number %d", cmd.Name, albumId, trackNumber),
+	)
+}
+
+func (h *handler) runPlayCommand(
+	cmd cmdroute.CommandData,
+	playFn func(guildId discord.GuildID, channelId discord.ChannelID) error,
+	responseMsg string,
+) *api.InteractionResponseData {
 	vs, err := h.state.VoiceState(cmd.Event.GuildID, cmd.Event.Member.User.ID)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -53,16 +90,14 @@ func (h *handler) cmdPlay(_ context.Context, cmd cmdroute.CommandData) *api.Inte
 
 	h.LastChannelId = cmd.Event.ChannelID
 
-	go h.play(subsonicId, cmd.Event.GuildID, vs.ChannelID)
+	go func() {
+		if err := playFn(cmd.Event.GuildID, vs.ChannelID); err != nil {
+			log.Printf("\nERROR: playFn resulted in %v", err)
+		}
+	}()
 
 	return &api.InteractionResponseData{
-		Content: option.NewNullableString(fmt.Sprintf("Recieved %v command with subsonic ID of %v", cmd.Name, subsonicId)),
-	}
-}
-
-func (h *handler) play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) {
-	if _, err := h.commandHandler.Play(subsonicId, guildId, channelId); err != nil {
-		log.Printf("\nERROR: Play resulted in %v", err)
+		Content: option.NewNullableString(responseMsg),
 	}
 }
 
@@ -101,6 +136,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	// Automatically defer handles if they're slow.
 	hand.Use(cmdroute.Deferrable(state, cmdroute.DeferOpts{}))
 	hand.AddFunc(playCommand, hand.cmdPlay)
+	hand.AddFunc(playAlbumTrackCommand, hand.cmdPlayTrackFromAlbum)
 	hand.AddFunc(clearCommand, hand.cmdClear)
 	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
 	hand.AddFunc(skipCommand, hand.cmdSkip)
