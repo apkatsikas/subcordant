@@ -122,7 +122,7 @@ var commands = []api.CreateCommandData{
 				Description: "ID of the subsonic album",
 				Required:    true,
 			},
-			&discord.NumberOption{
+			&discord.IntegerOption{
 				OptionName:  optionalTrackNumber,
 				Description: "Number of the track from the album",
 				Required:    true,

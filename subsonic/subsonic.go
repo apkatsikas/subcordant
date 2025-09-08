@@ -88,7 +88,7 @@ func (sc *SubsonicClient) GetTrackFromAlbum(albumId string, trackNumber int) (*g
 			"track number %v was greater than album song count of %v", trackNumber, album.SongCount)
 	}
 
-	return album.Song[trackNumber], nil
+	return album.Song[trackNumber-1], nil
 }
 
 func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
