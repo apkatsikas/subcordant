@@ -21,7 +21,7 @@ Download a binary of Subcordant from the releases page for your desired platform
 
 Example on *nix:
 
-`tar -xzf /path/subcordant-v0.9.1-linux-amd64.tar.gz -C  /path/`
+`tar -xzf /path/subcordant-v1.0.0-linux-amd64.tar.gz -C  /path/`
 
 ## Building
 Run `make build`.
