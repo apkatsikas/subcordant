@@ -21,8 +21,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// TODO - fix tests
-// add tests
 const subsonicId = "foobar"
 
 var guildId discord.GuildID = discord.NullGuildID
