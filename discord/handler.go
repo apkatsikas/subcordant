@@ -49,6 +49,8 @@ func (h *handler) cmdPlayTrackFromAlbum(_ context.Context, cmd cmdroute.CommandD
 		}
 	}
 
+	// TODO - get unmarshalling working
+	// and add tests
 	var trackNumber int
 	if err := json.Unmarshal(cmd.Options.Find("trackNumber").Value, &trackNumber); err != nil {
 		return &api.InteractionResponseData{

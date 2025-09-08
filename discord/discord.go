@@ -116,6 +116,18 @@ var commands = []api.CreateCommandData{
 	{
 		Name:        playAlbumTrackCommand,
 		Description: playAlbumTrackCommandDescription,
+		Options: []discord.CommandOption{
+			&discord.StringOption{
+				OptionName:  optionalAlbumId,
+				Description: "ID of the subsonic album",
+				Required:    true,
+			},
+			&discord.NumberOption{
+				OptionName:  optionalTrackNumber,
+				Description: "Number of the track from the album",
+				Required:    true,
+			},
+		},
 	},
 }
 
