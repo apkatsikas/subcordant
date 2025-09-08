@@ -62,6 +62,20 @@ func (sr *SubcordantRunner) queue(subsonicId string) error {
 	return nil
 }
 
+func (sr *SubcordantRunner) queueTrackFromAlbum(subsonicId string, trackNumber int) error {
+	track, err := sr.subsonicClient.GetTrackFromAlbum(subsonicId, trackNumber)
+	if err != nil {
+		sr.discordClient.SendMessage(err.Error())
+		return err
+	}
+
+	message := fmt.Sprintf("Queued track: %v", track.Title)
+	sr.discordClient.SendMessage(message)
+
+	sr.PlaylistService.Add(subsonic.ToTrack(track))
+	return nil
+}
+
 func (sr *SubcordantRunner) Reset() {
 	sr.mu.Lock()
 	defer sr.mu.Unlock()
@@ -99,7 +113,11 @@ func (sr *SubcordantRunner) Disconnect() {
 	sr.discordClient.LeaveVoiceSession()
 }
 
-func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+func (sr *SubcordantRunner) playWithQueue(
+	guildId discord.GuildID,
+	switchToChannel discord.ChannelID,
+	queueFn func() error,
+) (types.PlaybackState, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -110,22 +128,32 @@ func (sr *SubcordantRunner) Play(albumId string, guildId discord.GuildID, switch
 		return types.Invalid, err
 	}
 
-	wantToSwitchChannels := switchToChannel.IsValid()
-	if wantToSwitchChannels {
+	if switchToChannel.IsValid() {
 		sr.Reset()
-		err := sr.discordClient.SwitchVoiceChannel(switchToChannel)
-		if err != nil {
+		if err := sr.discordClient.SwitchVoiceChannel(switchToChannel); err != nil {
 			sr.Reset()
 			sr.discordClient.SendMessage(fmt.Sprintf("Failed to switch channels, error is %v", err))
 			return types.Invalid, err
 		}
 	}
 
-	if err := sr.queue(albumId); err != nil {
+	if err := queueFn(); err != nil {
 		return types.Invalid, err
 	}
 
 	return sr.playLooper(ctx, cancel)
+}
+
+func (sr *SubcordantRunner) Play(subsonicId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	return sr.playWithQueue(guildId, switchToChannel, func() error {
+		return sr.queue(subsonicId)
+	})
+}
+
+func (sr *SubcordantRunner) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	return sr.playWithQueue(guildId, switchToChannel, func() error {
+		return sr.queueTrackFromAlbum(subsonicId, trackNumber)
+	})
 }
 
 func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.CancelFunc) (types.PlaybackState, error) {

@@ -9,8 +9,9 @@ import (
 	"io"
 	"net/url"
 
+	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
-	"github.com/apkatsikas/subcordant/subsonic"
+	subsonic0 "github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
 	"github.com/diamondburned/arikawa/v3/discord"
 	mock "github.com/stretchr/testify/mock"
@@ -673,24 +674,81 @@ func (_m *ISubsonicClient) EXPECT() *ISubsonicClient_Expecter {
 	return &ISubsonicClient_Expecter{mock: &_m.Mock}
 }
 
+// GetTrackFromAlbum provides a mock function for the type ISubsonicClient
+func (_mock *ISubsonicClient) GetTrackFromAlbum(albumId string, trackNumber int) (*subsonic.Child, error) {
+	ret := _mock.Called(albumId, trackNumber)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTrackFromAlbum")
+	}
+
+	var r0 *subsonic.Child
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, int) (*subsonic.Child, error)); ok {
+		return returnFunc(albumId, trackNumber)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, int) *subsonic.Child); ok {
+		r0 = returnFunc(albumId, trackNumber)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*subsonic.Child)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, int) error); ok {
+		r1 = returnFunc(albumId, trackNumber)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ISubsonicClient_GetTrackFromAlbum_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTrackFromAlbum'
+type ISubsonicClient_GetTrackFromAlbum_Call struct {
+	*mock.Call
+}
+
+// GetTrackFromAlbum is a helper method to define mock.On call
+//   - albumId
+//   - trackNumber
+func (_e *ISubsonicClient_Expecter) GetTrackFromAlbum(albumId interface{}, trackNumber interface{}) *ISubsonicClient_GetTrackFromAlbum_Call {
+	return &ISubsonicClient_GetTrackFromAlbum_Call{Call: _e.mock.On("GetTrackFromAlbum", albumId, trackNumber)}
+}
+
+func (_c *ISubsonicClient_GetTrackFromAlbum_Call) Run(run func(albumId string, trackNumber int)) *ISubsonicClient_GetTrackFromAlbum_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(int))
+	})
+	return _c
+}
+
+func (_c *ISubsonicClient_GetTrackFromAlbum_Call) Return(child *subsonic.Child, err error) *ISubsonicClient_GetTrackFromAlbum_Call {
+	_c.Call.Return(child, err)
+	return _c
+}
+
+func (_c *ISubsonicClient_GetTrackFromAlbum_Call) RunAndReturn(run func(albumId string, trackNumber int) (*subsonic.Child, error)) *ISubsonicClient_GetTrackFromAlbum_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetTracks provides a mock function for the type ISubsonicClient
-func (_mock *ISubsonicClient) GetTracks(id string) (*subsonic.TracksResult, error) {
+func (_mock *ISubsonicClient) GetTracks(id string) (*subsonic0.TracksResult, error) {
 	ret := _mock.Called(id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetTracks")
 	}
 
-	var r0 *subsonic.TracksResult
+	var r0 *subsonic0.TracksResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic.TracksResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic0.TracksResult, error)); ok {
 		return returnFunc(id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) *subsonic.TracksResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) *subsonic0.TracksResult); ok {
 		r0 = returnFunc(id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*subsonic.TracksResult)
+			r0 = ret.Get(0).(*subsonic0.TracksResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
@@ -719,12 +777,12 @@ func (_c *ISubsonicClient_GetTracks_Call) Run(run func(id string)) *ISubsonicCli
 	return _c
 }
 
-func (_c *ISubsonicClient_GetTracks_Call) Return(tracksResult *subsonic.TracksResult, err error) *ISubsonicClient_GetTracks_Call {
+func (_c *ISubsonicClient_GetTracks_Call) Return(tracksResult *subsonic0.TracksResult, err error) *ISubsonicClient_GetTracks_Call {
 	_c.Call.Return(tracksResult, err)
 	return _c
 }
 
-func (_c *ISubsonicClient_GetTracks_Call) RunAndReturn(run func(id string) (*subsonic.TracksResult, error)) *ISubsonicClient_GetTracks_Call {
+func (_c *ISubsonicClient_GetTracks_Call) RunAndReturn(run func(id string) (*subsonic0.TracksResult, error)) *ISubsonicClient_GetTracks_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -6,17 +6,17 @@ import (
 	"net/url"
 	"os"
 
-	sub "github.com/apkatsikas/go-subsonic"
+	gosubsonic "github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/types"
 )
 
 type SubsonicClient struct {
-	client *sub.Client
+	client *gosubsonic.Client
 }
 
 type TracksResult struct {
 	Name   string
-	Tracks []*sub.Child
+	Tracks []*gosubsonic.Child
 }
 
 func (sc *SubsonicClient) Init() error {
@@ -34,7 +34,7 @@ func (sc *SubsonicClient) Init() error {
 		return fmt.Errorf("SUBSONIC_PASSWORD must be set")
 	}
 
-	sc.client = &sub.Client{}
+	sc.client = &gosubsonic.Client{}
 	sc.client.Client = &http.Client{}
 
 	sc.client.BaseUrl = subsonicUrl
@@ -50,7 +50,7 @@ func (sc *SubsonicClient) Init() error {
 }
 
 func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
-	tracks := &TracksResult{Tracks: []*sub.Child{}}
+	tracks := &TracksResult{Tracks: []*gosubsonic.Child{}}
 
 	if album, err := sc.client.GetAlbum(id); err == nil && album != nil {
 		tracks.Tracks = append(tracks.Tracks, album.Song...)
@@ -73,6 +73,24 @@ func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
 	return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
 }
 
+func (sc *SubsonicClient) GetTrackFromAlbum(albumId string, trackNumber int) (*gosubsonic.Child, error) {
+	if trackNumber <= 0 {
+		return nil, fmt.Errorf("track number must be greater than 0")
+	}
+
+	album, err := sc.client.GetAlbum(albumId)
+	if err != nil || album == nil {
+		return nil, fmt.Errorf("could not find album with ID of %v", albumId)
+	}
+
+	if int(trackNumber) > album.SongCount {
+		return nil, fmt.Errorf(
+			"track number %v was greater than album song count of %v", trackNumber, album.SongCount)
+	}
+
+	return album.Song[trackNumber], nil
+}
+
 func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
 	streamUrl, err := sc.client.StreamUrl(trackId, nil)
 	if err != nil {
@@ -81,7 +99,7 @@ func (sc *SubsonicClient) StreamUrl(trackId string) (*url.URL, error) {
 	return streamUrl, nil
 }
 
-func ToTrack(c *sub.Child) types.Track {
+func ToTrack(c *gosubsonic.Child) types.Track {
 	return types.Track{
 		ID:   c.ID,
 		Path: c.Path,
