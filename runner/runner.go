@@ -128,7 +128,8 @@ func (sr *SubcordantRunner) playWithQueue(
 		return types.Invalid, err
 	}
 
-	if switchToChannel.IsValid() {
+	wantToSwitchChannels := switchToChannel.IsValid()
+	if wantToSwitchChannels {
 		sr.Reset()
 		if err := sr.discordClient.SwitchVoiceChannel(switchToChannel); err != nil {
 			sr.Reset()
