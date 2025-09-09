@@ -12,7 +12,7 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 * `/albumtrack` - takes an `albumid` parameter and `tracknumber` parameter. Behaves the same as the `/play` command, but instead targets a single track from the specified album/track number combination
 * `/clear` - clears the playlist and stops playback
 * `/disconnect` - disconnects the subcordant bot, stopping playback and clearing the playlist
-* `/skip` - skips the surrently playing song
+* `/skip` - skips the currently playing song
 * `/help` - describes all commands
 
 ## Downloading
