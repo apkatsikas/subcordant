@@ -32,12 +32,16 @@ const (
 	disconnectCommand            = "disconnect"
 	disconnectCommandDescription = "disconnects the subcordant bot from the voice channel, " +
 		"stopping playback and clearing the playlist"
-	skipCommand            = "skip"
-	skipCommandDescription = "skips the surrently playing song"
-	helpCommand            = "help"
-	helpCommandDescription = "describes all Subcordant commands"
+	skipCommand                      = "skip"
+	skipCommandDescription           = "skips the surrently playing song"
+	helpCommand                      = "help"
+	helpCommandDescription           = "describes all Subcordant commands"
+	playAlbumTrackCommand            = "albumtrack"
+	playAlbumTrackCommandDescription = "play a track from an album by albumid and track number"
 
-	optionalSubsonicId = "subsonicid"
+	optionalSubsonicId  = "subsonicid"
+	optionalAlbumId     = "albumid"
+	optionalTrackNumber = "tracknumber"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
@@ -52,15 +56,17 @@ type DiscordClient struct {
 }
 
 var commandMap = map[string]string{
-	playCommand:       playCommandDescription,
-	clearCommand:      clearCommandDescription,
-	disconnectCommand: disconnectCommandDescription,
-	skipCommand:       skipCommandDescription,
-	helpCommand:       helpCommandDescription,
+	playCommand:           playCommandDescription,
+	playAlbumTrackCommand: playAlbumTrackCommandDescription,
+	clearCommand:          clearCommandDescription,
+	disconnectCommand:     disconnectCommandDescription,
+	skipCommand:           skipCommandDescription,
+	helpCommand:           helpCommandDescription,
 }
 
 var commandOrder = []string{
 	playCommand,
+	playAlbumTrackCommand,
 	skipCommand,
 	clearCommand,
 	disconnectCommand,
@@ -106,6 +112,22 @@ var commands = []api.CreateCommandData{
 	{
 		Name:        helpCommand,
 		Description: helpCommandDescription,
+	},
+	{
+		Name:        playAlbumTrackCommand,
+		Description: playAlbumTrackCommandDescription,
+		Options: []discord.CommandOption{
+			&discord.StringOption{
+				OptionName:  optionalAlbumId,
+				Description: "ID of the subsonic album",
+				Required:    true,
+			},
+			&discord.IntegerOption{
+				OptionName:  optionalTrackNumber,
+				Description: "Number of the track from the album",
+				Required:    true,
+			},
+		},
 	},
 }
 

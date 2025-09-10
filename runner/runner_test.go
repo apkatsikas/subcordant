@@ -21,8 +21,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// TODO - fix tests
-// add tests
 const subsonicId = "foobar"
 
 var guildId discord.GuildID = discord.NullGuildID
@@ -83,6 +81,55 @@ var _ = DescribeTableSubtree("runner init and play",
 	Entry("1 song", 1),
 	Entry("2 songs", 2),
 )
+
+var _ = Describe("runner init and play track from album", func() {
+	const songTitle = "foobar"
+	const trackId = "fooid"
+	var songs = getSongs(1)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	var initError error
+	var playError error
+	var playState types.PlaybackState
+
+	BeforeEach(func() {
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
+		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
+		discordClient.EXPECT().SendMessage(fmt.Sprintf("Queued track: %v", songTitle)).Once()
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(1)
+		streamer = getStreamer(len(songs))
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil).Once()
+		subsonicClient.EXPECT().GetTrackFromAlbum(subsonicId, 1).Return(&gosubonic.Child{
+			Title: songTitle,
+			ID:    trackId,
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(trackId).Return(&url.URL{}, nil)
+		subcordantRunner = &runner.SubcordantRunner{}
+
+		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		playState, playError = subcordantRunner.PlayTrackFromAlbum(subsonicId, 1, guildId, dontSwitchChannels)
+	})
+
+	It("should not error", func() {
+		Expect(initError).NotTo(HaveOccurred())
+		Expect(playError).NotTo(HaveOccurred())
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should show complete playback", func() {
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should complete all tracks", func() {
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
+	})
+})
 
 var _ = DescribeTableSubtree("runner init and play",
 	func(songCount int) {
