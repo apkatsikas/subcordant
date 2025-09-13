@@ -73,6 +73,18 @@ func (sc *SubsonicClient) GetTracks(id string) (*TracksResult, error) {
 	return nil, fmt.Errorf("could not find an album, playlist or track with id of %v", id)
 }
 
+func (sc *SubsonicClient) GetTrackByName(query string) (*gosubsonic.Child, error) {
+	result, err := sc.client.Search3(query, map[string]string{
+		"artistCount": "0",
+		"songCount":   "1",
+		"albumCount":  "0",
+	})
+	if err != nil || len(result.Song) == 0 {
+		return nil, fmt.Errorf("found no tracks with query %v", query)
+	}
+	return result.Song[0], nil
+}
+
 func (sc *SubsonicClient) GetTrackFromAlbum(albumId string, trackNumber int) (*gosubsonic.Child, error) {
 	if trackNumber <= 0 {
 		return nil, fmt.Errorf("track number must be greater than 0")

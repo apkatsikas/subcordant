@@ -32,15 +32,18 @@ const (
 	disconnectCommand            = "disconnect"
 	disconnectCommandDescription = "disconnects the subcordant bot from the voice channel, " +
 		"stopping playback and clearing the playlist"
-	skipCommand                      = "skip"
-	skipCommandDescription           = "skips the surrently playing song"
-	helpCommand                      = "help"
-	helpCommandDescription           = "describes all Subcordant commands"
-	playAlbumTrackCommand            = "albumtrack"
-	playAlbumTrackCommandDescription = "play a track from an album by albumid and track number"
+	skipCommand                       = "skip"
+	skipCommandDescription            = "skips the surrently playing song"
+	helpCommand                       = "help"
+	helpCommandDescription            = "describes all Subcordant commands"
+	playAlbumTrackCommand             = "albumtrack"
+	playAlbumTrackCommandDescription  = "play a track from an album by albumid and track number"
+	playTrackByNameCommand            = "trackname"
+	playTrackByNameCommandDescription = "play a track by name"
 
 	optionalSubsonicId  = "subsonicid"
 	optionalAlbumId     = "albumid"
+	optionalTrackName   = "trackname"
 	optionalTrackNumber = "tracknumber"
 
 	// Optional to tweak the Opus stream.
@@ -56,17 +59,19 @@ type DiscordClient struct {
 }
 
 var commandMap = map[string]string{
-	playCommand:           playCommandDescription,
-	playAlbumTrackCommand: playAlbumTrackCommandDescription,
-	clearCommand:          clearCommandDescription,
-	disconnectCommand:     disconnectCommandDescription,
-	skipCommand:           skipCommandDescription,
-	helpCommand:           helpCommandDescription,
+	playCommand:            playCommandDescription,
+	playAlbumTrackCommand:  playAlbumTrackCommandDescription,
+	playTrackByNameCommand: playTrackByNameCommandDescription,
+	clearCommand:           clearCommandDescription,
+	disconnectCommand:      disconnectCommandDescription,
+	skipCommand:            skipCommandDescription,
+	helpCommand:            helpCommandDescription,
 }
 
 var commandOrder = []string{
 	playCommand,
 	playAlbumTrackCommand,
+	playTrackByNameCommand,
 	skipCommand,
 	clearCommand,
 	disconnectCommand,
@@ -125,6 +130,17 @@ var commands = []api.CreateCommandData{
 			&discord.IntegerOption{
 				OptionName:  optionalTrackNumber,
 				Description: "Number of the track from the album",
+				Required:    true,
+			},
+		},
+	},
+	{
+		Name:        playTrackByNameCommand,
+		Description: playTrackByNameCommandDescription,
+		Options: []discord.CommandOption{
+			&discord.StringOption{
+				OptionName:  optionalTrackName,
+				Description: "Name of the track",
 				Required:    true,
 			},
 		},

@@ -10,6 +10,7 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 ## Available Commands
 * `/play` - takes a `subsonicid` parameter. Connects the bot to the voice channel currently occupied by the command issuer, if it is not yet connected. Enqueues all tracks from the specified album, playlist or track and initates playback, if not already playing. If the bot is already present in a different voice channel, playback will stop, the current playlist will be cleared and the bot will join the new channel
 * `/albumtrack` - takes an `albumid` parameter and `tracknumber` parameter. Behaves the same as the `/play` command, but instead targets a single track from the specified album/track number combination
+* `/trackname` - take a `trackname` parameter. Behaves the same as the `albumtrack` command, but instead takes the track name
 * `/clear` - clears the playlist and stops playback
 * `/disconnect` - disconnects the subcordant bot, stopping playback and clearing the playlist
 * `/skip` - skips the currently playing song

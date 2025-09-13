@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	gosubonic "github.com/apkatsikas/go-subsonic"
+	gosubsonic "github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces/mocks"
 	"github.com/apkatsikas/subcordant/runner"
 	"github.com/apkatsikas/subcordant/subsonic"
@@ -105,7 +105,7 @@ var _ = Describe("runner init and play track from album", func() {
 		streamer = getStreamer(len(songs))
 		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
 		subsonicClient.EXPECT().Init().Return(nil).Once()
-		subsonicClient.EXPECT().GetTrackFromAlbum(subsonicId, 1).Return(&gosubonic.Child{
+		subsonicClient.EXPECT().GetTrackFromAlbum(subsonicId, 1).Return(&gosubsonic.Child{
 			Title: songTitle,
 			ID:    trackId,
 		}, nil).Once()
@@ -114,6 +114,56 @@ var _ = Describe("runner init and play track from album", func() {
 
 		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
 		playState, playError = subcordantRunner.PlayTrackFromAlbum(subsonicId, 1, guildId, dontSwitchChannels)
+	})
+
+	It("should not error", func() {
+		Expect(initError).NotTo(HaveOccurred())
+		Expect(playError).NotTo(HaveOccurred())
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should show complete playback", func() {
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should complete all tracks", func() {
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
+	})
+})
+
+var _ = Describe("runner init and play track by name", func() {
+	const songTitle = "foobart"
+	const query = "foo"
+	const trackId = "fooid"
+	var songs = getSongs(1)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	var initError error
+	var playError error
+	var playState types.PlaybackState
+
+	BeforeEach(func() {
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
+		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
+		discordClient.EXPECT().SendMessage(fmt.Sprintf("Queued track: %v", songTitle)).Once()
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(1)
+		streamer = getStreamer(len(songs))
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil).Once()
+		subsonicClient.EXPECT().GetTrackByName(query).Return(&gosubsonic.Child{
+			Title: songTitle,
+			ID:    trackId,
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(trackId).Return(&url.URL{}, nil)
+		subcordantRunner = &runner.SubcordantRunner{}
+
+		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		playState, playError = subcordantRunner.PlayTrackByName(query, guildId, dontSwitchChannels)
 	})
 
 	It("should not error", func() {
@@ -180,7 +230,7 @@ var _ = Describe("runner init and play resulting in a channel change during play
 	var album1Songs = getSongs(albumSongCount)
 	var album2Songs = getSongs(albumSongCount)
 	var songCount = albumSongCount
-	var firstSongFromAlbum1 = []*gosubonic.Child{album1Songs[0]}
+	var firstSongFromAlbum1 = []*gosubsonic.Child{album1Songs[0]}
 
 	var sf = discord.NewSnowflake(time.Now())
 	var switchToChannel = discord.ChannelID(sf)
@@ -202,7 +252,7 @@ var _ = Describe("runner init and play resulting in a channel change during play
 		// as a cancel func being run would normally interrupt the streamer.Stream
 		// function, but in our case its always hardcoded to 50ms, so this
 		// means the test won't behave like it would in real life
-		subsonicClient = getMultipleAlbumOneStreamSubsonicClient(map[string][]*gosubonic.Child{
+		subsonicClient = getMultipleAlbumOneStreamSubsonicClient(map[string][]*gosubsonic.Child{
 			album1Name: firstSongFromAlbum1,
 			album2Name: album2Songs,
 		})
@@ -241,7 +291,7 @@ var _ = Describe("runner init and play resulting in a failed channel change duri
 	const albumSongCount = 2
 	var album1Songs = getSongs(albumSongCount)
 	var songCount = 1
-	var firstSongFromAlbum1 = []*gosubonic.Child{album1Songs[0]}
+	var firstSongFromAlbum1 = []*gosubsonic.Child{album1Songs[0]}
 
 	var sf = discord.NewSnowflake(time.Now())
 	var switchToChannel = discord.ChannelID(sf)
@@ -262,7 +312,7 @@ var _ = Describe("runner init and play resulting in a failed channel change duri
 			fmt.Errorf("Failed to switch voice channel")).Once()
 
 		streamer = getStreamerDelay(songCount)
-		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*gosubonic.Child{
+		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*gosubsonic.Child{
 			album1Name: firstSongFromAlbum1,
 		})
 		subcordantRunner = &runner.SubcordantRunner{}
@@ -313,7 +363,7 @@ var _ = Describe("runner", func() {
 		// Add an additional JoinVoiceChat expectation
 		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
 		streamer = getStreamerDelay(songCount)
-		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*gosubonic.Child{
+		subsonicClient = getMultipleAlbumSubsonicClient(map[string][]*gosubsonic.Child{
 			album1Name: album1Songs,
 			album2Name: album2Songs,
 		})
@@ -752,7 +802,7 @@ func getStreamerDelay(songCount int) *mocks.IStreamer {
 	return streamer
 }
 
-func getSubsonicClient(songs []*gosubonic.Child, fromStream bool) *mocks.ISubsonicClient {
+func getSubsonicClient(songs []*gosubsonic.Child, fromStream bool) *mocks.ISubsonicClient {
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
 	subsonicClient.EXPECT().Init().Return(nil).Once()
 	subsonicClient.EXPECT().GetTracks(subsonicId).Return(&subsonic.TracksResult{
@@ -769,7 +819,7 @@ func getSubsonicClient(songs []*gosubonic.Child, fromStream bool) *mocks.ISubson
 	return subsonicClient
 }
 
-func getMultipleAlbumSubsonicClient(albumSongs map[string][]*gosubonic.Child) *mocks.ISubsonicClient {
+func getMultipleAlbumSubsonicClient(albumSongs map[string][]*gosubsonic.Child) *mocks.ISubsonicClient {
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
 	subsonicClient.EXPECT().Init().Return(nil).Once()
 
@@ -786,7 +836,7 @@ func getMultipleAlbumSubsonicClient(albumSongs map[string][]*gosubonic.Child) *m
 	return subsonicClient
 }
 
-func getMultipleAlbumOneStreamSubsonicClient(albumSongs map[string][]*gosubonic.Child) *mocks.ISubsonicClient {
+func getMultipleAlbumOneStreamSubsonicClient(albumSongs map[string][]*gosubsonic.Child) *mocks.ISubsonicClient {
 	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
 	subsonicClient.EXPECT().Init().Return(nil).Once()
 
@@ -801,10 +851,10 @@ func getMultipleAlbumOneStreamSubsonicClient(albumSongs map[string][]*gosubonic.
 	return subsonicClient
 }
 
-func getSongs(n int) []*gosubonic.Child {
-	songs := make([]*gosubonic.Child, int(n))
+func getSongs(n int) []*gosubsonic.Child {
+	songs := make([]*gosubsonic.Child, int(n))
 	for i := range songs {
-		songs[i] = &gosubonic.Child{
+		songs[i] = &gosubsonic.Child{
 			ID: fmt.Sprintf("%v%v", time.Now().String(), i),
 		}
 	}

@@ -76,6 +76,20 @@ func (sr *SubcordantRunner) queueTrackFromAlbum(subsonicId string, trackNumber i
 	return nil
 }
 
+func (sr *SubcordantRunner) queueTrackByName(query string) error {
+	track, err := sr.subsonicClient.GetTrackByName(query)
+	if err != nil {
+		sr.discordClient.SendMessage(err.Error())
+		return err
+	}
+
+	message := fmt.Sprintf("Queued track: %v", track.Title)
+	sr.discordClient.SendMessage(message)
+
+	sr.PlaylistService.Add(subsonic.ToTrack(track))
+	return nil
+}
+
 func (sr *SubcordantRunner) Reset() {
 	sr.mu.Lock()
 	defer sr.mu.Unlock()
@@ -154,6 +168,12 @@ func (sr *SubcordantRunner) Play(subsonicId string, guildId discord.GuildID, swi
 func (sr *SubcordantRunner) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	return sr.playWithQueue(guildId, switchToChannel, func() error {
 		return sr.queueTrackFromAlbum(subsonicId, trackNumber)
+	})
+}
+
+func (sr *SubcordantRunner) PlayTrackByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	return sr.playWithQueue(guildId, switchToChannel, func() error {
+		return sr.queueTrackByName(query)
 	})
 }
 
