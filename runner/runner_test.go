@@ -131,6 +131,56 @@ var _ = Describe("runner init and play track from album", func() {
 	})
 })
 
+var _ = Describe("runner init and play track by name", func() {
+	const songTitle = "foobart"
+	const query = "foo"
+	const trackId = "fooid"
+	var songs = getSongs(1)
+
+	var subcordantRunner *runner.SubcordantRunner
+	var discordClient *mocks.IDiscordClient
+	var subsonicClient *mocks.ISubsonicClient
+	var streamer *mocks.IStreamer
+
+	var initError error
+	var playError error
+	var playState types.PlaybackState
+
+	BeforeEach(func() {
+		discordClient = mocks.NewIDiscordClient(GinkgoT())
+		discordClient.EXPECT().Init(mock.AnythingOfType("*runner.SubcordantRunner")).Return(nil).Once()
+		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
+		discordClient.EXPECT().SendMessage(fmt.Sprintf("Queued track: %v", songTitle)).Once()
+		discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(1)
+		streamer = getStreamer(len(songs))
+		subsonicClient = mocks.NewISubsonicClient(GinkgoT())
+		subsonicClient.EXPECT().Init().Return(nil).Once()
+		subsonicClient.EXPECT().GetTrackByName(query).Return(&gosubsonic.Child{
+			Title: songTitle,
+			ID:    trackId,
+		}, nil).Once()
+		subsonicClient.EXPECT().StreamUrl(trackId).Return(&url.URL{}, nil)
+		subcordantRunner = &runner.SubcordantRunner{}
+
+		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		playState, playError = subcordantRunner.PlayTrackByName(query, guildId, dontSwitchChannels)
+	})
+
+	It("should not error", func() {
+		Expect(initError).NotTo(HaveOccurred())
+		Expect(playError).NotTo(HaveOccurred())
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should show complete playback", func() {
+		Expect(playState).To(Equal(types.PlaybackComplete))
+	})
+
+	It("should complete all tracks", func() {
+		Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
+	})
+})
+
 var _ = DescribeTableSubtree("runner init and play",
 	func(songCount int) {
 		var songs = getSongs(songCount)
