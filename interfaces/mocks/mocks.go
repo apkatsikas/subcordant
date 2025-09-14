@@ -133,6 +133,62 @@ func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(subsonicId string, gu
 	return _c
 }
 
+// PlayTrackByName provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) PlayTrackByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	ret := _mock.Called(query, guildId, switchToChannel)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PlayTrackByName")
+	}
+
+	var r0 types.PlaybackState
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
+		return returnFunc(query, guildId, switchToChannel)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
+		r0 = returnFunc(query, guildId, switchToChannel)
+	} else {
+		r0 = ret.Get(0).(types.PlaybackState)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
+		r1 = returnFunc(query, guildId, switchToChannel)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ICommandHandler_PlayTrackByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PlayTrackByName'
+type ICommandHandler_PlayTrackByName_Call struct {
+	*mock.Call
+}
+
+// PlayTrackByName is a helper method to define mock.On call
+//   - query
+//   - guildId
+//   - switchToChannel
+func (_e *ICommandHandler_Expecter) PlayTrackByName(query interface{}, guildId interface{}, switchToChannel interface{}) *ICommandHandler_PlayTrackByName_Call {
+	return &ICommandHandler_PlayTrackByName_Call{Call: _e.mock.On("PlayTrackByName", query, guildId, switchToChannel)}
+}
+
+func (_c *ICommandHandler_PlayTrackByName_Call) Run(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID)) *ICommandHandler_PlayTrackByName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_PlayTrackByName_Call) Return(playbackState types.PlaybackState, err error) *ICommandHandler_PlayTrackByName_Call {
+	_c.Call.Return(playbackState, err)
+	return _c
+}
+
+func (_c *ICommandHandler_PlayTrackByName_Call) RunAndReturn(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_PlayTrackByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // PlayTrackFromAlbum provides a mock function for the type ICommandHandler
 func (_mock *ICommandHandler) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	ret := _mock.Called(subsonicId, trackNumber, guildId, switchToChannel)
@@ -729,6 +785,62 @@ type ISubsonicClient_Expecter struct {
 
 func (_m *ISubsonicClient) EXPECT() *ISubsonicClient_Expecter {
 	return &ISubsonicClient_Expecter{mock: &_m.Mock}
+}
+
+// GetAlbumByName provides a mock function for the type ISubsonicClient
+func (_mock *ISubsonicClient) GetAlbumByName(query string) (*subsonic.AlbumID3, error) {
+	ret := _mock.Called(query)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAlbumByName")
+	}
+
+	var r0 *subsonic.AlbumID3
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (*subsonic.AlbumID3, error)); ok {
+		return returnFunc(query)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) *subsonic.AlbumID3); ok {
+		r0 = returnFunc(query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*subsonic.AlbumID3)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(query)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ISubsonicClient_GetAlbumByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAlbumByName'
+type ISubsonicClient_GetAlbumByName_Call struct {
+	*mock.Call
+}
+
+// GetAlbumByName is a helper method to define mock.On call
+//   - query
+func (_e *ISubsonicClient_Expecter) GetAlbumByName(query interface{}) *ISubsonicClient_GetAlbumByName_Call {
+	return &ISubsonicClient_GetAlbumByName_Call{Call: _e.mock.On("GetAlbumByName", query)}
+}
+
+func (_c *ISubsonicClient_GetAlbumByName_Call) Run(run func(query string)) *ISubsonicClient_GetAlbumByName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *ISubsonicClient_GetAlbumByName_Call) Return(albumID3 *subsonic.AlbumID3, err error) *ISubsonicClient_GetAlbumByName_Call {
+	_c.Call.Return(albumID3, err)
+	return _c
+}
+
+func (_c *ISubsonicClient_GetAlbumByName_Call) RunAndReturn(run func(query string) (*subsonic.AlbumID3, error)) *ISubsonicClient_GetAlbumByName_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // GetTrackByName provides a mock function for the type ISubsonicClient
