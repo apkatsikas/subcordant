@@ -91,7 +91,7 @@ func (sc *SubsonicClient) GetAlbumByName(query string) (*gosubsonic.AlbumID3, er
 		"songCount":   "0",
 		"albumCount":  "1",
 	})
-	if err != nil || len(result.Song) == 0 {
+	if err != nil || len(result.Album) == 0 {
 		return nil, fmt.Errorf("found no albums with query %v", query)
 	}
 	return result.Album[0], nil

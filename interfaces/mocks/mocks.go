@@ -133,6 +133,62 @@ func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(subsonicId string, gu
 	return _c
 }
 
+// PlayAlbumByName provides a mock function for the type ICommandHandler
+func (_mock *ICommandHandler) PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	ret := _mock.Called(query, guildId, switchToChannel)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PlayAlbumByName")
+	}
+
+	var r0 types.PlaybackState
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
+		return returnFunc(query, guildId, switchToChannel)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
+		r0 = returnFunc(query, guildId, switchToChannel)
+	} else {
+		r0 = ret.Get(0).(types.PlaybackState)
+	}
+	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
+		r1 = returnFunc(query, guildId, switchToChannel)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ICommandHandler_PlayAlbumByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PlayAlbumByName'
+type ICommandHandler_PlayAlbumByName_Call struct {
+	*mock.Call
+}
+
+// PlayAlbumByName is a helper method to define mock.On call
+//   - query
+//   - guildId
+//   - switchToChannel
+func (_e *ICommandHandler_Expecter) PlayAlbumByName(query interface{}, guildId interface{}, switchToChannel interface{}) *ICommandHandler_PlayAlbumByName_Call {
+	return &ICommandHandler_PlayAlbumByName_Call{Call: _e.mock.On("PlayAlbumByName", query, guildId, switchToChannel)}
+}
+
+func (_c *ICommandHandler_PlayAlbumByName_Call) Run(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID)) *ICommandHandler_PlayAlbumByName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
+	})
+	return _c
+}
+
+func (_c *ICommandHandler_PlayAlbumByName_Call) Return(playbackState types.PlaybackState, err error) *ICommandHandler_PlayAlbumByName_Call {
+	_c.Call.Return(playbackState, err)
+	return _c
+}
+
+func (_c *ICommandHandler_PlayAlbumByName_Call) RunAndReturn(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_PlayAlbumByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // PlayTrackByName provides a mock function for the type ICommandHandler
 func (_mock *ICommandHandler) PlayTrackByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	ret := _mock.Called(query, guildId, switchToChannel)
