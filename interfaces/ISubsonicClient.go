@@ -13,4 +13,5 @@ type ISubsonicClient interface {
 	StreamUrl(trackId string) (*url.URL, error)
 	GetTrackFromAlbum(albumId string, trackNumber int) (*gosubsonic.Child, error)
 	GetTrackByName(query string) (*gosubsonic.Child, error)
+	GetAlbumByName(query string) (*gosubsonic.AlbumID3, error)
 }

@@ -11,6 +11,7 @@ type ICommandHandler interface {
 		switchToChannel discord.ChannelID) (types.PlaybackState, error)
 	PlayTrackByName(
 		query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)
+	PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)
 	Reset()
 	Disconnect()
 	Skip()

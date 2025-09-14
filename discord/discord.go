@@ -40,11 +40,14 @@ const (
 	playAlbumTrackCommandDescription  = "play a track from an album by albumid and track number"
 	playTrackByNameCommand            = "trackname"
 	playTrackByNameCommandDescription = "play a track by name"
+	playAlbumByNameCommand            = "albumname"
+	playAlbumByNameCommandDescription = "play an album by name"
 
 	optionalSubsonicId  = "subsonicid"
 	optionalAlbumId     = "albumid"
 	optionalTrackName   = "trackname"
 	optionalTrackNumber = "tracknumber"
+	optionalAlbumName   = "albumname"
 
 	// Optional to tweak the Opus stream.
 	timeIncrement      = 2880
@@ -62,6 +65,7 @@ var commandMap = map[string]string{
 	playCommand:            playCommandDescription,
 	playAlbumTrackCommand:  playAlbumTrackCommandDescription,
 	playTrackByNameCommand: playTrackByNameCommandDescription,
+	playAlbumByNameCommand: playAlbumByNameCommandDescription,
 	clearCommand:           clearCommandDescription,
 	disconnectCommand:      disconnectCommandDescription,
 	skipCommand:            skipCommandDescription,
@@ -72,6 +76,7 @@ var commandOrder = []string{
 	playCommand,
 	playAlbumTrackCommand,
 	playTrackByNameCommand,
+	playAlbumByNameCommand,
 	skipCommand,
 	clearCommand,
 	disconnectCommand,
@@ -141,6 +146,17 @@ var commands = []api.CreateCommandData{
 			&discord.StringOption{
 				OptionName:  optionalTrackName,
 				Description: "Name of the track",
+				Required:    true,
+			},
+		},
+	},
+	{
+		Name:        playAlbumByNameCommand,
+		Description: playAlbumByNameCommandDescription,
+		Options: []discord.CommandOption{
+			&discord.StringOption{
+				OptionName:  optionalAlbumName,
+				Description: "Name of the album",
 				Required:    true,
 			},
 		},

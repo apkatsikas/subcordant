@@ -66,6 +66,24 @@ func (h *handler) cmdPlayTrackFromAlbum(_ context.Context, cmd cmdroute.CommandD
 	)
 }
 
+func (h *handler) cmdPlayAlbumByName(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
+	var albumName string
+	if err := json.Unmarshal(cmd.Options.Find("albumName").Value, &albumName); err != nil {
+		return &api.InteractionResponseData{
+			Content: option.NewNullableString(fmt.Sprintf("ERROR: Failed to unmarshal albumName: %v", err)),
+		}
+	}
+
+	return h.runPlayCommand(
+		cmd,
+		func(guildId discord.GuildID, channelId discord.ChannelID) error {
+			_, err := h.commandHandler.PlayAlbumByName(albumName, guildId, channelId)
+			return err
+		},
+		fmt.Sprintf("Received %v command with album name %v", cmd.Name, albumName),
+	)
+}
+
 func (h *handler) cmdPlayTrackByName(_ context.Context, cmd cmdroute.CommandData) *api.InteractionResponseData {
 	var trackName string
 	if err := json.Unmarshal(cmd.Options.Find("trackName").Value, &trackName); err != nil {
@@ -156,6 +174,7 @@ func newHandler(state *state.State, commandHandler interfaces.ICommandHandler) *
 	hand.AddFunc(playCommand, hand.cmdPlay)
 	hand.AddFunc(playAlbumTrackCommand, hand.cmdPlayTrackFromAlbum)
 	hand.AddFunc(playTrackByNameCommand, hand.cmdPlayTrackByName)
+	hand.AddFunc(playAlbumByNameCommand, hand.cmdPlayAlbumByName)
 	hand.AddFunc(clearCommand, hand.cmdClear)
 	hand.AddFunc(disconnectCommand, hand.cmdDisconnect)
 	hand.AddFunc(skipCommand, hand.cmdSkip)

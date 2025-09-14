@@ -181,6 +181,50 @@ var _ = Describe("runner init and play track by name", func() {
 	})
 })
 
+var _ = DescribeTableSubtree("runner init and play album by name",
+	func(songCount int) {
+		const query = "foo"
+		const albumID = "albumfoo"
+		var songs = getSongs(songCount)
+
+		var subcordantRunner *runner.SubcordantRunner
+		var discordClient *mocks.IDiscordClient
+		var subsonicClient *mocks.ISubsonicClient
+		var streamer *mocks.IStreamer
+
+		var initError error
+		var playError error
+		var playState types.PlaybackState
+
+		BeforeEach(func() {
+			discordClient = getDiscordClient([]string{query})
+			discordClient.EXPECT().GetVoice().Return(fakeWriter).Times(songCount)
+			streamer = getStreamer(len(songs))
+			subsonicClient = getSubsonicClientWithAlbumByName(query, albumID, songs, true)
+			subcordantRunner = &runner.SubcordantRunner{}
+
+			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+			playState, playError = subcordantRunner.PlayAlbumByName(query, guildId, dontSwitchChannels)
+		})
+
+		It("should not error", func() {
+			Expect(initError).NotTo(HaveOccurred())
+			Expect(playError).NotTo(HaveOccurred())
+			Expect(playState).To(Equal(types.PlaybackComplete))
+		})
+
+		It("should show complete playback", func() {
+			Expect(playState).To(Equal(types.PlaybackComplete))
+		})
+
+		It("should complete all tracks", func() {
+			Expect(subcordantRunner.GetPlaylist()).To(HaveLen(0))
+		})
+	},
+	Entry("1 song", 1),
+	Entry("2 songs", 2),
+)
+
 var _ = DescribeTableSubtree("runner init and play",
 	func(songCount int) {
 		var songs = getSongs(songCount)
@@ -809,6 +853,27 @@ func getSubsonicClient(songs []*gosubsonic.Child, fromStream bool) *mocks.ISubso
 		Name:   albumName,
 		Tracks: songs,
 	}, nil).Once()
+
+	if fromStream {
+		for _, song := range songs {
+			subsonicClient.EXPECT().StreamUrl(song.ID).Return(&url.URL{}, nil).Once()
+		}
+	}
+
+	return subsonicClient
+}
+
+func getSubsonicClientWithAlbumByName(query string, albumID string, songs []*gosubsonic.Child, fromStream bool) *mocks.ISubsonicClient {
+	subsonicClient := mocks.NewISubsonicClient(GinkgoT())
+	subsonicClient.EXPECT().Init().Return(nil).Once()
+	subsonicClient.EXPECT().GetAlbumByName(query).Return(&gosubsonic.AlbumID3{
+		ID: albumID,
+	}, nil).Once()
+
+	tracks := &subsonic.TracksResult{}
+	tracks.Tracks = append(tracks.Tracks, songs...)
+	tracks.Name = query
+	subsonicClient.EXPECT().GetTracks(albumID).Return(tracks, nil).Once()
 
 	if fromStream {
 		for _, song := range songs {

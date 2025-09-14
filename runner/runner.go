@@ -62,6 +62,16 @@ func (sr *SubcordantRunner) queue(subsonicId string) error {
 	return nil
 }
 
+func (sr *SubcordantRunner) queueAlbumFromQuery(query string) error {
+	albumID, err := sr.subsonicClient.GetAlbumByName(query)
+	if err != nil {
+		sr.discordClient.SendMessage(err.Error())
+		return err
+	}
+
+	return sr.queue(albumID.ID)
+}
+
 func (sr *SubcordantRunner) queueTrackFromAlbum(subsonicId string, trackNumber int) error {
 	track, err := sr.subsonicClient.GetTrackFromAlbum(subsonicId, trackNumber)
 	if err != nil {
@@ -168,6 +178,12 @@ func (sr *SubcordantRunner) Play(subsonicId string, guildId discord.GuildID, swi
 func (sr *SubcordantRunner) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
 	return sr.playWithQueue(guildId, switchToChannel, func() error {
 		return sr.queueTrackFromAlbum(subsonicId, trackNumber)
+	})
+}
+
+func (sr *SubcordantRunner) PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
+	return sr.playWithQueue(guildId, switchToChannel, func() error {
+		return sr.queueAlbumFromQuery(query)
 	})
 }
 
