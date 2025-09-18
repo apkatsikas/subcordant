@@ -208,6 +208,7 @@ func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.Cance
 	}
 
 	sr.cancelIdleDisconnectTimer() // Cancel any previous auto-disconnect timers
+	// TODO - after testing, change to minutes
 	defer sr.startIdleDisconnectTimer(time.Duration(sr.IdleDisconnectTimeout) * time.Second)
 
 	for {
