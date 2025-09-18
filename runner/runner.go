@@ -25,17 +25,24 @@ type SubcordantRunner struct {
 	mu         sync.Mutex
 	cancelPlay context.CancelFunc
 	flagutil.StreamFrom
-	autoDisconnectCancel context.CancelFunc
+	flagutil.IdleDisconnectTimeout
+	idleDisconnectCancel context.CancelFunc
 }
 
 func (sr *SubcordantRunner) Init(
 	subsonicClient interfaces.ISubsonicClient, discordClient interfaces.IDiscordClient,
-	streamer interfaces.IStreamer, streamFrom flagutil.StreamFrom) error {
+	streamer interfaces.IStreamer, streamFrom flagutil.StreamFrom,
+	idleDisconnectTimeout flagutil.IdleDisconnectTimeout) error {
 	sr.PlaylistService = &playlist.PlaylistService{}
 	sr.subsonicClient = subsonicClient
 	sr.discordClient = discordClient
 	sr.streamer = streamer
 	sr.StreamFrom = streamFrom
+
+	sr.IdleDisconnectTimeout = 5
+	if idleDisconnectTimeout > 0 {
+		sr.IdleDisconnectTimeout = idleDisconnectTimeout
+	}
 
 	if err := sr.subsonicClient.Init(); err != nil {
 		return err
@@ -109,7 +116,7 @@ func (sr *SubcordantRunner) Reset() {
 		sr.cancelPlay()
 	}
 	sr.playing = false
-	sr.autoDisconnectCancel = nil
+	sr.idleDisconnectCancel = nil
 }
 
 func (sr *SubcordantRunner) Skip() {
@@ -200,8 +207,8 @@ func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.Cance
 		return types.AlreadyPlaying, nil
 	}
 
-	sr.cancelAutoDisconnectTimer() // Cancel any previous auto-disconnect timers
-	defer sr.startAutoDisconnectTimer(20 * time.Second)
+	sr.cancelIdleDisconnectTimer() // Cancel any previous auto-disconnect timers
+	defer sr.startIdleDisconnectTimer(time.Duration(sr.IdleDisconnectTimeout) * time.Second)
 
 	for {
 		select {
@@ -222,7 +229,7 @@ func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.Cance
 
 		trackId := sr.PlaylistService.GetPlaylist()[0]
 		sr.mu.Unlock()
-		sr.cancelAutoDisconnectTimer() // cancel after every track plays
+		sr.cancelIdleDisconnectTimer() // cancel after every track plays
 		if err := sr.play(ctx, trackId); err != nil {
 			sr.PlaylistService.FinishTrack()
 			return types.Invalid, fmt.Errorf("playing track %s resulted in: %v", trackId, err)
@@ -233,14 +240,14 @@ func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.Cance
 	}
 }
 
-func (sr *SubcordantRunner) startAutoDisconnectTimer(duration time.Duration) {
+func (sr *SubcordantRunner) startIdleDisconnectTimer(duration time.Duration) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	sr.mu.Lock()
-	if sr.autoDisconnectCancel != nil {
-		sr.autoDisconnectCancel() // Cancel any previous timer
+	if sr.idleDisconnectCancel != nil {
+		sr.idleDisconnectCancel() // Cancel any previous timer
 	}
-	sr.autoDisconnectCancel = cancel
+	sr.idleDisconnectCancel = cancel
 	sr.mu.Unlock()
 
 	go func() {
@@ -253,11 +260,11 @@ func (sr *SubcordantRunner) startAutoDisconnectTimer(duration time.Duration) {
 	}()
 }
 
-func (sr *SubcordantRunner) cancelAutoDisconnectTimer() {
+func (sr *SubcordantRunner) cancelIdleDisconnectTimer() {
 	sr.mu.Lock()
-	if sr.autoDisconnectCancel != nil {
-		sr.autoDisconnectCancel()
-		sr.autoDisconnectCancel = nil
+	if sr.idleDisconnectCancel != nil {
+		sr.idleDisconnectCancel()
+		sr.idleDisconnectCancel = nil
 	}
 	sr.mu.Unlock()
 }

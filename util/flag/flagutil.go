@@ -3,6 +3,7 @@ package flagutil
 import (
 	"flag"
 	"fmt"
+	"strconv"
 	"sync"
 )
 
@@ -22,18 +23,36 @@ func (s *StreamFrom) Set(value string) error {
 	}
 }
 
+type IdleDisconnectTimeout int
+
+func (idt *IdleDisconnectTimeout) String() string {
+	return strconv.Itoa(int(*idt))
+}
+
+func (idt *IdleDisconnectTimeout) Set(value string) error {
+	timeout, err := strconv.Atoi(value)
+	if err != nil {
+		return fmt.Errorf("invalid value for idleDisconnectTimeout: %s", value)
+	}
+	*idt = IdleDisconnectTimeout(timeout)
+	return nil
+}
+
 const (
 	StreamFromFile   StreamFrom = "file"
 	StreamFromStream StreamFrom = "stream"
 )
 
 type FlagUtil struct {
-	StreamFrom StreamFrom
+	StreamFrom            StreamFrom
+	IdleDisconnectTimeout IdleDisconnectTimeout
 }
 
 func (fu *FlagUtil) Setup() {
 	flag.Var(&fu.StreamFrom, "streamFrom",
 		"Source from which to stream - valid values are 'file' or 'stream'")
+	flag.Var(&fu.IdleDisconnectTimeout, "idleDisconnectTimeout",
+		"Duration in minutes after which bot will disconnect when no music is playing")
 	flag.Parse()
 }
 
