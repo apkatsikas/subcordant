@@ -14,6 +14,8 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
+const defaultIdleTimeout = 5
+
 var timeBetweenSkips = time.Millisecond * 3500
 
 type SubcordantRunner struct {
@@ -39,7 +41,7 @@ func (sr *SubcordantRunner) Init(
 	sr.streamer = streamer
 	sr.StreamFrom = streamFrom
 
-	sr.IdleDisconnectTimeout = 5
+	sr.IdleDisconnectTimeout = defaultIdleTimeout
 	if idleDisconnectTimeout > 0 {
 		sr.IdleDisconnectTimeout = idleDisconnectTimeout
 	}
@@ -208,8 +210,7 @@ func (sr *SubcordantRunner) playLooper(ctx context.Context, cancel context.Cance
 	}
 
 	sr.cancelIdleDisconnectTimer() // Cancel any previous auto-disconnect timers
-	// TODO - after testing, change to minutes
-	defer sr.startIdleDisconnectTimer(time.Duration(sr.IdleDisconnectTimeout) * time.Second)
+	defer sr.startIdleDisconnectTimer(time.Duration(sr.IdleDisconnectTimeout) * time.Minute)
 
 	for {
 		select {
