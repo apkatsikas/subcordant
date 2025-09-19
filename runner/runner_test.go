@@ -60,7 +60,7 @@ var _ = DescribeTableSubtree("runner init and play",
 			subsonicClient = getSubsonicClient(songs, true)
 			subcordantRunner = &runner.SubcordantRunner{}
 
-			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 			playState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
 		})
 
@@ -112,7 +112,7 @@ var _ = Describe("runner init and play track from album", func() {
 		subsonicClient.EXPECT().StreamUrl(trackId).Return(&url.URL{}, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
 
-		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		playState, playError = subcordantRunner.PlayTrackFromAlbum(subsonicId, 1, guildId, dontSwitchChannels)
 	})
 
@@ -162,7 +162,7 @@ var _ = Describe("runner init and play track by name", func() {
 		subsonicClient.EXPECT().StreamUrl(trackId).Return(&url.URL{}, nil)
 		subcordantRunner = &runner.SubcordantRunner{}
 
-		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		playState, playError = subcordantRunner.PlayTrackByName(query, guildId, dontSwitchChannels)
 	})
 
@@ -203,7 +203,7 @@ var _ = DescribeTableSubtree("runner init and play album by name",
 			subsonicClient = getSubsonicClientWithAlbumByName(query, albumID, songs, true)
 			subcordantRunner = &runner.SubcordantRunner{}
 
-			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 			playState, playError = subcordantRunner.PlayAlbumByName(query, guildId, dontSwitchChannels)
 		})
 
@@ -245,7 +245,7 @@ var _ = DescribeTableSubtree("runner init and play",
 			subsonicClient = getSubsonicClient(songs, false)
 			subcordantRunner = &runner.SubcordantRunner{}
 
-			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromFile)
+			initError = subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromFile, 5)
 			playState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
 		})
 
@@ -304,7 +304,7 @@ var _ = Describe("runner init and play resulting in a channel change during play
 	})
 
 	It("should return playback complete state when invoked twice while playback is underway", func() {
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		var wg sync.WaitGroup
@@ -363,7 +363,7 @@ var _ = Describe("runner init and play resulting in a failed channel change duri
 	})
 
 	It("should return an invalid state when invoked twice - on the second time - while playback is underway", func() {
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		var wg sync.WaitGroup
@@ -415,7 +415,7 @@ var _ = Describe("runner", func() {
 	})
 
 	It("should return already playing state when invoked twice while playback is underway", func() {
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		var wg sync.WaitGroup
@@ -462,7 +462,7 @@ var _ = Describe("runner", func() {
 		}, nil).Once()
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil).Once()
 		subcordantRunner = &runner.SubcordantRunner{}
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -510,7 +510,7 @@ var _ = Describe("runner", func() {
 		}, nil).Once()
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(&url.URL{}, nil).Once()
 		subcordantRunner = &runner.SubcordantRunner{}
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -547,7 +547,7 @@ var _ = Describe("runner", func() {
 
 	It("should error on init if subsonic init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, mocks.NewIDiscordClient(GinkgoT()),
-			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream)
+			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream, 5)
 		Expect(err).To(HaveOccurred())
 	})
 })
@@ -567,7 +567,7 @@ var _ = Describe("runner", func() {
 
 	It("should error on init if discord init errors", func() {
 		err := subcordantRunner.Init(subsonicClient, discordClient,
-			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream)
+			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream, 5)
 		Expect(err).To(HaveOccurred())
 	})
 })
@@ -590,7 +590,7 @@ var _ = Describe("runner play if get album errors", func() {
 		discordClient.EXPECT().SendMessage(fmt.Sprintf("Could not find album with ID of %v", subsonicId)).Once()
 		discordClient.EXPECT().JoinVoiceChat(guildId, dontSwitchChannels).Return(dontSwitchChannels, nil).Once()
 		err := subcordantRunner.Init(subsonicClient, discordClient,
-			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream)
+			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
@@ -627,7 +627,7 @@ var _ = Describe("runner play if stream url errors", func() {
 		subsonicClient.EXPECT().StreamUrl(songs[0].ID).Return(nil, fmt.Errorf("stream url error")).Once()
 		discordClient = getDiscordClient([]string{albumName})
 		err := subcordantRunner.Init(subsonicClient, discordClient,
-			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream)
+			mocks.NewIStreamer(GinkgoT()), flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
@@ -662,7 +662,7 @@ var _ = Describe("runner play if prep stream from file errors, using stream from
 
 		streamer.EXPECT().PrepStreamFromStream(anyUrl).Return(fmt.Errorf("prep stream error")).Once()
 
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
@@ -701,7 +701,7 @@ var _ = Describe("runner play if prep stream from file errors, using stream from
 
 		streamer.EXPECT().PrepStreamFromFile(anyString).Return(fmt.Errorf("prep stream error")).Once()
 
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromFile)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromFile, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
@@ -742,7 +742,7 @@ var _ = Describe("runner play if stream errors", func() {
 		streamer.EXPECT().PrepStreamFromStream(anyUrl).Return(nil).Once()
 		streamer.EXPECT().Stream(anyCancelContext, fakeWriter).Return(fmt.Errorf("stream error")).Once()
 
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
@@ -783,7 +783,7 @@ var _ = Describe("runner play if join voice errors", func() {
 		discordClient.EXPECT().SendMessage(fmt.Sprintf("Could not join voice, error is %v", errorMessage))
 		streamer = mocks.NewIStreamer(GinkgoT())
 
-		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream)
+		err := subcordantRunner.Init(subsonicClient, discordClient, streamer, flagutil.StreamFromStream, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		playbackState, playError = subcordantRunner.Play(subsonicId, guildId, dontSwitchChannels)
