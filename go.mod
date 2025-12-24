@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c
-	github.com/diamondburned/arikawa/v3 v3.5.0
+	github.com/diamondburned/arikawa/v3 v3.6.0
 	github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647
 	github.com/joho/godotenv v1.5.1
 	github.com/onsi/ginkgo/v2 v2.23.4
@@ -31,3 +31,5 @@ require (
 	golang.org/x/tools v0.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/diamondburned/arikawa/v3 => github.com/apkatsikas/arikawa/v3 v3.0.0-20251224163247-7b43c971d013
