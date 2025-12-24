@@ -1,9 +1,9 @@
+github.com/apkatsikas/arikawa/v3 v3.0.0-20251224163247-7b43c971d013 h1:ZPAxrOUd4wiGK3Q6AJfosMwyGgrS63n4KBmWnQwuDfw=
+github.com/apkatsikas/arikawa/v3 v3.0.0-20251224163247-7b43c971d013/go.mod h1:thocAM2X8lRDHuEZR5vWYaT4w+tb/vOKa1qm+r0gs5A=
 github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c h1:ceGT/ngSdiaxb7fBTCVdjgfYmeqn8o8eB803onCKb6M=
 github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c/go.mod h1:eOu2jmR3ed7Dp0mXKqyf7oHXWujlTzDPFbOtoUAwDP4=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/diamondburned/arikawa/v3 v3.5.0 h1:Ct93e1kZBLqlwTB88oOSZ/B0zzqrn5MpRwfGYiH81d8=
-github.com/diamondburned/arikawa/v3 v3.5.0/go.mod h1:thocAM2X8lRDHuEZR5vWYaT4w+tb/vOKa1qm+r0gs5A=
 github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647 h1:TJWvffl1cMLzSOvw8Wv3CQicuU9NaKDKXvBfh5T9W00=
 github.com/diamondburned/oggreader v0.0.0-20201118014549-87df9534b647/go.mod h1:xEJuvlmPx1wBKUWkx+MUp1ULSMQwSM9FS+bnFJhPQkk=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
