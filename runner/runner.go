@@ -11,7 +11,7 @@ import (
 	"github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
 	flagutil "github.com/apkatsikas/subcordant/util/flag"
-	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/disgoorg/snowflake/v2"
 )
 
 const defaultIdleTimeout = 5
@@ -148,22 +148,26 @@ func (sr *SubcordantRunner) Disconnect() {
 	sr.discordClient.LeaveVoiceSession()
 }
 
+func (sr *SubcordantRunner) Shutdown() {
+	sr.Disconnect()
+	sr.discordClient.Shutdown()
+}
+
 func (sr *SubcordantRunner) playWithQueue(
-	guildId discord.GuildID,
-	switchToChannel discord.ChannelID,
+	switchToChannel snowflake.ID,
 	queueFn func() error,
 ) (types.PlaybackState, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	switchToChannel, err := sr.discordClient.JoinVoiceChat(guildId, switchToChannel)
+	switchToChannel, err := sr.discordClient.JoinVoiceChat(switchToChannel)
 	if err != nil {
 		sr.Reset()
 		sr.discordClient.SendMessage(fmt.Sprintf("Could not join voice, error is %v", err))
 		return types.Invalid, err
 	}
 
-	wantToSwitchChannels := switchToChannel.IsValid()
+	wantToSwitchChannels := switchToChannel != 0
 	if wantToSwitchChannels {
 		sr.Reset()
 		if err := sr.discordClient.SwitchVoiceChannel(switchToChannel); err != nil {
@@ -180,26 +184,26 @@ func (sr *SubcordantRunner) playWithQueue(
 	return sr.playLooper(ctx, cancel)
 }
 
-func (sr *SubcordantRunner) Play(subsonicId string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	return sr.playWithQueue(guildId, switchToChannel, func() error {
+func (sr *SubcordantRunner) Play(subsonicId string, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	return sr.playWithQueue(switchToChannel, func() error {
 		return sr.queue(subsonicId)
 	})
 }
 
-func (sr *SubcordantRunner) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	return sr.playWithQueue(guildId, switchToChannel, func() error {
+func (sr *SubcordantRunner) PlayTrackFromAlbum(subsonicId string, trackNumber int, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	return sr.playWithQueue(switchToChannel, func() error {
 		return sr.queueTrackFromAlbum(subsonicId, trackNumber)
 	})
 }
 
-func (sr *SubcordantRunner) PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	return sr.playWithQueue(guildId, switchToChannel, func() error {
+func (sr *SubcordantRunner) PlayAlbumByName(query string, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	return sr.playWithQueue(switchToChannel, func() error {
 		return sr.queueAlbumFromQuery(query)
 	})
 }
 
-func (sr *SubcordantRunner) PlayTrackByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	return sr.playWithQueue(guildId, switchToChannel, func() error {
+func (sr *SubcordantRunner) PlayTrackByName(query string, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	return sr.playWithQueue(switchToChannel, func() error {
 		return sr.queueTrackByName(query)
 	})
 }
@@ -286,7 +290,7 @@ func (sr *SubcordantRunner) play(context context.Context, track types.Track) err
 		if err := sr.streamer.PrepStreamFromFile(track.Path); err != nil {
 			return err
 		}
-		return sr.streamer.Stream(context, sr.discordClient.GetVoice())
+		return sr.streamer.Stream(context, sr.discordClient.SetFrameProvider)
 	}
 
 	streamUrl, err := sr.subsonicClient.StreamUrl(track.ID)
@@ -297,5 +301,5 @@ func (sr *SubcordantRunner) play(context context.Context, track types.Track) err
 	if err := sr.streamer.PrepStreamFromStream(streamUrl); err != nil {
 		return err
 	}
-	return sr.streamer.Stream(context, sr.discordClient.GetVoice())
+	return sr.streamer.Stream(context, sr.discordClient.SetFrameProvider)
 }

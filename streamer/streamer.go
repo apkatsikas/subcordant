@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
 
 	"github.com/apkatsikas/subcordant/constants"
-	"github.com/diamondburned/oggreader"
+	"github.com/disgoorg/disgo/voice"
 )
+
+const frameBuffer = 100
 
 type Streamer struct {
 	stdout io.ReadCloser
@@ -43,7 +46,7 @@ func (s *Streamer) prepStream(streamFromStream bool, inputString string) error {
 	if err != nil {
 		stdout.Close()
 		s.stdout.Close()
-		s.cmd.Cancel()
+		safeCancel(s.cmd.Cancel)
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 	s.stdout = stdout
@@ -51,58 +54,62 @@ func (s *Streamer) prepStream(streamFromStream bool, inputString string) error {
 	if err := s.cmd.Start(); err != nil {
 		stdout.Close()
 		s.stdout.Close()
-		s.cmd.Cancel()
+		safeCancel(s.cmd.Cancel)
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Streamer) Stream(ctx context.Context, voice io.Writer) error {
-	defer s.stdout.Close()
+func (s *Streamer) Stream(
+	ctx context.Context,
+	setFrameProvider func(voice.OpusFrameProvider),
+) error {
+	frameQueue := newOpusFrameQueue(frameBuffer)
+	setFrameProvider(frameQueue)
 
 	decodingDone := make(chan error, 1)
+
 	go func() {
-		if err := oggreader.DecodeBuffered(voice, s.stdout); err != nil {
+		defer close(frameQueue.frames)
+
+		if err := demuxOpusFromOGGBuffered(frameQueue, s.stdout); err != nil {
 			decodingDone <- fmt.Errorf("failed to decode ogg: %w", err)
 			return
 		}
 		decodingDone <- nil
 	}()
 
+	cleanup := func() {
+		s.stdout.Close()
+		frameQueue.Close()
+		if s.cmd != nil {
+			safeCancel(s.cmd.Cancel)
+		}
+	}
+
 	select {
 	case <-ctx.Done():
-		if s.stdout != nil && s.stdout.Close() != nil {
-			s.stdout.Close()
-		}
-		if s.cmd != nil && s.cmd.Cancel != nil {
-			s.cmd.Cancel()
-		}
-
+		cleanup()
 		return nil
+
 	case err := <-decodingDone:
 		if err != nil {
-			if s.stdout != nil && s.stdout.Close() != nil {
-				s.stdout.Close()
-			}
-			if s.cmd != nil && s.cmd.Cancel != nil {
-				s.cmd.Cancel()
-			}
+			cleanup()
 			return err
 		}
 	}
 
-	if err := s.cmd.Wait(); err != nil {
-		if s.stdout != nil && s.stdout.Close() != nil {
-			s.stdout.Close()
-		}
-		if s.cmd != nil && s.cmd.Cancel != nil {
-			s.cmd.Cancel()
-		}
-		return fmt.Errorf("failed to finish ffmpeg: %w", err)
-	}
-
 	return nil
+}
+
+func safeCancel(cancel func() error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("panic during cmd.Cancel(): %v", r)
+		}
+	}()
+	cancel()
 }
 
 func getArgs(streamFromStream bool, inputString string) []string {
