@@ -1,5 +1,5 @@
 package constants
 
 const (
-	FrameDuration = 60 // ms
+	FrameDuration = 20 // ms
 )
