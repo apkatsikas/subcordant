@@ -193,7 +193,12 @@ main() {
 
     detect_environment
 
-    is_sha=$(echo "$VERSION" | grep -E "^[0-9a-fA-F]{7,40}$" >/dev/null 2>&1; echo $?)
+    echo "$VERSION" | grep -E "^[0-9a-fA-F]{7,40}$" >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        is_sha=0
+    else
+        is_sha=1
+    fi
     if [ "$is_sha" -eq 0 ]; then
         version="$VERSION"
     else
