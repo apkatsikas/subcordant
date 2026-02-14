@@ -49,8 +49,8 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          chmod +x ./scripts/libdave-install.sh
-          ./scripts/libdave-install.sh v1.1.0
+          chmod +x ./scripts/libdave_install.sh
+          ./scripts/libdave_install.sh v1.1.0
         env:
           NON_INTERACTIVE: 1
 
@@ -58,7 +58,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          ./scripts/libdave-install.ps1 -Version v1.1.0
+          ./scripts/libdave_install.ps1 -Version v1.1.0
 
       - name: Set binary name
         id: binname
