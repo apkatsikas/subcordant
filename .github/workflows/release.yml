@@ -84,6 +84,11 @@ jobs:
             export CXX=aarch64-linux-gnu-g++
           fi
 
+          # Fix macOS pkg-config path so cgo finds libdave
+          if [[ "${{ matrix.goos }}" == "darwin" ]]; then
+            export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig"
+          fi
+
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
           CGO_ENABLED=1 \
