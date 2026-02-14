@@ -45,6 +45,10 @@ jobs:
         with:
           go-version-file: ./go.mod
 
+      - name: Install pkg-config (macOS)
+        if: matrix.goos == 'darwin'
+        run: brew install pkg-config
+
       - name: Install libdave (Unix)
         if: runner.os != 'Windows'
         shell: bash
