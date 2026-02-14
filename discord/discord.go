@@ -204,9 +204,7 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 }
 
 func (dc *DiscordClient) SendMessage(message string) {
-	_, err := dc.bot.Rest.CreateMessage(dc.LastChannelId, discord.NewMessageCreateBuilder().
-		SetContent(message).
-		Build())
+	_, err := dc.bot.Rest.CreateMessage(dc.LastChannelId, discord.NewMessageCreateV2(discord.NewTextDisplay(message)))
 	if err != nil {
 		log.Printf("ERROR: send message resulted in %v", err)
 	}
