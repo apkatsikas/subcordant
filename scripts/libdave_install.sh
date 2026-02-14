@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -eux
 
 # --- Configuration & Globals ---
 REPO_OWNER="discord"
