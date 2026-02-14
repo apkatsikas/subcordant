@@ -1,5 +1,5 @@
 #!/bin/sh
-set -u
+set -eu
 
 # --- Configuration & Globals ---
 REPO_OWNER="discord"
@@ -38,7 +38,7 @@ detect_environment() {
         Darwin)
             OS="macos"; LIB_EXT="dylib"; LIB_VAR="DYLD_LIBRARY_PATH"; GITHUB_OS="macOS" ;;
         MSYS*|MINGW*|CYGWIN*)
-            OS="win"; LIB_EXT="lib"; LIB_VAR="PATH"; GITHUB_OS="Windows" ;;
+            error_exit "Unsupported OS: $PLATFORM (use powershell installer on Windows)" ;;
         *) error_exit "Unsupported OS: $PLATFORM" ;;
     esac
 
@@ -135,7 +135,7 @@ Name: dave
 Description: Discord Audio & Video End-to-End Encryption (DAVE) Protocol
 Version: $VERSION
 URL: $LIBDAVE_REPO
-Libs: -L\${libdir} -ldave -Wl,-rpath,\${libdir}
+Libs: -L\${libdir} -ldave -Wl,-rpath,'$ORIGIN'
 Cflags: -I\${includedir}
 EOF
 }
@@ -147,7 +147,7 @@ update_shell_profile() {
     esac
 
     pc_line="export PKG_CONFIG_PATH=\"\$HOME/.local/lib/pkgconfig:\$PKG_CONFIG_PATH\""
-    path_line="export PATH=\"\$HOME/.local/path:\$PATH\""
+    path_line="export PATH=\"\$HOME/.local/bin:\$PATH\""
 
     # Use grep -F for fixed string matching
     needs_pc=0;
