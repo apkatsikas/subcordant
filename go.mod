@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c
 	github.com/disgoorg/disgo v0.19.2
-	github.com/disgoorg/godave/golibdave v0.0.0-20260211223842-18cd5c306076
+	github.com/disgoorg/godave/golibdave v0.1.0
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/joho/godotenv v1.5.1
 	github.com/onsi/ginkgo/v2 v2.23.4
@@ -15,8 +15,8 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/disgoorg/godave v0.0.0-20260211223842-18cd5c306076 // indirect
-	github.com/disgoorg/godave/libdave v0.0.0-20260211223842-18cd5c306076 // indirect
+	github.com/disgoorg/godave v0.1.0 // indirect
+	github.com/disgoorg/godave/libdave v0.1.0 // indirect
 	github.com/disgoorg/json/v2 v2.0.0 // indirect
 	github.com/disgoorg/omit v1.0.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
