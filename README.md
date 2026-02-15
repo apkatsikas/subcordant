@@ -18,15 +18,9 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 - `/skip` - skips the currently playing song
 - `/help` - describes all commands
 
-## Downloading
-
-Download a binary of Subcordant from the releases page for your desired platform and extract.
-
-Example on \*nix:
-
-`tar -xzf /path/subcordant-v1.0.0-linux-amd64.tar.gz -C  /path/`
-
 ## Building
+
+Depending on your operating system, run either [libdave_install.sh](scripts/libdave_install.sh) or [libdave_install.ps1](scripts/libdave_install.ps1). For more info see [the docs](https://github.com/disgoorg/godave/tree/master?tab=readme-ov-file#libdave-installation).
 
 Run `make build`.
 
@@ -82,11 +76,3 @@ Subcordant makes use of the following:
 - [Ginkgo](https://github.com/onsi/ginkgo) - testing framework
 - [Mockery](https://vektra.github.io/mockery/latest/) - for generating mocks from interfaces
 - [Testify](https://github.com/stretchr/testify?tab=readme-ov-file#mock-package) - for the mock package
-
-dont force libdave build on push check
-use matrix of releases
-update install docs
-make release binaries work on every Linux distro automatically
-Environment=LD_LIBRARY_PATH=/opt/subcordant vs Build with rpath:
-
--Wl,-rpath,'$ORIGIN'
