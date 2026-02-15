@@ -86,3 +86,7 @@ Subcordant makes use of the following:
 dont force libdave build on push check
 use matrix of releases
 update install docs
+make release binaries work on every Linux distro automatically
+Environment=LD_LIBRARY_PATH=/opt/subcordant vs Build with rpath:
+
+-Wl,-rpath,'$ORIGIN'

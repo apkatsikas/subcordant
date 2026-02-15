@@ -76,7 +76,7 @@ jobs:
           path: dist/releases/*.tar.gz
 
   upload:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     permissions:
       contents: write
