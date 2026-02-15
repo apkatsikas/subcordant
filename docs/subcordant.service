@@ -16,6 +16,7 @@ Environment=SUBSONIC_URL=https://foobar
 Environment=SUBSONIC_USER=foobar
 Environment=SUBSONIC_PASSWORD=foobar
 Environment=DISCORD_BOT_TOKEN=foobar
+Environment=LD_LIBRARY_PATH=/opt/subcordant
 Restart=on-failure
 KillMode=control-group
 KillSignal=SIGINT
