@@ -47,8 +47,9 @@ jobs:
         run: |
           mkdir -p dist/${{ matrix.goos }}_${{ matrix.goarch }}
 
-          # Make CGO find libdave
           export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig"
+          export CGO_LDFLAGS="-L$HOME/.local/lib"
+          export CGO_CFLAGS="-I$HOME/.local/include"
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
