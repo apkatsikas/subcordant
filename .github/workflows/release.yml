@@ -27,11 +27,12 @@ jobs:
         with:
           go-version-file: ./go.mod
 
-      - name: Install libdave
+      - name: Install libdave from source
+        if: matrix.goos == 'linux'
         shell: bash
         run: |
           chmod +x ./scripts/libdave_install.sh
-          ./scripts/libdave_install.sh v1.1.0
+          FORCE_BUILD=1 ./scripts/libdave_install.sh v1.1.0
         env:
           NON_INTERACTIVE: 1
 
