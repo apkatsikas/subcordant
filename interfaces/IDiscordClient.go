@@ -1,16 +1,16 @@
 package interfaces
 
 import (
-	"io"
-
-	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/disgoorg/disgo/voice"
+	"github.com/disgoorg/snowflake/v2"
 )
 
 type IDiscordClient interface {
 	Init(commandHandler ICommandHandler) error
-	JoinVoiceChat(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error)
-	SwitchVoiceChannel(channelId discord.ChannelID) error
+	JoinVoiceChat(channelId snowflake.ID) (snowflake.ID, error)
+	SwitchVoiceChannel(channelId snowflake.ID) error
 	SendMessage(message string)
-	GetVoice() io.Writer
 	LeaveVoiceSession()
+	Shutdown()
+	SetFrameProvider(frameProvider voice.OpusFrameProvider)
 }

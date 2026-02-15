@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   check:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -12,6 +11,14 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
+      - name: Install NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: Install libdave
+        run: NON_INTERACTIVE=1 FORCE_BUILD=1 ./scripts/libdave_install.sh v1.1.0
+      - name: Add local bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Set libdave env variables
+        run: echo "PKG_CONFIG_PATH=$HOME/.local/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
       - name: Check Build
         run: make check-build
       - name: Install Staticcheck

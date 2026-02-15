@@ -6,14 +6,14 @@ package mocks
 
 import (
 	"context"
-	"io"
 	"net/url"
 
 	"github.com/apkatsikas/go-subsonic"
 	"github.com/apkatsikas/subcordant/interfaces"
 	subsonic0 "github.com/apkatsikas/subcordant/subsonic"
 	"github.com/apkatsikas/subcordant/types"
-	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/disgoorg/disgo/voice"
+	"github.com/disgoorg/snowflake/v2"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -78,8 +78,8 @@ func (_c *ICommandHandler_Disconnect_Call) RunAndReturn(run func()) *ICommandHan
 }
 
 // Play provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) Play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error) {
-	ret := _mock.Called(subsonicId, guildId, channelId)
+func (_mock *ICommandHandler) Play(subsonicId string, channelId snowflake.ID) (types.PlaybackState, error) {
+	ret := _mock.Called(subsonicId, channelId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Play")
@@ -87,16 +87,16 @@ func (_mock *ICommandHandler) Play(subsonicId string, guildId discord.GuildID, c
 
 	var r0 types.PlaybackState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
-		return returnFunc(subsonicId, guildId, channelId)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) (types.PlaybackState, error)); ok {
+		return returnFunc(subsonicId, channelId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
-		r0 = returnFunc(subsonicId, guildId, channelId)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) types.PlaybackState); ok {
+		r0 = returnFunc(subsonicId, channelId)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(subsonicId, guildId, channelId)
+	if returnFunc, ok := ret.Get(1).(func(string, snowflake.ID) error); ok {
+		r1 = returnFunc(subsonicId, channelId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -110,15 +110,14 @@ type ICommandHandler_Play_Call struct {
 
 // Play is a helper method to define mock.On call
 //   - subsonicId
-//   - guildId
 //   - channelId
-func (_e *ICommandHandler_Expecter) Play(subsonicId interface{}, guildId interface{}, channelId interface{}) *ICommandHandler_Play_Call {
-	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", subsonicId, guildId, channelId)}
+func (_e *ICommandHandler_Expecter) Play(subsonicId interface{}, channelId interface{}) *ICommandHandler_Play_Call {
+	return &ICommandHandler_Play_Call{Call: _e.mock.On("Play", subsonicId, channelId)}
 }
 
-func (_c *ICommandHandler_Play_Call) Run(run func(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) Run(run func(subsonicId string, channelId snowflake.ID)) *ICommandHandler_Play_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
+		run(args[0].(string), args[1].(snowflake.ID))
 	})
 	return _c
 }
@@ -128,14 +127,14 @@ func (_c *ICommandHandler_Play_Call) Return(playbackState types.PlaybackState, e
 	return _c
 }
 
-func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
+func (_c *ICommandHandler_Play_Call) RunAndReturn(run func(subsonicId string, channelId snowflake.ID) (types.PlaybackState, error)) *ICommandHandler_Play_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // PlayAlbumByName provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	ret := _mock.Called(query, guildId, switchToChannel)
+func (_mock *ICommandHandler) PlayAlbumByName(query string, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	ret := _mock.Called(query, switchToChannel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PlayAlbumByName")
@@ -143,16 +142,16 @@ func (_mock *ICommandHandler) PlayAlbumByName(query string, guildId discord.Guil
 
 	var r0 types.PlaybackState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
-		return returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) (types.PlaybackState, error)); ok {
+		return returnFunc(query, switchToChannel)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
-		r0 = returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) types.PlaybackState); ok {
+		r0 = returnFunc(query, switchToChannel)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(1).(func(string, snowflake.ID) error); ok {
+		r1 = returnFunc(query, switchToChannel)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -166,15 +165,14 @@ type ICommandHandler_PlayAlbumByName_Call struct {
 
 // PlayAlbumByName is a helper method to define mock.On call
 //   - query
-//   - guildId
 //   - switchToChannel
-func (_e *ICommandHandler_Expecter) PlayAlbumByName(query interface{}, guildId interface{}, switchToChannel interface{}) *ICommandHandler_PlayAlbumByName_Call {
-	return &ICommandHandler_PlayAlbumByName_Call{Call: _e.mock.On("PlayAlbumByName", query, guildId, switchToChannel)}
+func (_e *ICommandHandler_Expecter) PlayAlbumByName(query interface{}, switchToChannel interface{}) *ICommandHandler_PlayAlbumByName_Call {
+	return &ICommandHandler_PlayAlbumByName_Call{Call: _e.mock.On("PlayAlbumByName", query, switchToChannel)}
 }
 
-func (_c *ICommandHandler_PlayAlbumByName_Call) Run(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID)) *ICommandHandler_PlayAlbumByName_Call {
+func (_c *ICommandHandler_PlayAlbumByName_Call) Run(run func(query string, switchToChannel snowflake.ID)) *ICommandHandler_PlayAlbumByName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
+		run(args[0].(string), args[1].(snowflake.ID))
 	})
 	return _c
 }
@@ -184,14 +182,14 @@ func (_c *ICommandHandler_PlayAlbumByName_Call) Return(playbackState types.Playb
 	return _c
 }
 
-func (_c *ICommandHandler_PlayAlbumByName_Call) RunAndReturn(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_PlayAlbumByName_Call {
+func (_c *ICommandHandler_PlayAlbumByName_Call) RunAndReturn(run func(query string, switchToChannel snowflake.ID) (types.PlaybackState, error)) *ICommandHandler_PlayAlbumByName_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // PlayTrackByName provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) PlayTrackByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	ret := _mock.Called(query, guildId, switchToChannel)
+func (_mock *ICommandHandler) PlayTrackByName(query string, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	ret := _mock.Called(query, switchToChannel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PlayTrackByName")
@@ -199,16 +197,16 @@ func (_mock *ICommandHandler) PlayTrackByName(query string, guildId discord.Guil
 
 	var r0 types.PlaybackState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
-		return returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) (types.PlaybackState, error)); ok {
+		return returnFunc(query, switchToChannel)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
-		r0 = returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, snowflake.ID) types.PlaybackState); ok {
+		r0 = returnFunc(query, switchToChannel)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	if returnFunc, ok := ret.Get(1).(func(string, discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(query, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(1).(func(string, snowflake.ID) error); ok {
+		r1 = returnFunc(query, switchToChannel)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -222,15 +220,14 @@ type ICommandHandler_PlayTrackByName_Call struct {
 
 // PlayTrackByName is a helper method to define mock.On call
 //   - query
-//   - guildId
 //   - switchToChannel
-func (_e *ICommandHandler_Expecter) PlayTrackByName(query interface{}, guildId interface{}, switchToChannel interface{}) *ICommandHandler_PlayTrackByName_Call {
-	return &ICommandHandler_PlayTrackByName_Call{Call: _e.mock.On("PlayTrackByName", query, guildId, switchToChannel)}
+func (_e *ICommandHandler_Expecter) PlayTrackByName(query interface{}, switchToChannel interface{}) *ICommandHandler_PlayTrackByName_Call {
+	return &ICommandHandler_PlayTrackByName_Call{Call: _e.mock.On("PlayTrackByName", query, switchToChannel)}
 }
 
-func (_c *ICommandHandler_PlayTrackByName_Call) Run(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID)) *ICommandHandler_PlayTrackByName_Call {
+func (_c *ICommandHandler_PlayTrackByName_Call) Run(run func(query string, switchToChannel snowflake.ID)) *ICommandHandler_PlayTrackByName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(discord.GuildID), args[2].(discord.ChannelID))
+		run(args[0].(string), args[1].(snowflake.ID))
 	})
 	return _c
 }
@@ -240,14 +237,14 @@ func (_c *ICommandHandler_PlayTrackByName_Call) Return(playbackState types.Playb
 	return _c
 }
 
-func (_c *ICommandHandler_PlayTrackByName_Call) RunAndReturn(run func(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_PlayTrackByName_Call {
+func (_c *ICommandHandler_PlayTrackByName_Call) RunAndReturn(run func(query string, switchToChannel snowflake.ID) (types.PlaybackState, error)) *ICommandHandler_PlayTrackByName_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // PlayTrackFromAlbum provides a mock function for the type ICommandHandler
-func (_mock *ICommandHandler) PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error) {
-	ret := _mock.Called(subsonicId, trackNumber, guildId, switchToChannel)
+func (_mock *ICommandHandler) PlayTrackFromAlbum(subsonicId string, trackNumber int, switchToChannel snowflake.ID) (types.PlaybackState, error) {
+	ret := _mock.Called(subsonicId, trackNumber, switchToChannel)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PlayTrackFromAlbum")
@@ -255,16 +252,16 @@ func (_mock *ICommandHandler) PlayTrackFromAlbum(subsonicId string, trackNumber 
 
 	var r0 types.PlaybackState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string, int, discord.GuildID, discord.ChannelID) (types.PlaybackState, error)); ok {
-		return returnFunc(subsonicId, trackNumber, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, int, snowflake.ID) (types.PlaybackState, error)); ok {
+		return returnFunc(subsonicId, trackNumber, switchToChannel)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string, int, discord.GuildID, discord.ChannelID) types.PlaybackState); ok {
-		r0 = returnFunc(subsonicId, trackNumber, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(0).(func(string, int, snowflake.ID) types.PlaybackState); ok {
+		r0 = returnFunc(subsonicId, trackNumber, switchToChannel)
 	} else {
 		r0 = ret.Get(0).(types.PlaybackState)
 	}
-	if returnFunc, ok := ret.Get(1).(func(string, int, discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(subsonicId, trackNumber, guildId, switchToChannel)
+	if returnFunc, ok := ret.Get(1).(func(string, int, snowflake.ID) error); ok {
+		r1 = returnFunc(subsonicId, trackNumber, switchToChannel)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -279,15 +276,14 @@ type ICommandHandler_PlayTrackFromAlbum_Call struct {
 // PlayTrackFromAlbum is a helper method to define mock.On call
 //   - subsonicId
 //   - trackNumber
-//   - guildId
 //   - switchToChannel
-func (_e *ICommandHandler_Expecter) PlayTrackFromAlbum(subsonicId interface{}, trackNumber interface{}, guildId interface{}, switchToChannel interface{}) *ICommandHandler_PlayTrackFromAlbum_Call {
-	return &ICommandHandler_PlayTrackFromAlbum_Call{Call: _e.mock.On("PlayTrackFromAlbum", subsonicId, trackNumber, guildId, switchToChannel)}
+func (_e *ICommandHandler_Expecter) PlayTrackFromAlbum(subsonicId interface{}, trackNumber interface{}, switchToChannel interface{}) *ICommandHandler_PlayTrackFromAlbum_Call {
+	return &ICommandHandler_PlayTrackFromAlbum_Call{Call: _e.mock.On("PlayTrackFromAlbum", subsonicId, trackNumber, switchToChannel)}
 }
 
-func (_c *ICommandHandler_PlayTrackFromAlbum_Call) Run(run func(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID)) *ICommandHandler_PlayTrackFromAlbum_Call {
+func (_c *ICommandHandler_PlayTrackFromAlbum_Call) Run(run func(subsonicId string, trackNumber int, switchToChannel snowflake.ID)) *ICommandHandler_PlayTrackFromAlbum_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(int), args[2].(discord.GuildID), args[3].(discord.ChannelID))
+		run(args[0].(string), args[1].(int), args[2].(snowflake.ID))
 	})
 	return _c
 }
@@ -297,7 +293,7 @@ func (_c *ICommandHandler_PlayTrackFromAlbum_Call) Return(playbackState types.Pl
 	return _c
 }
 
-func (_c *ICommandHandler_PlayTrackFromAlbum_Call) RunAndReturn(run func(subsonicId string, trackNumber int, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)) *ICommandHandler_PlayTrackFromAlbum_Call {
+func (_c *ICommandHandler_PlayTrackFromAlbum_Call) RunAndReturn(run func(subsonicId string, trackNumber int, switchToChannel snowflake.ID) (types.PlaybackState, error)) *ICommandHandler_PlayTrackFromAlbum_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -395,52 +391,6 @@ func (_m *IDiscordClient) EXPECT() *IDiscordClient_Expecter {
 	return &IDiscordClient_Expecter{mock: &_m.Mock}
 }
 
-// GetVoice provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) GetVoice() io.Writer {
-	ret := _mock.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetVoice")
-	}
-
-	var r0 io.Writer
-	if returnFunc, ok := ret.Get(0).(func() io.Writer); ok {
-		r0 = returnFunc()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.Writer)
-		}
-	}
-	return r0
-}
-
-// IDiscordClient_GetVoice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVoice'
-type IDiscordClient_GetVoice_Call struct {
-	*mock.Call
-}
-
-// GetVoice is a helper method to define mock.On call
-func (_e *IDiscordClient_Expecter) GetVoice() *IDiscordClient_GetVoice_Call {
-	return &IDiscordClient_GetVoice_Call{Call: _e.mock.On("GetVoice")}
-}
-
-func (_c *IDiscordClient_GetVoice_Call) Run(run func()) *IDiscordClient_GetVoice_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *IDiscordClient_GetVoice_Call) Return(writer io.Writer) *IDiscordClient_GetVoice_Call {
-	_c.Call.Return(writer)
-	return _c
-}
-
-func (_c *IDiscordClient_GetVoice_Call) RunAndReturn(run func() io.Writer) *IDiscordClient_GetVoice_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Init provides a mock function for the type IDiscordClient
 func (_mock *IDiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 	ret := _mock.Called(commandHandler)
@@ -487,25 +437,25 @@ func (_c *IDiscordClient_Init_Call) RunAndReturn(run func(commandHandler interfa
 }
 
 // JoinVoiceChat provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) JoinVoiceChat(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error) {
-	ret := _mock.Called(guildId, channelId)
+func (_mock *IDiscordClient) JoinVoiceChat(channelId snowflake.ID) (snowflake.ID, error) {
+	ret := _mock.Called(channelId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for JoinVoiceChat")
 	}
 
-	var r0 discord.ChannelID
+	var r0 snowflake.ID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(discord.GuildID, discord.ChannelID) (discord.ChannelID, error)); ok {
-		return returnFunc(guildId, channelId)
+	if returnFunc, ok := ret.Get(0).(func(snowflake.ID) (snowflake.ID, error)); ok {
+		return returnFunc(channelId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(discord.GuildID, discord.ChannelID) discord.ChannelID); ok {
-		r0 = returnFunc(guildId, channelId)
+	if returnFunc, ok := ret.Get(0).(func(snowflake.ID) snowflake.ID); ok {
+		r0 = returnFunc(channelId)
 	} else {
-		r0 = ret.Get(0).(discord.ChannelID)
+		r0 = ret.Get(0).(snowflake.ID)
 	}
-	if returnFunc, ok := ret.Get(1).(func(discord.GuildID, discord.ChannelID) error); ok {
-		r1 = returnFunc(guildId, channelId)
+	if returnFunc, ok := ret.Get(1).(func(snowflake.ID) error); ok {
+		r1 = returnFunc(channelId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -518,25 +468,24 @@ type IDiscordClient_JoinVoiceChat_Call struct {
 }
 
 // JoinVoiceChat is a helper method to define mock.On call
-//   - guildId
 //   - channelId
-func (_e *IDiscordClient_Expecter) JoinVoiceChat(guildId interface{}, channelId interface{}) *IDiscordClient_JoinVoiceChat_Call {
-	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", guildId, channelId)}
+func (_e *IDiscordClient_Expecter) JoinVoiceChat(channelId interface{}) *IDiscordClient_JoinVoiceChat_Call {
+	return &IDiscordClient_JoinVoiceChat_Call{Call: _e.mock.On("JoinVoiceChat", channelId)}
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(guildId discord.GuildID, channelId discord.ChannelID)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) Run(run func(channelId snowflake.ID)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(discord.GuildID), args[1].(discord.ChannelID))
+		run(args[0].(snowflake.ID))
 	})
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) Return(channelID discord.ChannelID, err error) *IDiscordClient_JoinVoiceChat_Call {
-	_c.Call.Return(channelID, err)
+func (_c *IDiscordClient_JoinVoiceChat_Call) Return(iD snowflake.ID, err error) *IDiscordClient_JoinVoiceChat_Call {
+	_c.Call.Return(iD, err)
 	return _c
 }
 
-func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(guildId discord.GuildID, channelId discord.ChannelID) (discord.ChannelID, error)) *IDiscordClient_JoinVoiceChat_Call {
+func (_c *IDiscordClient_JoinVoiceChat_Call) RunAndReturn(run func(channelId snowflake.ID) (snowflake.ID, error)) *IDiscordClient_JoinVoiceChat_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -608,8 +557,75 @@ func (_c *IDiscordClient_SendMessage_Call) RunAndReturn(run func(message string)
 	return _c
 }
 
+// SetFrameProvider provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) SetFrameProvider(frameProvider voice.OpusFrameProvider) {
+	_mock.Called(frameProvider)
+	return
+}
+
+// IDiscordClient_SetFrameProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetFrameProvider'
+type IDiscordClient_SetFrameProvider_Call struct {
+	*mock.Call
+}
+
+// SetFrameProvider is a helper method to define mock.On call
+//   - frameProvider
+func (_e *IDiscordClient_Expecter) SetFrameProvider(frameProvider interface{}) *IDiscordClient_SetFrameProvider_Call {
+	return &IDiscordClient_SetFrameProvider_Call{Call: _e.mock.On("SetFrameProvider", frameProvider)}
+}
+
+func (_c *IDiscordClient_SetFrameProvider_Call) Run(run func(frameProvider voice.OpusFrameProvider)) *IDiscordClient_SetFrameProvider_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(voice.OpusFrameProvider))
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_SetFrameProvider_Call) Return() *IDiscordClient_SetFrameProvider_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *IDiscordClient_SetFrameProvider_Call) RunAndReturn(run func(frameProvider voice.OpusFrameProvider)) *IDiscordClient_SetFrameProvider_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Shutdown provides a mock function for the type IDiscordClient
+func (_mock *IDiscordClient) Shutdown() {
+	_mock.Called()
+	return
+}
+
+// IDiscordClient_Shutdown_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Shutdown'
+type IDiscordClient_Shutdown_Call struct {
+	*mock.Call
+}
+
+// Shutdown is a helper method to define mock.On call
+func (_e *IDiscordClient_Expecter) Shutdown() *IDiscordClient_Shutdown_Call {
+	return &IDiscordClient_Shutdown_Call{Call: _e.mock.On("Shutdown")}
+}
+
+func (_c *IDiscordClient_Shutdown_Call) Run(run func()) *IDiscordClient_Shutdown_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *IDiscordClient_Shutdown_Call) Return() *IDiscordClient_Shutdown_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *IDiscordClient_Shutdown_Call) RunAndReturn(run func()) *IDiscordClient_Shutdown_Call {
+	_c.Run(run)
+	return _c
+}
+
 // SwitchVoiceChannel provides a mock function for the type IDiscordClient
-func (_mock *IDiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) error {
+func (_mock *IDiscordClient) SwitchVoiceChannel(channelId snowflake.ID) error {
 	ret := _mock.Called(channelId)
 
 	if len(ret) == 0 {
@@ -617,7 +633,7 @@ func (_mock *IDiscordClient) SwitchVoiceChannel(channelId discord.ChannelID) err
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(discord.ChannelID) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(snowflake.ID) error); ok {
 		r0 = returnFunc(channelId)
 	} else {
 		r0 = ret.Error(0)
@@ -636,9 +652,9 @@ func (_e *IDiscordClient_Expecter) SwitchVoiceChannel(channelId interface{}) *ID
 	return &IDiscordClient_SwitchVoiceChannel_Call{Call: _e.mock.On("SwitchVoiceChannel", channelId)}
 }
 
-func (_c *IDiscordClient_SwitchVoiceChannel_Call) Run(run func(channelId discord.ChannelID)) *IDiscordClient_SwitchVoiceChannel_Call {
+func (_c *IDiscordClient_SwitchVoiceChannel_Call) Run(run func(channelId snowflake.ID)) *IDiscordClient_SwitchVoiceChannel_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(discord.ChannelID))
+		run(args[0].(snowflake.ID))
 	})
 	return _c
 }
@@ -648,7 +664,7 @@ func (_c *IDiscordClient_SwitchVoiceChannel_Call) Return(err error) *IDiscordCli
 	return _c
 }
 
-func (_c *IDiscordClient_SwitchVoiceChannel_Call) RunAndReturn(run func(channelId discord.ChannelID) error) *IDiscordClient_SwitchVoiceChannel_Call {
+func (_c *IDiscordClient_SwitchVoiceChannel_Call) RunAndReturn(run func(channelId snowflake.ID) error) *IDiscordClient_SwitchVoiceChannel_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -771,16 +787,16 @@ func (_c *IStreamer_PrepStreamFromStream_Call) RunAndReturn(run func(streamUrl *
 }
 
 // Stream provides a mock function for the type IStreamer
-func (_mock *IStreamer) Stream(ctx context.Context, voice io.Writer) error {
-	ret := _mock.Called(ctx, voice)
+func (_mock *IStreamer) Stream(ctx context.Context, setFrameProvider func(voice.OpusFrameProvider)) error {
+	ret := _mock.Called(ctx, setFrameProvider)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stream")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, io.Writer) error); ok {
-		r0 = returnFunc(ctx, voice)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, func(voice.OpusFrameProvider)) error); ok {
+		r0 = returnFunc(ctx, setFrameProvider)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -794,14 +810,14 @@ type IStreamer_Stream_Call struct {
 
 // Stream is a helper method to define mock.On call
 //   - ctx
-//   - voice
-func (_e *IStreamer_Expecter) Stream(ctx interface{}, voice interface{}) *IStreamer_Stream_Call {
-	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", ctx, voice)}
+//   - setFrameProvider
+func (_e *IStreamer_Expecter) Stream(ctx interface{}, setFrameProvider interface{}) *IStreamer_Stream_Call {
+	return &IStreamer_Stream_Call{Call: _e.mock.On("Stream", ctx, setFrameProvider)}
 }
 
-func (_c *IStreamer_Stream_Call) Run(run func(ctx context.Context, voice io.Writer)) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) Run(run func(ctx context.Context, setFrameProvider func(voice.OpusFrameProvider))) *IStreamer_Stream_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(io.Writer))
+		run(args[0].(context.Context), args[1].(func(voice.OpusFrameProvider)))
 	})
 	return _c
 }
@@ -811,7 +827,7 @@ func (_c *IStreamer_Stream_Call) Return(err error) *IStreamer_Stream_Call {
 	return _c
 }
 
-func (_c *IStreamer_Stream_Call) RunAndReturn(run func(ctx context.Context, voice io.Writer) error) *IStreamer_Stream_Call {
+func (_c *IStreamer_Stream_Call) RunAndReturn(run func(ctx context.Context, setFrameProvider func(voice.OpusFrameProvider)) error) *IStreamer_Stream_Call {
 	_c.Call.Return(run)
 	return _c
 }
