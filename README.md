@@ -82,3 +82,7 @@ Subcordant makes use of the following:
 - [Ginkgo](https://github.com/onsi/ginkgo) - testing framework
 - [Mockery](https://vektra.github.io/mockery/latest/) - for generating mocks from interfaces
 - [Testify](https://github.com/stretchr/testify?tab=readme-ov-file#mock-package) - for the mock package
+
+dont force libdave build on push check
+use matrix of releases
+update install docs
