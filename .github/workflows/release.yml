@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             goos: linux
             goarch: amd64
             libname: libdave.so
@@ -76,7 +76,7 @@ jobs:
           path: dist/releases/*.tar.gz
 
   upload:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     permissions:
       contents: write
