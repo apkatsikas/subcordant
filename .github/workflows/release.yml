@@ -17,24 +17,6 @@ jobs:
             goos: linux
             goarch: amd64
             libname: libdave.so
-          - os: ubuntu-latest
-            goos: linux
-            goarch: arm64
-            libname: libdave.so
-
-          - os: macos-latest
-            goos: darwin
-            goarch: amd64
-            libname: libdave.dylib
-          - os: macos-latest
-            goos: darwin
-            goarch: arm64
-            libname: libdave.dylib
-
-          - os: windows-latest
-            goos: windows
-            goarch: amd64
-            libname: libdave.dll
 
     runs-on: ${{ matrix.os }}
 
@@ -45,12 +27,7 @@ jobs:
         with:
           go-version-file: ./go.mod
 
-      - name: Install pkg-config (macOS)
-        if: matrix.goos == 'darwin'
-        run: brew install pkg-config
-
-      - name: Install libdave (Unix)
-        if: runner.os != 'Windows'
+      - name: Install libdave
         shell: bash
         run: |
           chmod +x ./scripts/libdave_install.sh
@@ -58,40 +35,16 @@ jobs:
         env:
           NON_INTERACTIVE: 1
 
-      - name: Install libdave (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          ./scripts/libdave_install.ps1 -Version v1.1.0
-
       - name: Set binary name
         id: binname
         shell: bash
         run: |
-          if [[ "${{ matrix.goos }}" == "windows" ]]; then
-            echo "binary_name=subcordant.exe" >> $GITHUB_OUTPUT
-          else
-            echo "binary_name=subcordant" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install cross compiler
-        if: matrix.goarch == 'arm64' && matrix.goos == 'linux'
-        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "binary_name=subcordant" >> $GITHUB_OUTPUT
 
       - name: Build
         shell: bash
         run: |
           mkdir -p dist/${{ matrix.goos }}_${{ matrix.goarch }}
-
-          if [[ "${{ matrix.goarch }}" == "arm64" && "${{ matrix.goos }}" == "linux" ]]; then
-            export CC=aarch64-linux-gnu-gcc
-            export CXX=aarch64-linux-gnu-g++
-          fi
-
-          # Fix macOS pkg-config path so cgo finds libdave
-          if [[ "${{ matrix.goos }}" == "darwin" ]]; then
-            export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig"
-          fi
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
@@ -104,27 +57,17 @@ jobs:
         shell: bash
         run: |
           TARGET=dist/${{ matrix.goos }}_${{ matrix.goarch }}
-
-          if [[ "${{ matrix.goos }}" == "windows" ]]; then
-            cp "$LOCALAPPDATA/libdave/bin/${{ matrix.libname }}" $TARGET/
-          else
-            cp "$HOME/.local/lib/${{ matrix.libname }}" $TARGET/
-          fi
+          cp "$HOME/.local/lib/${{ matrix.libname }}" $TARGET/
 
       - name: Compress binaries
         shell: bash
         run: |
           mkdir -p dist/releases
 
-          archname=${{ matrix.goarch }}
-          if [[ "${{ matrix.goos }}" == "darwin" && "${{ matrix.goarch }}" == "amd64" ]]; then
-            archname="x86_64"
-          fi
-
           version=${GITHUB_REF_NAME}
 
           tar -czf \
-            dist/releases/subcordant-${version}-${{ matrix.goos }}-${archname}.tar.gz \
+            dist/releases/subcordant-${version}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz \
             -C dist/${{ matrix.goos }}_${{ matrix.goarch }} .
 
       - uses: actions/upload-artifact@v4
