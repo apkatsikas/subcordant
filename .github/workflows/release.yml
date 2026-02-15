@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - disgo
-name: Release
 
 jobs:
   build:
