@@ -2,16 +2,16 @@ package interfaces
 
 import (
 	"github.com/apkatsikas/subcordant/types"
-	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/disgoorg/snowflake/v2"
 )
 
 type ICommandHandler interface {
-	Play(subsonicId string, guildId discord.GuildID, channelId discord.ChannelID) (types.PlaybackState, error)
-	PlayTrackFromAlbum(subsonicId string, trackNumber int, guildId discord.GuildID,
-		switchToChannel discord.ChannelID) (types.PlaybackState, error)
+	Play(subsonicId string, channelId snowflake.ID) (types.PlaybackState, error)
+	PlayTrackFromAlbum(subsonicId string, trackNumber int,
+		switchToChannel snowflake.ID) (types.PlaybackState, error)
 	PlayTrackByName(
-		query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)
-	PlayAlbumByName(query string, guildId discord.GuildID, switchToChannel discord.ChannelID) (types.PlaybackState, error)
+		query string, switchToChannel snowflake.ID) (types.PlaybackState, error)
+	PlayAlbumByName(query string, switchToChannel snowflake.ID) (types.PlaybackState, error)
 	Reset()
 	Disconnect()
 	Skip()

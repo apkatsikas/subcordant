@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/apkatsikas/subcordant/discord"
 	"github.com/apkatsikas/subcordant/runner"
@@ -23,4 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to init runner: %v", err)
 	}
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-s
+	runner.Shutdown()
+	log.Println("ty for jammin w/ me <3")
 }
