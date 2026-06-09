@@ -18,9 +18,15 @@ Subcordant is a Discord bot that streams music from your Subsonic-API compatible
 - `/skip` - skips the currently playing song
 - `/help` - describes all commands
 
-## Building
+## Downloading
 
-Depending on your operating system, run either [libdave_install.sh](scripts/libdave_install.sh) or [libdave_install.ps1](scripts/libdave_install.ps1). For more info see [the docs](https://github.com/disgoorg/godave/tree/master?tab=readme-ov-file#libdave-installation).
+Download a binary of Subcordant from the releases page for your desired platform and extract.
+
+Example on *nix:
+
+`tar -xzf /path/subcordant-v1.0.0-linux-amd64.tar.gz -C  /path/`
+
+## Building
 
 Run `make build`.
 

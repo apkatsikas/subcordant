@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/apkatsikas/subcordant/interfaces"
+	"github.com/thomas-vilte/dave-go/session"
 
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/disgo/voice"
-	"github.com/disgoorg/godave/golibdave"
 	"github.com/disgoorg/snowflake/v2"
 
 	"github.com/disgoorg/disgo"
@@ -186,7 +186,7 @@ func (dc *DiscordClient) Init(commandHandler interfaces.ICommandHandler) error {
 		bot.WithEventListenerFunc(dc.onGuildVoiceLeave),
 		bot.WithEventListenerFunc(dc.onGuildReady),
 		bot.WithVoiceManagerConfigOpts(
-			voice.WithDaveSessionCreateFunc(golibdave.NewSession),
+			voice.WithDaveSessionCreateFunc(session.New),
 		),
 	)
 	if err != nil {
