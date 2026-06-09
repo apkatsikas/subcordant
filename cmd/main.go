@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to init runner: %v", err)
 	}
+	log.Println("lets rock baby <3")
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s

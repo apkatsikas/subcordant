@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/apkatsikas/go-subsonic v0.0.0-20250519215938-0ea4b507971c
-	github.com/disgoorg/disgo v0.19.2
+	github.com/disgoorg/disgo v0.19.6
 	github.com/disgoorg/godave/golibdave v0.1.0
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/joho/godotenv v1.5.1
